@@ -1,0 +1,66 @@
+version: "3.1"
+
+rules:
+  - rule: activate shoe recommendation form
+    steps:
+      - intent: ask_product
+      - action: shoe_recommendation_form
+      - active_loop: shoe_recommendation_form
+
+  - rule: submit shoe recommendation form
+    condition:
+      - active_loop: shoe_recommendation_form
+    steps:
+      - action: shoe_recommendation_form
+      - active_loop: null
+      - action: action_suggest_shoes
+
+  - rule: greet rule
+    steps:
+      - intent: greet
+      - action: utter_greet
+
+  - rule: goodbye rule
+    steps:
+      - intent: goodbye
+      - action: utter_goodbye
+
+  - rule: promotion rule
+    steps:
+      - intent: ask_promotion
+      - action: utter_promotion
+
+  - rule: shipping rule
+    steps:
+      - intent: ask_shipping
+      - action: utter_shipping
+
+  - rule: payment rule
+    steps:
+      - intent: ask_payment
+      - action: utter_payment
+
+  - rule: return policy rule
+    steps:
+      - intent: ask_return_policy
+      - action: utter_return_policy
+
+  - rule: store info rule
+    steps:
+      - intent: ask_store_info
+      - action: utter_store_info
+
+  - rule: search products rule
+    steps:
+      - intent: search_products
+      - action: action_search_products
+
+  - rule: list brands rule
+    steps:
+      - intent: ask_brands
+      - action: action_list_brands
+
+  - rule: list categories rule
+    steps:
+      - intent: ask_categories
+      - action: action_list_categories

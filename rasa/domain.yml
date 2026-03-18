@@ -1,0 +1,103 @@
+version: "3.1"
+
+intents:
+  - greet
+  - goodbye
+  - ask_product
+  - provide_purpose
+  - provide_price_range
+  - provide_size
+  - ask_promotion
+  - ask_shipping
+  - ask_payment
+  - ask_return_policy
+  - ask_store_info
+  - search_products
+  - ask_brands
+  - ask_categories
+  - provide_info
+  - affirm
+  - deny
+
+entities:
+  - purpose
+  - price_min
+  - price_max
+  - shoe_size
+  - brand
+
+slots:
+  brand:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: brand
+        conditions:
+          - active_loop: null
+  purpose:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: shoe_recommendation_form
+            requested_slot: purpose
+  shoe_size:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: shoe_recommendation_form
+            requested_slot: shoe_size
+  price_range:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: shoe_recommendation_form
+            requested_slot: price_range
+
+forms:
+  shoe_recommendation_form:
+    required_slots:
+      - purpose
+      - shoe_size
+      - price_range
+
+responses:
+  utter_greet:
+    - text: "Chào bạn 👋, mình là trợ lý tư vấn giày. Bạn đang cần tìm giày để làm gì vậy (đi làm, chạy bộ, đá bóng...)?"
+  utter_ask_purpose:
+    - text: "Bạn đang cần giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi..."
+  utter_ask_shoe_size:
+    - text: "Bạn thường mang size giày bao nhiêu?"
+  utter_ask_price_range:
+    - text: "Bạn mong muốn tầm giá khoảng bao nhiêu? Ví dụ: dưới 1 triệu, 1–2 triệu, 2–3 triệu, trên 3 triệu..."
+  utter_promotion:
+    - text: "Hiện shop đang có một số chương trình giảm giá cho sneaker và giày chạy bộ. Bạn cho mình biết nhu cầu và tầm giá, mình tư vấn mẫu phù hợp nhé."
+  utter_shipping:
+    - text: "Shop có giao hàng toàn quốc. Bạn cho mình biết khu vực (tỉnh/thành) để mình ước tính phí ship và thời gian giao hàng nhé."
+  utter_payment:
+    - text: "Shop hỗ trợ COD (thanh toán khi nhận hàng) và chuyển khoản. Bạn muốn thanh toán theo cách nào?"
+  utter_return_policy:
+    - text: "Shop hỗ trợ đổi size/đổi mẫu trong thời gian quy định nếu sản phẩm còn nguyên tem mác. Bạn cho mình biết bạn muốn đổi size hay trả hàng, và bạn đã nhận hàng chưa?"
+  utter_store_info:
+    - text: "Bạn muốn xem thông tin gì: địa chỉ cửa hàng, giờ mở cửa, hay liên hệ hỗ trợ? Mình gửi chi tiết ngay."
+  utter_goodbye:
+    - text: "Cảm ơn bạn đã ghé shop giày, nếu cần hỗ trợ thêm cứ nhắn mình nhé 👋"
+  utter_default:
+    - text: "Xin lỗi, mình chưa hiểu rõ câu hỏi của bạn. Bạn có thể nói rõ hơn về nhu cầu chọn giày không?"
+
+actions:
+  - validate_shoe_recommendation_form
+  - action_suggest_shoes
+  - action_search_products
+  - action_list_brands
+  - action_list_categories
+
+session_config:
+  session_expiration_time: 60
+  carry_over_slots_to_new_session: true

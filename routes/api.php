@@ -1,0 +1,125 @@
+<?php
+
+use App\Mail\OrderStatusMail;
+use App\Models\Order;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| API Routes
+|--------------------------------------------------------------------------
+*/
+
+// TEST
+// Route::get('/test', function () {
+//     return response()->json([
+//         'message' => 'API OK',
+//     ]);
+// });
+
+// Route::get('/test-mail', function () {
+//     $order = Order::with(['items', 'payments', 'items.variant'])->latest()->first();
+
+//     if (!$order) {
+//         return response()->json([
+//             'message' => 'Không có đơn hàng để test.',
+//         ], 404);
+//     }
+
+//     if (empty($order->customer_email)) {
+//         return response()->json([
+//             'message' => 'Đơn hàng chưa có customer_email.',
+//         ], 422);
+//     }
+
+//     Mail::to($order->customer_email)->send(
+//         new OrderStatusMail($order, 'paid')
+//     );
+
+//     return response()->json([
+//         'message' => 'Đã gửi mail thành công tới ' . $order->customer_email,
+//     ]);
+// });
+
+// AUTH
+Route::prefix('auth')->group(function () {
+    Route::post('/register', [App\Http\Controllers\Api\Auth\AuthController::class, 'register']);
+    Route::post('/login', [App\Http\Controllers\Api\Auth\AuthController::class, 'login']);
+    Route::post('/logout', [App\Http\Controllers\Api\Auth\AuthController::class, 'logout']);
+
+    Route::middleware('auth:sanctum')->group(function () {
+        Route::get('/me', [App\Http\Controllers\Api\Auth\AuthController::class, 'me']);
+    });
+});
+
+// PUBLIC STORE
+Route::prefix('v1')->group(function () {
+    Route::get('products/facets', [App\Http\Controllers\Api\Public\ProductFacetController::class, 'index']);
+    Route::get('products', [App\Http\Controllers\Api\Public\ProductController::class, 'index']);
+    Route::get('products/{product:slug}', [App\Http\Controllers\Api\Public\ProductController::class, 'show']);
+
+    Route::get('categories', [App\Http\Controllers\Api\Public\CategoryController::class, 'index']);
+    Route::get('categories/{slug}', [App\Http\Controllers\Api\Public\CategoryController::class, 'show']);
+    Route::get('/banners', [App\Http\Controllers\Api\Public\BannerController::class, 'index']);
+    Route::get('/banners/position/{position}', [App\Http\Controllers\Api\Public\BannerController::class, 'showByPosition']);
+
+    Route::post('/chatbot', [App\Http\Controllers\Api\Public\ChatbotController::class, 'message']);
+});
+
+// USER: CART + ORDER
+Route::prefix('v1')
+    ->middleware('auth:sanctum')
+    ->group(function () {
+        // CART
+        Route::get('cart', [App\Http\Controllers\Api\Public\CartController::class, 'show']);
+        Route::post('cart/items', [App\Http\Controllers\Api\Public\CartController::class, 'addItem']);
+        Route::patch('cart/items/{item}', [App\Http\Controllers\Api\Public\CartController::class, 'updateItem']);
+        Route::delete('cart/items/{item}', [App\Http\Controllers\Api\Public\CartController::class, 'removeItem']);
+        Route::delete('cart/clear', [App\Http\Controllers\Api\Public\CartController::class, 'clear']);
+
+        // ORDERS
+        Route::post('orders', [App\Http\Controllers\Api\Public\OrderController::class, 'store']);
+        Route::get('orders', [App\Http\Controllers\Api\Public\OrderController::class, 'index']);
+        Route::get('orders/{order}', [App\Http\Controllers\Api\Public\OrderController::class, 'show']);
+        Route::post('orders/{order}/payment', [App\Http\Controllers\Api\Public\OrderController::class, 'createPayment']);
+    });
+
+// VNPAY CALLBACK
+Route::prefix('v1/payments/vnpay')->group(function () {
+    Route::get('return', [App\Http\Controllers\Api\Public\OrderController::class, 'vnpayReturn']);
+    Route::get('ipn', [App\Http\Controllers\Api\Public\OrderController::class, 'vnpayIpn']);
+});
+
+// MOMO CALLBACK
+Route::prefix('v1/payments/momo')->group(function () {
+    Route::match(['GET', 'POST'], 'return', [App\Http\Controllers\Api\Public\OrderController::class, 'momoReturn']);
+    Route::match(['GET', 'POST'], 'ipn', [App\Http\Controllers\Api\Public\OrderController::class, 'momoIpn']);
+});
+
+// ADMIN
+Route::prefix('v1/admin')
+    ->middleware(['auth:sanctum', 'role:admin'])
+    ->group(function () {
+        Route::get('/dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
+        
+        Route::apiResource('products', App\Http\Controllers\Api\Admin\ProductController::class);
+        Route::apiResource('categories', App\Http\Controllers\Api\Admin\CategoryController::class);
+        Route::apiResource('brands', App\Http\Controllers\Api\Admin\BrandController::class);
+        
+        Route::post('uploads/images', [App\Http\Controllers\Api\Admin\UploadController::class, 'store']);
+        Route::delete('uploads/images', [App\Http\Controllers\Api\Admin\UploadController::class, 'destroy']);
+
+        // USERS
+        Route::get('users', [App\Http\Controllers\Api\Admin\UserController::class, 'index']);
+        Route::get('users/{user}', [App\Http\Controllers\Api\Admin\UserController::class, 'show']);
+        Route::put('users/{user}', [App\Http\Controllers\Api\Admin\UserController::class, 'update']);
+
+        // ORDERS
+        Route::get('orders', [App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
+        Route::get('orders/{order}', [App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
+        Route::patch('orders/{order}/status', [App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
+        
+        // BANNER 
+        Route::apiResource('banners', App\Http\Controllers\Api\Admin\BannerController::class);
+    });

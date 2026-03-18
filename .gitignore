@@ -1,0 +1,60 @@
+# ========================
+# Laravel
+# ========================
+/vendor/
+/node_modules/
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+
+.env
+.env.backup
+.env.production
+
+.phpunit.result.cache
+.phpactor.json
+/.phpunit.cache
+
+# ========================
+# Python / Rasa
+# ========================
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Rasa cache & models
+.rasa/
+models/
+*.tar.gz
+
+# ========================
+# Logs
+# ========================
+*.log
+
+# ========================
+# IDE / OS
+# ========================
+.DS_Store
+Thumbs.db
+/.idea
+/.vscode
+/.fleet
+/.zed
+
+# ========================
+# Docker (optional)
+# ========================
+docker-compose.override.yml
+
+# ========================
+# Misc
+# ========================
+auth.json
+Homestead.json
+Homestead.yaml

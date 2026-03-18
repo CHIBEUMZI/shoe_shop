@@ -1,0 +1,169 @@
+version: "3.1"
+
+nlu:
+  - intent: greet
+    examples: |
+      - chào
+      - xin chào
+      - hello
+      - hi
+      - chào shop
+      - chào bạn
+
+  - intent: goodbye
+    examples: |
+      - tạm biệt
+      - bye
+      - hẹn gặp lại
+      - cảm ơn, mình out đây
+      - ok cảm ơn nhé
+
+  - intent: ask_product
+    examples: |
+      - mình muốn mua giày
+      - tôi muốn mua giày
+      - mình cần mua giày
+      - mình đang tìm giày
+      - cho mình xem giày
+      - mình muốn tìm giày
+      - shop có giày không
+      - tư vấn giày giúp mình
+      - mình cần giày mới
+      - mình muốn mua đôi giày
+
+  - intent: provide_purpose
+    examples: |
+      - mình cần giày chạy bộ
+      - giày đá bóng
+      - giày để đi làm
+      - giày đi học cho nam
+      - mình muốn giày sneaker đi chơi
+      - giày tập gym
+      - giày đi bộ hằng ngày
+
+  - intent: provide_size
+    examples: |
+      - mình mang size 40
+      - bình thường mình đi size 41
+      - mình chân nhỏ, khoảng size 38
+      - size 39
+      - khoảng 40 41
+
+  - intent: provide_price_range
+    examples: |
+      - tầm dưới 1 triệu
+      - khoảng 1 đến 2 triệu
+      - khoảng 2 3 triệu
+      - tầm trên 3 triệu
+      - khoảng 1 triệu rưỡi
+      - tầm 800k tới 1 triệu
+
+  - intent: ask_promotion
+    examples: |
+      - shop đang có khuyến mãi gì
+      - giày có đang giảm giá không
+      - ưu đãi hiện tại là gì
+      - có voucher gì không
+      - có sale không
+      - hôm nay có chương trình giảm giá gì không
+
+  - intent: ask_shipping
+    examples: |
+      - shop có giao hàng không
+      - phí ship bao nhiêu
+      - giao hàng mấy ngày tới
+      - giao hàng toàn quốc không
+      - có giao hỏa tốc không
+
+  - intent: ask_payment
+    examples: |
+      - shop hỗ trợ thanh toán như thế nào
+      - có thanh toán khi nhận hàng không
+      - có COD không
+      - có chuyển khoản không
+      - thanh toán qua ví momo được không
+
+  - intent: ask_return_policy
+    examples: |
+      - đổi trả như thế nào
+      - mua rồi có đổi size được không
+      - mình muốn trả hàng thì sao
+      - chính sách đổi trả của shop
+      - bao lâu thì được đổi trả
+
+  - intent: ask_store_info
+    examples: |
+      - shop ở đâu
+      - địa chỉ cửa hàng
+      - giờ mở cửa thế nào
+      - có showroom không
+      - mình muốn tới xem trực tiếp
+
+  - intent: search_products
+    examples: |
+      - tìm giày [nike](brand)
+      - tìm sneaker [adidas](brand)
+      - giày [chạy bộ](purpose) dưới [2 triệu](price_range)
+      - giày size [40](shoe_size) tầm [1 đến 2 triệu](price_range)
+      - mình cần giày [đá bóng](purpose) size [41](shoe_size)
+      - gợi ý giày [puma](brand) size [39](shoe_size) dưới [1 triệu](price_range)
+      - cho mình xem giày [đi làm](purpose) tầm [2-3 triệu](price_range)
+      - tìm giày màu trắng size [38](shoe_size)
+      - tôi muốn mua giày [nike](brand) giá từ [2 đến 3 triệu](price_range)
+      - mình muốn mua [adidas](brand) [chạy bộ](purpose) size [40](shoe_size) tầm [2-3 triệu](price_range)
+      - mình muốn mua [adidas](brand) tầm [1-2 triệu](price_range)
+      - mua [nike](brand) dưới [3 triệu](price_range)
+      - tìm giày [nike](brand) khoảng [2 3 triệu](price_range)
+      - mình cần giày [adidas](brand) chạy bộ size [40](shoe_size) tầm [2-3 triệu](price_range)
+
+  - intent: provide_info
+    examples: |
+      - size [40](shoe_size)
+      - khoảng [2 triệu](price_range)
+      - mình đi size [41](shoe_size)
+      - giày [chạy bộ](purpose)
+      - hãng [adidas](brand)
+      - brand [nike](brand)
+
+  - lookup: brand
+    examples: |
+      - nike
+      - adidas
+      - puma
+      - converse
+
+  - regex: shoe_size
+    examples: |
+      - \\b(3[5-9]|4[0-5])\\b
+
+  - intent: ask_brands
+    examples: |
+      - shop có những brand nào
+      - có những hãng giày nào
+      - danh sách thương hiệu
+      - brands hiện có
+      - các hãng đang bán
+      - có nike adidas không
+
+  - intent: ask_categories
+    examples: |
+      - shop có những loại giày nào
+      - danh mục sản phẩm
+      - categories hiện có
+      - shop bán những dòng nào
+      - cho mình xem các danh mục
+
+  - intent: affirm
+    examples: |
+      - đúng rồi
+      - chính xác
+      - vâng
+      - ok
+      - được
+
+  - intent: deny
+    examples: |
+      - không
+      - không phải
+      - thôi khỏi
+      - chưa cần
