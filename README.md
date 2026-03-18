@@ -1,8 +1,8 @@
 # 🥿 Shoe Shop
 
-**Shoe Shop** là website bán giày được xây dựng theo kiến trúc **RESTful API + Single Page Application (SPA)**.
+**Shoe Shop** là website bán giày được xây dựng theo kiến trúc **RESTful API + Single Page Application (SPA)**, tích hợp **chatbot tư vấn giày** dùng **Rasa**.
 
-Dự án sử dụng **Laravel 12** để xây dựng Backend API và **Vue 3** để phát triển Frontend.
+Dự án sử dụng **Laravel 12** để xây dựng Backend API, **Vue 3** để phát triển Frontend và **Rasa (Pro + SDK)** để xử lý hội thoại/chatbot.
 Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dàng cài đặt và chạy trên nhiều môi trường khác nhau.
 
 ---
@@ -13,6 +13,8 @@ Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dà
 | ---------- | ------------------------------------- |
 | Laravel 12 | Backend RESTful API                   |
 | Vue 3      | Frontend SPA                          |
+| Rasa Pro   | Chatbot (NLU + Dialogue)              |
+| Rasa SDK   | Custom actions gọi API sản phẩm       |
 | Vite       | Frontend build tool & Hot Reload      |
 | Docker     | Containerized development environment |
 | MySQL 8    | Relational Database                   |
@@ -74,7 +76,7 @@ DB_PASSWORD=123456
 
 # 🐳 Start Docker Containers
 
-Build và chạy toàn bộ hệ thống:
+Build và chạy toàn bộ hệ thống (API + Frontend + Chatbot):
 
 ```bash
 docker compose up -d --build
@@ -93,7 +95,9 @@ app_shoe_shop
 db_shoe_shop
 queue_shoe_shop
 nginx_shoe_shop
-pma_shoe_shop
+phpmyadmin_shoe_shop
+rasa_shoe_shop
+rasa_actions_shoe_shop
 ```
 
 ---
@@ -139,6 +143,8 @@ Sau đó mở trình duyệt:
 ```
 http://localhost:8080
 ```
+
+Chatbot trên website sẽ giao tiếp với Rasa qua API Laravel (`/api/v1/chatbot`).
 
 ---
 
@@ -191,6 +197,67 @@ docker compose exec app php artisan migrate
 npm install
 npm run dev
 ```
+
+---
+
+# 🤖 Chatbot tư vấn giày (Rasa)
+
+Thư mục chatbot nằm trong `rasa/` và được chạy bằng 2 service:
+
+- `rasa_shoe_shop`: Rasa server (NLU + rules + stories)
+- `rasa_actions_shoe_shop`: Rasa SDK action server (gọi API sản phẩm của shop)
+
+## 1. Cấu hình môi trường
+
+Trong file `.env` của Laravel:
+
+```env
+# URL Rasa REST webhook (từ bên trong container app)
+RASA_URL=http://rasa:5005/webhooks/rest/webhook
+
+# Base URL API + Web cho Rasa actions
+SHOP_API_BASE_URL=http://nginx
+SHOP_WEB_BASE_URL=http://localhost:8080
+```
+
+## 2. Train model Rasa
+
+Khi thay đổi file trong thư mục `rasa/` (`nlu.yml`, `rules.yml`, `stories.yml`, `domain.yml`, `actions/actions.py`...), cần train lại model:
+
+```bash
+docker compose run --rm rasa rasa train
+```
+
+Model mới sẽ được lưu trong `rasa/models/*.tar.gz` và tự động được Rasa server load ở lần khởi động tiếp theo.
+
+## 3. Khởi động / restart chatbot
+
+Đảm bảo tất cả service (bao gồm chatbot) đang chạy:
+
+```bash
+docker compose up -d
+```
+
+Hoặc chỉ restart phần chatbot sau khi sửa code actions:
+
+```bash
+docker compose restart rasa rasa-actions
+```
+
+## 4. Cách hoạt động tổng quan
+
+- Frontend (`ChatBot.vue`) gọi tới API Laravel:
+  - `POST /api/v1/chatbot` với payload: `{ message: "..." }`
+- Laravel (`ChatbotController`) proxy request sang Rasa REST channel (`RASA_URL`).
+- Rasa:
+  - Hiểu intent + entity (brand, purpose, shoe_size, price_range...)
+  - Với intent `search_products`, gọi custom actions trong `rasa/actions/actions.py` để:
+    - Gọi API sản phẩm (`/api/v1/products`) với các filter phù hợp
+    - Trả về message dạng text hoặc `custom` (products, chips) cho frontend
+- Frontend render lại thành:
+  - tin nhắn text
+  - card sản phẩm (ảnh + tên + giá + link)
+  - chips brand/category có thể bấm để mở trang `/shop/products?...`
 
 ---
 
