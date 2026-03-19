@@ -4,6 +4,7 @@ import { useRouter, useRoute } from "vue-router";
 import categoryAdminService from "../../../services/admin/categoryAdminService";
 import BaseTable, { type TableColumn } from "../../../components/BaseTable.vue";
 import BaseSelect from "../../../components/BaseSelect.vue";
+import ConfirmModal from "../../../components/ComfirmModal.vue";
 import { useAlert } from "../../../composables/useAlert";
 
 const router = useRouter();
@@ -14,6 +15,13 @@ const loading = ref(false);
 const error = ref("");
 
 const items = ref<any[]>([]);
+
+const showConfirm = ref(false);
+const selectedItem = ref<any>(null);
+
+const confirmMessage = computed(() => {
+  return `Bạn có chắc muốn xoá danh mục "${selectedItem.value?.name || ''}" không?`;
+});
 
 const q = ref(String(route.query.search || ""));
 const status = ref(
@@ -96,16 +104,26 @@ async function fetchData() {
   }
 }
 
-async function removeItem(c: any) {
-  if (!confirm(`Xóa danh mục "${c.name}"?`)) return;
+function removeItem(item: any) {
+  selectedItem.value = item;
+  showConfirm.value = true;
+}
+
+async function handleConfirmDelete() {
+  if (!selectedItem.value) return;
+
+  const id = selectedItem.value.id;
+  showConfirm.value = false;
 
   loading.value = true;
   error.value = "";
 
   try {
-    await categoryAdminService.remove(c.id);
+    await categoryAdminService.remove(id);
 
-    if (items.value.length <= 1 && page.value > 1) page.value -= 1;
+    if (items.value.length <= 1 && page.value > 1) {
+      page.value -= 1;
+    }
 
     pushQuery();
     await fetchData();
@@ -113,9 +131,12 @@ async function removeItem(c: any) {
       title: "Xoá thành công",
       duration: 2500,
     });
+    selectedItem.value = null;
   } catch (e: any) {
-    console.error(e);
-    error.value = e?.response?.data?.message || "Xóa thất bại";
+    notify.error(e?.response?.data?.message || "Xoá thất bại.", {
+      title: "Xoá thất bại",
+      duration: 2500,
+    });
   } finally {
     loading.value = false;
   }
@@ -352,4 +373,11 @@ function statusLabel(s: any) {
       </template>
     </BaseTable>
   </div>
+  <ConfirmModal
+    :visible="showConfirm"
+    title="Xác nhận xoá"
+    :message="confirmMessage"
+    @confirm="handleConfirmDelete"
+    @cancel="showConfirm = false"
+  />
 </template>

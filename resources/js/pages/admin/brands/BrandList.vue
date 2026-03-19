@@ -5,12 +5,15 @@ import brandAdminService from "../../../services/admin/brandAdminService";
 import BaseTable, { type TableColumn } from "../../../components/BaseTable.vue";
 import { buildImageUrl } from "../../../utils/image";
 import BaseSelect from "../../../components/BaseSelect.vue";
+import ConfirmModal from "../../../components/ComfirmModal.vue";
 import { useAlert } from "../../../composables/useAlert";
 
 const router = useRouter();
 const route = useRoute();
 const notify = useAlert();
 
+const showConfirm = ref(false);
+const selectedItem = ref(null);
 const loading = ref(false);
 const error = ref("");
 
@@ -21,7 +24,9 @@ const meta = ref({
   per_page: 10,
   total: 0,
 });
-
+const confirmMessage = computed(() => {
+  return `Bạn có chắc muốn xoá thương hiệu "${selectedItem.value?.name || ''}" không?`;
+});
 const q = ref(String(route.query.search || ""));
 const status = ref(
   route.query.status === undefined || route.query.status === ""
@@ -118,24 +123,34 @@ function goEdit(id: number) {
 function goDetail(id: number) {
   router.push(`/admin/brands/${id}`);
 }
+function onDelete(item) {
+  selectedItem.value = item;
+  showConfirm.value = true;
+}
+async function handleConfirmDelete() {
+  if (!selectedItem.value) return;
 
-async function onDelete(item: any) {
-  const ok = window.confirm(`Bạn chắc chắn muốn xoá thương hiệu "${item?.name}"?`);
-  if (!ok) return;
+  const id = selectedItem.value.id;
+  showConfirm.value = false;
 
   loading.value = true;
   error.value = "";
 
   try {
-    await brandAdminService.destroy(item.id);
+    await brandAdminService.destroy(id);
 
-    if (items.value.length <= 1 && page.value > 1) page.value -= 1;
+    if (items.value.length <= 1 && page.value > 1) {
+      page.value -= 1;
+    }
+
     pushQuery();
     await fetchList();
     notify.success("Xoá thương hiệu thành công.", {
       title: "Xoá thành công",
       duration: 2500,
     });
+
+    selectedItem.value = null;
   } catch (e: any) {
     notify.error(e?.response?.data?.message || "Xoá thất bại.", {
       title: "Xoá thất bại",
@@ -226,9 +241,8 @@ watch(
   <div class="mx-auto max-w-[1200px] p-6">
     <div class="mb-4 flex items-end justify-between gap-4">
       <div>
-        <div class="text-xs text-slate-500">Quản trị • Thương hiệu</div>
         <h2 class="m-0 text-2xl font-extrabold">Danh sách thương hiệu</h2>
-        <div class="mt-1 text-xs text-slate-500">{{ fromToText }}</div>
+        <div class="mt-1 text-sm text-slate-500">Quản lý thương hiệu thêm mới, chỉnh sửa, xóa</div>
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -327,4 +341,11 @@ watch(
       </template>
     </BaseTable>
   </div>
+  <ConfirmModal
+    :visible="showConfirm"
+    title="Xác nhận xoá"
+    :message="confirmMessage"
+    @confirm="handleConfirmDelete"
+    @cancel="showConfirm = false"
+  />
 </template>

@@ -204,6 +204,7 @@ const rowActions = [
     key: "view",
     icon: "visibility",
     title: "Chi tiết",
+    class: "border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"
   },
 ];
 

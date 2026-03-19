@@ -53,7 +53,7 @@
           class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
           @click="resetFilters"
         >
-          Đặt lại
+          Làm mới
         </button>
       </template>
 
@@ -128,21 +128,33 @@
       </template>
     </BaseTable>
   </main>
+  <ConfirmModal
+    :visible="showConfirm"
+    title="Xác nhận xoá"
+    :message="confirmMessage"
+    @confirm="handleConfirmDelete"
+    @cancel="showConfirm = false"
+  />
 </template>
 
-<script setup>
-import { onMounted, reactive, ref } from "vue";
+<script setup >
+import { onMounted, computed, reactive, ref } from "vue";
 import { useRouter } from "vue-router";
 
 import BaseTable from "../../../components/BaseTable.vue";
 import BaseSelect from "../../../components/BaseSelect.vue";
 import bannerAdminService from "../../../services/admin/bannerAdminService";
+import ConfirmModal from "../../../components/ComfirmModal.vue";
+import { useAlert } from "../../../composables/useAlert";
 
 const router = useRouter();
 
 const loading = ref(false);
 const error = ref("");
 const items = ref([]);
+const notify = useAlert();
+const showConfirm = ref(false);
+const selectedItem = ref(null);
 
 const filters = reactive({
   search: "",
@@ -218,7 +230,9 @@ function formatDate(value) {
     return "--";
   }
 }
-
+const confirmMessage = computed(() => {
+  return `Bạn có chắc muốn xoá banner "${selectedItem.value?.title || ''}" không?`;
+});
 function formatPosition(value) {
   const map = {
     home_top: "Home Top",
@@ -295,13 +309,19 @@ function resetFilters() {
   filters.per_page = 10;
   fetchItems();
 }
+function removeItem(item) {
+  selectedItem.value = item;
+  showConfirm.value = true;
+}
 
-async function removeItem(item) {
-  const ok = window.confirm(`Bạn có chắc muốn xoá banner "${item.title}" không?`);
-  if (!ok) return;
+async function handleConfirmDelete() {
+  if (!selectedItem.value) return;
+
+  const id = selectedItem.value.id;
+  showConfirm.value = false;
 
   try {
-    await bannerAdminService.delete(item.id);
+    await bannerAdminService.delete(id);
 
     if (items.value.length === 1 && filters.page > 1) {
       filters.page -= 1;
@@ -310,6 +330,8 @@ async function removeItem(item) {
       title: "Xoá thành công",
       duration: 2500,
     });
+
+    selectedItem.value = null;
     await fetchItems();
   } catch (e) {
     notify.error(e?.response?.data?.message || "Xoá banner thất bại.", {

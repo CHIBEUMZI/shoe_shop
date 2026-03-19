@@ -144,6 +144,14 @@
       </template>
     </div>
   </main>
+  <ConfirmModal
+    :visible="confirmModal.visible"
+    :title="confirmModal.title"
+    :message="confirmModal.message"
+    :variant="confirmModal.variant"
+    @confirm="onConfirmModal"
+    @cancel="onCancelModal"
+  />
 </template>
 
 <script setup>
@@ -153,6 +161,7 @@ import AdminDetailSection from "../../../components/AdminDetailSection.vue";
 import AdminActionPanel from "../../../components/AdminActionPanel.vue";
 import orderAdminService from "../../../services/admin/orderAdminService";
 import { useAlert } from "../../../composables/useAlert";
+import ConfirmModal from "../../../components/ComfirmModal.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -165,6 +174,13 @@ const actionError = ref("");
 const actionMessage = ref("");
 const order = ref({});
 
+const confirmModal = ref({
+  visible: false,
+  targetStatus: null,
+  title: "",
+  message: "",
+  variant: "info",
+});
 const fallbackImage = "https://via.placeholder.com/400x400?text=Shoe";
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
@@ -265,8 +281,29 @@ const nextStatuses = computed(() => {
   return map[order.value.status] || [];
 });
 
-async function updateStatus(status) {
-  if (!order.value?.id) return;
+function updateStatus(status) {
+  const labelMap = {
+    confirmed: { title: "Xác nhận đơn hàng", message: "Bạn có chắc muốn xác nhận đơn hàng này?", variant: "success" },
+    processing: { title: "Chuyển sang chuẩn bị", message: "Chuyển đơn hàng sang trạng thái đang chuẩn bị?", variant: "info" },
+    shipping: { title: "Chuyển sang đang giao", message: "Chuyển đơn hàng sang trạng thái đang giao?", variant: "info" },
+    completed: { title: "Hoàn thành đơn hàng", message: "Đánh dấu đơn hàng này là đã hoàn thành?", variant: "success" },
+    cancelled: { title: "Hủy đơn hàng", message: "Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác.", variant: "danger" },
+  };
+
+  const config = labelMap[status] || { title: "Cập nhật trạng thái", message: "Xác nhận thay đổi trạng thái?", variant: "info" };
+
+  confirmModal.value = {
+    visible: true,
+    targetStatus: status,
+    ...config,
+  };
+}
+
+async function onConfirmModal() {
+  const status = confirmModal.value.targetStatus;
+  confirmModal.value.visible = false;
+
+  if (!order.value?.id || !status) return;
 
   submitting.value = true;
   actionError.value = "";
@@ -278,23 +315,21 @@ async function updateStatus(status) {
     const successMessage = statusSuccessMessage(status);
     actionMessage.value = successMessage;
 
-    notify.success(successMessage, {
-      title: "Cập nhật thành công",
-      duration: 2600,
-    });
+    notify.success(successMessage, { title: "Cập nhật thành công", duration: 2600 });
 
     await fetchDetail();
   } catch (e) {
     const msg = e?.response?.data?.message || statusErrorMessage(status);
     actionError.value = msg;
 
-    notify.error(msg, {
-      title: "Cập nhật thất bại",
-      duration: 3800,
-    });
+    notify.error(msg, { title: "Cập nhật thất bại", duration: 3800 });
   } finally {
     submitting.value = false;
   }
+}
+function onCancelModal() {
+  confirmModal.value.visible = false;
+  confirmModal.value.targetStatus = null;
 }
 
 function statusActionLabel(status) {

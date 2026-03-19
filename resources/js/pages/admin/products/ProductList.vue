@@ -6,6 +6,7 @@ import BaseTable, { type TableColumn } from "../../../components/BaseTable.vue";
 import BaseSelect from "../../../components/BaseSelect.vue";
 import { buildImageUrl } from "../../../utils/image";
 import { useAlert } from "../../../composables/useAlert";
+import ConfirmModal from "../../../components/ComfirmModal.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -13,6 +14,8 @@ const notify = useAlert();
 
 const loading = ref(false);
 const error = ref("");
+const showConfirm = ref(false);
+const selectedItem = ref<any>(null);
 
 const items = ref<any[]>([]);
 const meta = ref({
@@ -21,7 +24,9 @@ const meta = ref({
   per_page: 10,
   total: 0,
 });
-
+const confirmMessage = computed(() => {
+  return `Bạn chắc chắn muốn xoá sản phẩm "${selectedItem.value?.name || ""}"?`;
+});
 const q = ref(String(route.query.search || ""));
 const status = ref(
   route.query.status === undefined || route.query.status === ""
@@ -151,9 +156,15 @@ function goDetail(id: number) {
   router.push(`/admin/products/${id}`);
 }
 
-async function onDelete(item: any) {
-  const ok = window.confirm(`Bạn chắc chắn muốn xoá sản phẩm "${item?.name}"?`);
-  if (!ok) return;
+function onDelete(item: any) {
+  selectedItem.value = item;
+  showConfirm.value = true;
+}
+async function handleConfirmDelete() {
+  if (!selectedItem.value) return;
+
+  const item = selectedItem.value;
+  showConfirm.value = false;
 
   loading.value = true;
   error.value = "";
@@ -169,14 +180,14 @@ async function onDelete(item: any) {
     });
   } catch (e: any) {
     notify.error(e?.response?.data?.message || "Xoá sản phẩm thất bại.", {
-        title: "Xoá thất bại",
-        duration: 2500,
+      title: "Xoá thất bại",
+      duration: 2500,
     });
   } finally {
     loading.value = false;
+    selectedItem.value = null;
   }
 }
-
 const columns = computed<TableColumn[]>(() => [
   { key: "thumbnail", label: "Ảnh", width: "84px" },
   { key: "name", label: "Sản phẩm", sortable: true },
@@ -235,9 +246,8 @@ function onAction(e: { key: string; item: any }) {
   <div class="mx-auto max-w-[1200px] p-6">
     <div class="mb-4 flex items-end justify-between gap-4">
       <div>
-        <div class="text-xs text-slate-500">Quản lý • Sản phẩm</div>
         <h2 class="m-0 text-2xl font-extrabold">Danh sách sản phẩm</h2>
-        <div class="mt-1 text-xs text-slate-500">{{ fromToText }}</div>
+        <div class="mt-1 text-sm text-slate-500">Quản lý sản phẩm thêm mới, chỉnh sửa, xóa</div>
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -296,7 +306,7 @@ function onAction(e: { key: string; item: any }) {
             :disabled="loading"
             @click="resetFilters"
           >
-            Reset
+            Làm mới
           </button>
         </div>
       </template>
@@ -369,4 +379,11 @@ function onAction(e: { key: string; item: any }) {
       </template>
     </BaseTable>
   </div>
+  <ConfirmModal
+    :visible="showConfirm"
+    title="Xác nhận xoá"
+    :message="confirmMessage"
+    @confirm="handleConfirmDelete"
+    @cancel="showConfirm = false"
+  />
 </template>

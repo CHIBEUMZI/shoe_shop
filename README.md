@@ -327,7 +327,7 @@ docker compose exec app php artisan optimize:clear
 
 # 👨‍💻 Author
 
-**Shoe Shop Project**
+**BMC Shoes Project**
 
 Built with ❤️ using:
 
