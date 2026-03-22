@@ -85,9 +85,25 @@
           </div>
 
           <!-- Thumbnails -->
+        <div class="relative">
+        <button
+          v-if="currentIndex > 0"
+          @click="prevImages"
+          class="absolute left-1 top-1/2 z-10 -translate-y-1/2 group"
+        >
+          <div class="flex h-9 w-9 items-center justify-center rounded-full
+                      bg-white/80 backdrop-blur border border-slate-200
+                      shadow-md transition-all duration-300
+                      group-hover:bg-white group-hover:shadow-lg group-hover:scale-110">
+            
+            <span class="material-symbols-outlined text-[20px] text-slate-700 group-hover:text-primary transition">
+              chevron_left
+            </span>
+          </div>
+        </button>
           <div class="grid grid-cols-4 gap-2.5 sm:gap-3">
             <button
-              v-for="img in images.slice(0, 4)"
+              v-for="img in visibleImages"
               :key="img"
               type="button"
               class="group overflow-hidden rounded-xl border bg-white transition-all duration-200"
@@ -97,7 +113,6 @@
                   : 'border-slate-200 hover:-translate-y-0.5 hover:border-primary/70'
               "
               @click="activeImage = img"
-              title="Xem ảnh"
             >
               <img
                 class="aspect-square h-full w-full object-cover transition duration-300 group-hover:scale-105"
@@ -106,6 +121,24 @@
               />
             </button>
           </div>
+
+          <!-- Button Right -->
+          <button
+            v-if="currentIndex + 4 < images.length"
+            @click="nextImages"
+            class="absolute right-1 top-1/2 z-10 -translate-y-1/2 group"
+          >
+            <div class="flex h-9 w-9 items-center justify-center rounded-full
+                        bg-white/80 backdrop-blur border border-slate-200
+                        shadow-md transition-all duration-300
+                        group-hover:bg-white group-hover:shadow-lg group-hover:scale-110">
+              
+              <span class="material-symbols-outlined text-[20px] text-slate-700 group-hover:text-primary transition">
+                chevron_right
+              </span>
+            </div>
+          </button>
+        </div>
 
           <!-- Small highlight cards -->
           <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-3">
@@ -451,11 +484,6 @@
                   <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Category</div>
                   <div class="mt-1.5 text-sm font-semibold text-slate-900">{{ categoriesText }}</div>
                 </div>
-
-                <div class="rounded-xl bg-slate-50 p-3.5">
-                  <div class="text-[11px] font-bold uppercase tracking-wide text-slate-400">Variants</div>
-                  <div class="mt-1.5 text-sm font-semibold text-slate-900">{{ variants.length }}</div>
-                </div>
               </div>
             </template>
 
@@ -604,6 +632,7 @@ const tab = ref("desc");
 
 const selectedSize = ref(null);
 const selectedColor = ref(null);
+const currentIndex = ref(0);
 
 const qty = ref(1);
 const qtyInput = ref("1");
@@ -638,14 +667,26 @@ const firstCategory = computed(() => (product.value?.categories || [])[0] || nul
 const categoriesText = computed(
   () => (product.value?.categories || []).map((c) => c.name).join(", ") || "-"
 );
-
+const visibleImages = computed(() => {
+  return images.value.slice(currentIndex.value, currentIndex.value + 4);
+});
 const images = computed(() => {
   if (!product.value) return [];
   const imgs = [];
-  if (product.value.thumbnail) imgs.push(product.value.thumbnail);
+
+  if (product.value.thumbnail) {
+    imgs.push(product.value.thumbnail);
+  }
+
   for (const v of product.value.variants || []) {
-    for (const img of v.images || []) {
-      if (img.url && !imgs.includes(img.url)) imgs.push(img.url);
+    const sorted = [...(v.images || [])].sort(
+      (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    );
+
+    for (const img of sorted) {
+      if (img.url && !imgs.includes(img.url)) {
+        imgs.push(img.url);
+      }
     }
   }
   return imgs.length ? imgs : [fallbackImage];
@@ -688,7 +729,17 @@ const plainTextDescription = computed(() => {
   const raw = String(product.value?.description || "");
   return raw.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() || "Chưa có mô tả sản phẩm.";
 });
+function nextImages() {
+  if (currentIndex.value + 4 < images.value.length) {
+    currentIndex.value++;
+  }
+}
 
+function prevImages() {
+  if (currentIndex.value > 0) {
+    currentIndex.value--;
+  }
+}
 function clampQty(n) {
   const max = maxQty.value || 0;
   if (max <= 0) return 1;
@@ -798,6 +849,7 @@ async function fetchDetail() {
   qty.value = 1;
   qtyInput.value = "1";
   tab.value = "desc";
+  currentIndex.value = 0;
 
   try {
     const res = await productService.show(slug.value);
@@ -905,5 +957,13 @@ watch(slug, fetchDetail);
 
 .filled-icon {
   font-variation-settings: "FILL" 1;
+}
+::-webkit-scrollbar {
+  height: 6px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.3);
+  border-radius: 999px;
 }
 </style>

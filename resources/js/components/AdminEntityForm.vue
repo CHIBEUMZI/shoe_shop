@@ -370,7 +370,11 @@ function sectionGridClass(sectionKey) {
             <div class="section-body">
               <div class="form-grid" :class="sectionGridClass(g.key)">
                 <template v-for="field in g.fields" :key="field.name">
-                  <div v-if="field.type === 'slot'" class="field full">
+                  <!-- SLOT -->
+                  <div
+                    v-if="field.type === 'slot'"
+                    class="slot-wrapper"
+                  >
                     <slot
                       :name="`field:${field.name}`"
                       :field="field"
@@ -841,7 +845,8 @@ function sectionGridClass(sectionKey) {
   background: #fff;
   border: 1px solid #e8ecf4;
   border-radius: 16px;
-  overflow: hidden;
+  /* overflow: hidden đã xóa — cho phép dropdown con hiển thị ra ngoài */
+  overflow: visible;
   margin-bottom: 16px;
   box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
   transition: box-shadow 0.2s;
@@ -857,6 +862,9 @@ function sectionGridClass(sectionKey) {
   display: flex;
   align-items: center;
   gap: 12px;
+  /* giữ bo góc trên khi section không còn overflow: hidden */
+  border-radius: 16px 16px 0 0;
+  background: #fff;
 }
 
 .section-icon {
@@ -910,6 +918,11 @@ function sectionGridClass(sectionKey) {
 
 .full {
   grid-column: 1 / -1;
+}
+
+.slot-wrapper {
+  grid-column: 1 / -1;  
+  position: relative; 
 }
 
 /* ── Labels ── */

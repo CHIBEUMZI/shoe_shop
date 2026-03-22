@@ -174,114 +174,113 @@
       </div>
     </section>
 
-    <!-- Big sale products -->
-    <section class="mb-16">
+    <!-- Big sale products (NEW UI) -->
+    <section class="mb-20">
       <div
-        class="rounded-[28px] overflow-hidden border border-rose-100 dark:border-rose-900/30 bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400 p-[1px]"
+        class="relative rounded-[32px] overflow-hidden p-[1px] bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400 shadow-2xl"
       >
-        <div
-          class="bg-white dark:bg-slate-950 rounded-[27px] px-5 md:px-8 py-6 md:py-8"
-        >
-          <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+        <!-- Glow effect -->
+        <div class="absolute -top-20 -left-20 w-72 h-72 bg-rose-500/30 blur-[120px]"></div>
+        <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-orange-400/30 blur-[120px]"></div>
+
+        <div class="relative bg-white dark:bg-slate-950 rounded-[31px] px-6 md:px-10 py-8 md:py-10">
+          
+          <!-- Header -->
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
             <div>
-              <div
-                class="inline-flex items-center gap-2 rounded-full bg-rose-100 text-rose-600 px-3 py-1.5 text-[11px] font-extrabold uppercase tracking-[0.2em] mb-3"
-              >
-                <span class="material-symbols-outlined text-sm">sell</span>
-                Big sale & Deals
+              <div class="flex items-center gap-3 mb-3">
+                <span class="px-3 py-1 text-xs font-black uppercase tracking-wider bg-rose-500 text-white rounded-full">
+                  🔥 Flash Sale
+                </span>
+
+                <span class="text-xs font-bold text-rose-600 bg-rose-100 px-3 py-1 rounded-full">
+                  Sắp kết thúc
+                </span>
               </div>
-              <h2 class="text-2xl md:text-4xl font-black tracking-tight text-slate-950 dark:text-white">
-                Sản phẩm giảm giá cực khủng
+
+              <h2 class="text-3xl md:text-5xl font-black text-slate-950 dark:text-white leading-tight">
+                Giảm giá lên đến <span class="text-rose-500">50%</span>
               </h2>
-              <p class="text-slate-500 mt-2 text-sm md:text-[15px] leading-7 font-medium max-w-2xl">
-                Những mẫu đang có mức giảm tốt để khách hàng có thể lựa chọn những đôi
-                giày tốt nhất.
+
+              <p class="text-slate-500 mt-2 text-sm md:text-[15px] font-medium">
+                Những đôi giày hot đang sale mạnh – số lượng có hạn!
               </p>
             </div>
 
             <button
-              type="button"
-              class="self-start md:self-auto px-5 py-3 rounded-2xl bg-slate-950 text-white text-sm font-extrabold hover:bg-primary transition"
+              class="px-6 py-3 rounded-2xl bg-rose-500 text-white font-extrabold shadow-lg hover:scale-105 hover:shadow-xl transition-all"
               @click="goBigSale"
             >
-              Xem tất cả deal hot
+              Mua ngay
             </button>
           </div>
 
+          <!-- Products -->
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div v-if="loadingBigSale" class="col-span-full text-sm text-slate-500">
-              Đang tải sản phẩm sale lớn...
-            </div>
-
-            <div v-else-if="bigSaleProducts.length === 0" class="col-span-full">
-              <div
-                class="rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 p-8 text-center text-slate-500 font-medium"
-              >
-                Hiện chưa có sản phẩm giảm giá từ 25%.
-              </div>
+            <div v-if="loadingBigSale" class="col-span-full text-slate-500">
+              Đang tải...
             </div>
 
             <article
               v-for="p in bigSaleProducts"
-              :key="`sale-${p.id}`"
-              class="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all cursor-pointer"
+              :key="p.id"
+              class="group relative rounded-3xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
               @click="goDetail(p.slug)"
             >
-              <div class="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">
+              <!-- Image -->
+              <div class="relative aspect-square overflow-hidden">
+                <!-- Discount badge -->
                 <span
-                  class="absolute top-3 left-3 z-10 rounded-full bg-rose-500 text-white px-3 py-1 text-[11px] font-black shadow"
+                  class="absolute top-3 left-3 z-10 bg-rose-500 text-white px-3 py-1 text-xs font-black rounded-full shadow"
                 >
                   -{{ p.discountPercent }}%
                 </span>
 
-                <span
-                  class="absolute top-3 right-3 z-10 rounded-full bg-white/90 text-slate-900 px-3 py-1 text-[11px] font-extrabold backdrop-blur"
-                >
-                  Deal hot
-                </span>
+                <!-- Hover overlay -->
+                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition"></div>
 
                 <img
-                  class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                   :src="p.image"
                   :alt="p.name"
+                  class="w-full h-full object-cover group-hover:scale-110 transition duration-700"
                 />
               </div>
 
+              <!-- Content -->
               <div class="p-4">
-                <div class="flex items-center justify-between gap-3 mb-2">
-                  <p class="text-[11px] font-extrabold uppercase tracking-[0.14em] text-slate-500">
-                    {{ p.brand }}
-                  </p>
-                  <span
-                    class="text-[11px] font-bold text-rose-600 bg-rose-50 dark:bg-rose-500/10 px-2.5 py-1 rounded-full"
-                  >
-                    Tiết kiệm {{ moneyVND((p.compareAt || 0) - p.price) }}
-                  </span>
-                </div>
+                <p class="text-[11px] uppercase font-bold text-slate-400 mb-1">
+                  {{ p.brand }}
+                </p>
 
-                <h3
-                  class="font-extrabold text-[16px] text-slate-900 dark:text-white leading-6 min-h-[48px] line-clamp-2"
-                >
+                <h3 class="font-bold text-[15px] text-slate-900 dark:text-white line-clamp-2 min-h-[44px]">
                   {{ p.name }}
                 </h3>
 
-                <div class="flex items-end gap-2 mt-3 mb-4">
-                  <span class="text-xl md:text-2xl font-black tracking-tight text-slate-950 dark:text-white">
+                <!-- Price -->
+                <div class="flex items-end gap-2 mt-3">
+                  <span class="text-xl font-black text-rose-500">
                     {{ moneyVND(p.price) }}
                   </span>
-                  <span class="text-sm text-slate-400 line-through font-medium">
+                  <span class="text-sm text-slate-400 line-through">
                     {{ moneyVND(p.compareAt) }}
                   </span>
                 </div>
 
+                <!-- CTA -->
                 <button
-                  type="button"
-                  class="w-full rounded-2xl bg-slate-950 text-white py-3 text-sm font-extrabold hover:bg-primary transition"
+                  class="mt-4 w-full py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-rose-500 transition-all"
                   @click.stop="goDetail(p.slug)"
                 >
-                  Xem chi tiết
+                  Xem ngay
                 </button>
               </div>
+
+              <!-- Floating quick action -->
+              <button
+                class="absolute bottom-4 right-4 opacity-0 group-hover:opacity-100 translate-y-4 group-hover:translate-y-0 transition-all  "
+                @click.stop="goDetail(p.slug)"
+              >
+              </button>
             </article>
           </div>
         </div>
@@ -556,16 +555,6 @@ function goBigSale() {
     query: {
       sale: 1,
       min_discount: 25,
-      page: 1,
-    },
-  });
-}
-
-function goCategory(categoryId) {
-  router.push({
-    path: "/shop/products",
-    query: {
-      category_id: categoryId,
       page: 1,
     },
   });
