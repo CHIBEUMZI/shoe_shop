@@ -28,14 +28,12 @@ class ProductController extends Controller
                 });
             })
 
-            // ✅ brand: hỗ trợ 1 hoặc nhiều
             ->when($request->filled('brand'), function ($q) use ($request) {
                 $brands = (array) $request->query('brand');
                 $brands = array_values(array_filter(array_map('intval', $brands)));
                 if (count($brands)) $q->whereIn('brand_id', $brands);
             })
 
-            // ✅ category: hỗ trợ 1 hoặc nhiều
             ->when($request->filled('category'), function ($q) use ($request) {
                 $cats = (array) $request->query('category');
                 $cats = array_values(array_filter(array_map('intval', $cats)));
@@ -46,7 +44,6 @@ class ProductController extends Controller
                 }
             })
 
-            // ✅ size
             ->when($request->filled('size'), function ($q) use ($request) {
                 $sizes = (array) $request->query('size');
                 $sizes = array_values(array_filter(array_map('strval', $sizes)));
@@ -57,7 +54,6 @@ class ProductController extends Controller
                 }
             })
 
-            // ✅ color
             ->when($request->filled('color'), function ($q) use ($request) {
                 $colors = (array) $request->query('color');
                 $colors = array_values(array_filter(array_map('strval', $colors)));

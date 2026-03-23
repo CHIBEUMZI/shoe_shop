@@ -16,8 +16,8 @@ class UserController extends Controller
     {
         $perPage = $request->integer('per_page', 10);
         $search  = trim((string) $request->query('search', ''));
-        $role    = $request->query('role', null);      // ví dụ: admin|staff|customer
-        $active  = $request->query('is_active', null); // 1|0
+        $role    = $request->query('role', null);      
+        $active  = $request->query('is_active', null); 
 
         $query = User::query()
             ->when($search !== '', function ($q) use ($search) {

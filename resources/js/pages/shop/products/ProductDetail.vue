@@ -245,7 +245,7 @@
 
             <!-- Description short -->
             <div class="mb-6">
-              <p class="line-clamp-3 text-[13px] leading-6 text-slate-500">
+              <p class="line-clamp-3 text-[13px] leading-6 text-slate-500 whitespace-pre-line">
                 {{ plainTextDescription }}
               </p>
             </div>
@@ -727,7 +727,7 @@ const maxQty = computed(() => {
 
 const plainTextDescription = computed(() => {
   const raw = String(product.value?.description || "");
-  return raw.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim() || "Chưa có mô tả sản phẩm.";
+  return raw.replace(/<[^>]*>/g, "").trim() || "Chưa có mô tả sản phẩm.";
 });
 function nextImages() {
   if (currentIndex.value + 4 < images.value.length) {
@@ -812,7 +812,11 @@ function moneyVND(v) {
 }
 
 function safeHtml(html) {
-  return html || "";
+  if (!html) return "";
+  if (!/<[a-z][\s\S]*>/i.test(html)) {
+    return html.replace(/\n/g, "<br>");
+  }
+  return html;
 }
 
 function colorToCss(name) {

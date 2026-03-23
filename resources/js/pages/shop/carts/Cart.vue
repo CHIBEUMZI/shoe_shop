@@ -9,7 +9,7 @@
 
         <button
           type="button"
-          class="text-primary hover:underline font-medium flex items-center gap-1"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
           @click="goShop"
         >
           <span class="material-symbols-outlined text-sm">arrow_back</span>
@@ -205,7 +205,7 @@
                   <input
                     id="promo"
                     v-model="promoCode"
-                    class="flex-1 rounded-lg border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm focus:ring-primary focus:border-primary"
+                    class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
                     placeholder="Nhập mã"
                     type="text"
                   />
@@ -248,7 +248,7 @@
                 class="text-xs text-center text-slate-500 dark:text-slate-400 flex items-center justify-center gap-1"
               >
                 <span class="material-symbols-outlined text-base">lock</span>
-                Thanh toán an toàn bởi Shoe Shop
+                Thanh toán an toàn bởi BMC Shoes
               </p>
             </div>
 

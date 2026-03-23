@@ -21,9 +21,10 @@
 
         <button
           type="button"
-          class="self-start md:self-auto px-4 py-2.5 rounded-2xl border border-slate-200 dark:border-slate-700 font-semibold bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
           @click="router.push('/shop')"
         >
+          <span class="material-symbols-outlined text-sm">arrow_back</span>
           Quay về trang chủ
         </button>
       </div>

@@ -13,7 +13,7 @@
 
         <button
           type="button"
-          class="text-primary hover:underline font-medium flex items-center gap-1"
+          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
           @click="goCart"
         >
           <span class="material-symbols-outlined text-sm">arrow_back</span>
