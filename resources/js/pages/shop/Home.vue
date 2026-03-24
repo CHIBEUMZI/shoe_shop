@@ -258,10 +258,10 @@
 
                 <!-- Price -->
                 <div class="flex items-end gap-2 mt-3">
-                  <span class="text-xl font-black text-rose-500">
+                  <span class="text-lg md:text-xl font-black tracking-tight text-primary">
                     {{ moneyVND(p.price) }}
                   </span>
-                  <span class="text-sm text-slate-400 line-through">
+                  <span v-if="p.compareAt" class="text-sm text-slate-400 line-through font-medium">
                     {{ moneyVND(p.compareAt) }}
                   </span>
                 </div>
@@ -350,7 +350,7 @@
             </h4>
 
             <div class="flex items-center gap-2 mb-4">
-              <span class="text-lg md:text-xl font-black tracking-tight text-slate-950 dark:text-white">
+              <span class="text-lg md:text-xl font-black tracking-tight text-primary">
                 {{ moneyVND(p.price) }}
               </span>
               <span v-if="p.compareAt" class="text-sm text-slate-400 line-through font-medium">

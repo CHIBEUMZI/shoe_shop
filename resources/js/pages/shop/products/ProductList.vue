@@ -34,7 +34,7 @@
       <!-- Sidebar -->
       <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
         <div
-          class="bg-white dark:bg-slate-900 rounded-3xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-24"
+          class="bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-24"
         >
           <div
             class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-slate-800"
@@ -49,7 +49,7 @@
               class="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               @click="resetFilters"
             >
-              Reset
+              Tải lại
             </button>
           </div>
 
@@ -275,7 +275,7 @@
           <article
             v-for="p in filteredClient"
             :key="p.id"
-            class="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            class="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
             @click="goDetail(p.slug)"
           >
             <div class="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">
