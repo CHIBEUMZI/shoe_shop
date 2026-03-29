@@ -5,6 +5,7 @@ from typing import Any, Text, Dict, List, Optional, Tuple
 import requests
 
 from rasa_sdk import Action, Tracker, FormValidationAction
+from rasa_sdk.events import SlotSet
 from rasa_sdk.executor import CollectingDispatcher
 from rasa_sdk.types import DomainDict
 
@@ -236,6 +237,27 @@ def _fetch_facets() -> Dict[Text, Any]:
     return payload if isinstance(payload, dict) else {}
 
 
+def _get_advice_for_purpose(purpose: Optional[str]) -> str:
+    p = (purpose or "").lower()
+    if not p:
+        return "Mình gợi ý một số mẫu giày phù hợp với yêu cầu của bạn:"
+    
+    if "chạy bộ" in p or "chạy" in p or "running" in p:
+        return "🏃 **Tư vấn:** Đối với giày chạy bộ, bạn nên ưu tiên các mẫu có trọng lượng nhẹ, đế đệm êm (như bọt xốp) giúp giảm chấn và phần thân giày thoáng khí tốt. Dưới đây là các gợi ý tốt nhất cho bạn:"
+    elif "đá bóng" in p or "bóng đá" in p or "football" in p:
+        return "⚽ **Tư vấn:** Với giày đá bóng, việc chọn loại đinh phù hợp với mặt sân (như đinh TF cho sân cỏ nhân tạo, đinh FG cho cỏ tự nhiên) và form giày ôm chân là rất quan trọng để có cảm giác bóng tốt. Mời bạn tham khảo:"
+    elif "đi làm" in p or "công sở" in p:
+        return "💼 **Tư vấn:** Giày đi làm cần sự thoải mái để mang cả ngày, cộng thêm thiết kế thanh lịch và êm ái. Đây là một số mẫu rất phù hợp để kết hợp với trang phục công sở:"
+    elif "đi chơi" in p or "dạo phố" in p or "thời trang" in p or "sneaker" in p:
+        return "🌟 **Tư vấn:** Giày đi chơi thì kiểu dáng thời trang, dễ phối đồ và mang lại sự thoải mái năng động là ưu tiên hàng đầu. Vài gợi ý chuẩn gu cho bạn nè:"
+    elif "tập gym" in p or "thể thao" in p or "training" in p:
+        return "🏋️ **Tư vấn:** Để tập luyện trong phòng gym (nâng tạ, cardio...), một đôi giày có đế bằng, bám sàn tốt và giữ thăng bằng cao là lựa chọn tối ưu nhất. Bạn xem thử nhé:"
+    elif "đi bộ" in p:
+        return "🚶 **Tư vấn:** Giày đi bộ hằng ngày cần có phần đế êm, độ uốn dẻo linh hoạt và hỗ trợ vòm chân tốt để đi lâu không mỏi. Mình tìm được các mẫu này cho bạn:"
+    
+    return f"💡 **Tư vấn:** Dựa trên nhu cầu '{purpose}' của bạn, mình đã tìm thấy các mẫu giày thích hợp sau:"
+
+
 class ActionSuggestShoes(Action):
 
     def name(self) -> Text:
@@ -272,18 +294,20 @@ class ActionSuggestShoes(Action):
             dispatcher.utter_message(
                 text="Mình chưa tìm được sản phẩm phù hợp 😢"
             )
-            return []
+            return [SlotSet("purpose", None), SlotSet("shoe_size", None), SlotSet("price_range", None)]
+
+        advice_text = _get_advice_for_purpose(purpose)
 
         dispatcher.utter_message(
             json_message={
                 "type": "products",
-                "title": "Mình gợi ý một số mẫu phù hợp:",
+                "title": advice_text,
                 "items": [_product_to_card(p) for p in data[:5]],
             }
         )
         dispatcher.utter_message(text="Bạn muốn mình lọc thêm theo thương hiệu hoặc tầm giá cụ thể không?")
 
-        return []
+        return [SlotSet("purpose", None), SlotSet("shoe_size", None), SlotSet("price_range", None)]
 
 
 class ValidateShoeRecommendationForm(FormValidationAction):
@@ -300,6 +324,12 @@ class ValidateShoeRecommendationForm(FormValidationAction):
         if not value or len(value.strip()) < 2:
             dispatcher.utter_message(text="Bạn nói rõ hơn giúp mình bạn cần giày để làm gì nhé.")
             return {"purpose": None}
+            
+        v_lower = value.lower()
+        if any(w in v_lower for w in ["không biết", "chưa rõ", "chưa nghĩ ra", "tư vấn", "gợi ý"]):
+            dispatcher.utter_message(text="Để mình gợi ý nhé! Bạn dự định mua giày để đi làm, đi học, chơi thể thao hay đi dạo phố?")
+            return {"purpose": None}
+            
         # Keep intent but clean filler words for better backend search matching.
         cleaned = _clean_search_query(value) or value.strip()
         return {"purpose": cleaned}
@@ -313,6 +343,10 @@ class ValidateShoeRecommendationForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         parsed = _parse_size(value)
         if not parsed:
+            v_lower = value.lower()
+            if any(w in v_lower for w in ["không biết", "chưa rõ", "tư vấn"]):
+                dispatcher.utter_message(text="Bạn có thể áng chừng size (ví dụ khoảng 39, 40) hoặc tự đo chiều dài bàn chân báo mình để chọn chuẩn nhé!")
+                return {"shoe_size": None}
             dispatcher.utter_message(text="Bạn cho mình xin size dạng số nhé (ví dụ: 38, 39, 40, 41, 42).")
             return {"shoe_size": None}
         return {"shoe_size": parsed}
@@ -324,6 +358,11 @@ class ValidateShoeRecommendationForm(FormValidationAction):
         tracker: Tracker,
         domain: DomainDict,
     ) -> Dict[Text, Any]:
+        v_lower = value.lower() if value else ""
+        if any(w in v_lower for w in ["không biết", "sao cũng được", "tư vấn"]):
+            # Accept any price
+            return {"price_range": "không giới hạn"}
+
         # Keep original text; budget parser extracts min/max later.
         return {"price_range": value.strip() if value else value}
 
@@ -450,10 +489,12 @@ class ActionSearchProducts(Action):
             )
             return []
 
+        advice_text = _get_advice_for_purpose(ent_purpose or text)
+
         dispatcher.utter_message(
             json_message={
                 "type": "products",
-                "title": "Mình tìm được một số mẫu phù hợp:",
+                "title": advice_text,
                 "items": [_product_to_card(p) for p in items[:5]],
             }
         )

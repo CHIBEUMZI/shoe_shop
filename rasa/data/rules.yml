@@ -7,6 +7,12 @@ rules:
       - action: shoe_recommendation_form
       - active_loop: shoe_recommendation_form
 
+  - rule: activate shoe recommendation form via advice
+    steps:
+      - intent: ask_advice
+      - action: shoe_recommendation_form
+      - active_loop: shoe_recommendation_form
+
   - rule: submit shoe recommendation form
     condition:
       - active_loop: shoe_recommendation_form

@@ -27,9 +27,27 @@ nlu:
       - cho mình xem giày
       - mình muốn tìm giày
       - shop có giày không
-      - tư vấn giày giúp mình
       - mình cần giày mới
       - mình muốn mua đôi giày
+
+  - intent: ask_advice
+    examples: |
+      - mình không biết chọn giày nào
+      - tư vấn giúp mình giày cho người mới [chạy bộ](purpose)
+      - mình nên mua giày gì
+      - shop có thể gợi ý giày cho mình không
+      - cho mình xin lời khuyên chọn giày
+      - tư vấn mình chọn giày [đá bóng](purpose) chân bè
+      - gợi ý giày [đi làm](purpose)
+      - mình phân vân quá, tư vấn giúp mình
+      - tư vấn tôi giày [đi học](purpose)
+      - gợi ý cho mình vài mẫu
+      - nên chọn giày gì để [chạy bộ](purpose)
+      - shop tư vấn giúp mình với
+      - mình chưa tìm được sản phẩm phù hợp
+      - chưa tìm được đôi nào ưng ý
+      - chưa chọn được mẫu nào
+      - tư vấn cho mình vài câu hỏi nhé
 
   - intent: provide_purpose
     examples: |

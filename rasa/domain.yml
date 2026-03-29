@@ -4,6 +4,7 @@ intents:
   - greet
   - goodbye
   - ask_product
+  - ask_advice
   - provide_purpose
   - provide_price_range
   - provide_size

@@ -13,3 +13,11 @@ stories:
       - active_loop: shoe_recommendation_form
       - active_loop: null
       - action: action_suggest_shoes
+
+  - story: asking for advice
+    steps:
+      - intent: ask_advice
+      - action: shoe_recommendation_form
+      - active_loop: shoe_recommendation_form
+      - active_loop: null
+      - action: action_suggest_shoes
