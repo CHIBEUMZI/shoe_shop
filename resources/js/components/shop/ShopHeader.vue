@@ -295,7 +295,7 @@
               class="absolute left-0 top-full pt-2 hidden group-hover:block"
             >
               <div
-                class="w-64 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark shadow-lg overflow-hidden"
+                class="w-64 rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-background-dark shadow-lg overflow-hidden"
               >
                 <div
                   class="px-3 py-2 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800"

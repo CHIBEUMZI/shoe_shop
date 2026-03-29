@@ -224,7 +224,7 @@
             <article
               v-for="p in bigSaleProducts"
               :key="p.id"
-              class="group relative rounded-3xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
+              class="group relative rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 shadow-md hover:shadow-2xl transition-all duration-500 cursor-pointer"
               @click="goDetail(p.slug)"
             >
               <!-- Image -->
@@ -364,7 +364,7 @@
 
     <!-- CTA -->
     <section
-      class="rounded-[32px] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 md:px-10 py-10 md:py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl"
+      class="rounded-[16px] bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-6 md:px-10 py-10 md:py-12 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 shadow-2xl"
     >
       <div>
         <div
