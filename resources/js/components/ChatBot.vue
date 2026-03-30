@@ -105,7 +105,7 @@ const sending = ref(false);
 const messages = ref([
   {
     from: "bot",
-    text: "Chào bạn, mình hỗ trợ tư vấn chọn giày. Bạn đang cần giày để làm gì?",
+    text: "Chào bạn, minh là trợ lý ảo của BMC Shoes, mình có thể giúp gì cho bạn hôm nay?",
   },
 ]);
 
