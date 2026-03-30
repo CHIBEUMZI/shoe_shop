@@ -9,13 +9,13 @@
             Cam kết chất lượng và dịch vụ tận tâm.
           </p>
           <div class="flex gap-4">
-            <a class="size-10 bg-slate-800 hover:bg-primary transition-colors flex items-center justify-center rounded-lg" href="#">
+            <a class="size-10 bg-slate-800 hover:bg-primary flex items-center justify-center rounded-lg">
               <span class="material-symbols-outlined text-white">social_leaderboard</span>
             </a>
-            <a class="size-10 bg-slate-800 hover:bg-primary transition-colors flex items-center justify-center rounded-lg" href="#">
+            <a class="size-10 bg-slate-800 hover:bg-primary flex items-center justify-center rounded-lg">
               <span class="material-symbols-outlined text-white">camera</span>
             </a>
-            <a class="size-10 bg-slate-800 hover:bg-primary transition-colors flex items-center justify-center rounded-lg" href="#">
+            <a class="size-10 bg-slate-800 hover:bg-primary flex items-center justify-center rounded-lg">
               <span class="material-symbols-outlined text-white">alternate_email</span>
             </a>
           </div>
@@ -24,20 +24,20 @@
         <div>
           <h6 class="text-white font-bold text-lg mb-6">Policies</h6>
           <ul class="space-y-4 text-sm">
-            <li><a class="hover:text-primary transition-colors" href="#">Chính sách bảo hành</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Chính sách đổi trả</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Chính sách vận chuyển</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Bảo mật thông tin</a></li>
+            <li><a class="hover:text-primary">Chính sách bảo hành</a></li>
+            <li><a class="hover:text-primary">Chính sách đổi trả</a></li>
+            <li><a class="hover:text-primary">Chính sách vận chuyển</a></li>
+            <li><a class="hover:text-primary">Bảo mật thông tin</a></li>
           </ul>
         </div>
 
         <div>
           <h6 class="text-white font-bold text-lg mb-6">Customer Guide</h6>
           <ul class="space-y-4 text-sm">
-            <li><a class="hover:text-primary transition-colors" href="#">Hướng dẫn chọn size</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Hướng dẫn thanh toán</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Tra cứu đơn hàng</a></li>
-            <li><a class="hover:text-primary transition-colors" href="#">Câu hỏi thường gặp</a></li>
+            <li><a class="hover:text-primary">Hướng dẫn chọn size</a></li>
+            <li><a class="hover:text-primary">Hướng dẫn thanh toán</a></li>
+            <li><a class="hover:text-primary">Tra cứu đơn hàng</a></li>
+            <li><a class="hover:text-primary">Câu hỏi thường gặp</a></li>
           </ul>
         </div>
 
@@ -46,23 +46,24 @@
           <p class="text-sm mb-4">Đăng ký để nhận thông tin khuyến mãi mới nhất.</p>
           <div class="flex gap-2">
             <input
-              class="bg-slate-800 border-none rounded-lg text-sm flex-1 focus:ring-primary"
+              class="bg-slate-800 border-none rounded-lg text-sm flex-1 px-3 py-2 focus:ring-primary"
               placeholder="Email của bạn"
               type="email"
               v-model="email"
             />
-            <button class="bg-primary px-4 py-2 rounded-lg text-white" type="button" @click="submit">
+            <button class="bg-primary px-4 py-2 rounded-lg text-white" @click="submit">
               <span class="material-symbols-outlined">send</span>
             </button>
           </div>
         </div>
+
       </div>
 
       <div class="border-t border-slate-800 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-500">
         <p>© 2026 BMC Shoes Ecommerce. All rights reserved.</p>
         <div class="flex gap-6">
-          <a class="hover:text-white transition-colors" href="#">Terms of Service</a>
-          <a class="hover:text-white transition-colors" href="#">Privacy Policy</a>
+          <a class="hover:text-white">Terms of Service</a>
+          <a class="hover:text-white">Privacy Policy</a>
         </div>
       </div>
     </div>

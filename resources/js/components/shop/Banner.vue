@@ -1,94 +1,168 @@
 <template>
-  <section v-if="banner" class="mb-12">
+  <section v-if="banners.length > 0" class="mb-12">
     <div
       class="relative w-full aspect-[16/7] rounded-2xl overflow-hidden shadow-xl bg-slate-200 group"
     >
-      <img
-        class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-        :src="banner.image"
-        :alt="plainTitle"
-      />
+      <div class="relative w-full h-full">
+      <transition name="fade" mode="out-in">
+        <div
+          class="absolute inset-0 cursor-pointer"
+          @click="handleAction"
+        >
+          <!-- Background -->
+          <img
+            :src="banners[currentIndex]?.image"
+            class="w-full h-full object-cover blur-2xl scale-110 opacity-40"
+          />
+
+          <!-- Main image -->
+          <img
+            :key="banners[currentIndex]?.id || currentIndex"
+            :src="banners[currentIndex]?.image"
+            class="absolute inset-0 w-full h-full object-contain"
+          />
+        </div>
+      </transition>
+      </div>
 
       <div
-        class="absolute inset-0 bg-gradient-to-r from-slate-900/85 via-slate-900/45 to-transparent flex items-center"
+        v-if="banners.length > 1"
+        class="absolute inset-0 flex items-center justify-between px-4 z-10"
       >
-        <div class="px-6 py-10 sm:px-8 lg:px-16 text-white max-w-2xl">
-        <h2
-          class="text-2xl sm:text-3xl lg:text-4xl font-black tracking-[0.08em] uppercase leading-tight drop-shadow-lg"
-          v-html="banner.title"
-        ></h2>
+        <button
+          @click="previousBanner"
+          class="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110"
+        >
+          ‹
+        </button>
 
-          <p v-if="banner.description" class="mt-4 text-sm sm:text-base lg:text-lg text-slate-200">
-            {{ banner.description }}
-          </p>
+        <button
+          @click="nextBanner"
+          class="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110"
+        >
+          ›
+        </button>
+      </div>
 
-          <div v-if="banner.button_text" class="mt-6">
-            <button
-              type="button"
-              class="bg-primary hover:bg-primary/90 text-white px-6 py-3 rounded-xl font-bold transition-all shadow-lg"
-              @click="handleAction"
-            >
-              {{ banner.button_text }}
-            </button>
-          </div>
-        </div>
+      <!-- Dots -->
+      <div
+        v-if="banners.length > 1"
+        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"
+      >
+        <button
+          v-for="(_, idx) in banners"
+          :key="idx"
+          @click="goToBanner(idx)"
+          :class="[
+            'rounded-full transition-all duration-300',
+            idx === currentIndex
+              ? 'bg-white w-8 h-2'
+              : 'bg-white/50 hover:bg-white/75 w-2 h-2',
+          ]"
+        />
       </div>
     </div>
   </section>
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { ref, onMounted, onBeforeUnmount } from "vue";
 import { useRouter } from "vue-router";
 import bannerPublicService from "../../services/public/bannerService";
 
 const props = defineProps({
-  position: {
-    type: String,
-    required: true,
-  },
-  fallbackAction: {
-    type: Function,
-    default: null,
+  position: String,
+  fallbackAction: Function,
+  autoRotateInterval: {
+    type: Number,
+    default: 5000,
   },
 });
 
 const router = useRouter();
-const banner = ref(null);
+const banners = ref([]);
+const currentIndex = ref(0);
+let timer = null;
 
-const plainTitle = computed(() =>
-  String(banner.value?.title || "")
+// Clean title
+function getPlainTitle(banner) {
+  return String(banner?.title || "")
     .replace(/<br\s*\/?>/gi, " ")
     .replace(/<[^>]*>/g, "")
-    .trim()
-);
+    .trim();
+}
 
-async function fetchBanner() {
+async function fetchBanners() {
   try {
-    const res = await bannerPublicService.getByPosition(props.position);
-    banner.value = res?.data?.data ?? res?.data ?? null;
-  } catch (e) {
-    banner.value = null;
+    const res = await bannerPublicService.list({ position: props.position });
+    banners.value = res?.data?.data ?? res?.data ?? [];
+
+    if (banners.value.length > 1) {
+      startAuto();
+    }
+  } catch {
+    banners.value = [];
   }
 }
 
+function nextBanner() {
+  currentIndex.value = (currentIndex.value + 1) % banners.value.length;
+  resetAuto();
+}
+
+function previousBanner() {
+  currentIndex.value =
+    (currentIndex.value - 1 + banners.value.length) %
+    banners.value.length;
+  resetAuto();
+}
+
+function goToBanner(i) {
+  currentIndex.value = i;
+  resetAuto();
+}
+
+// Auto slide
+function startAuto() {
+  timer = setInterval(nextBanner, props.autoRotateInterval);
+}
+
+function resetAuto() {
+  clearInterval(timer);
+  startAuto();
+}
+
+// Click action
 function handleAction() {
-  const link = banner.value?.button_link;
+  const link = banners.value[currentIndex.value]?.button_link;
 
-  if (link) {
-    if (link.startsWith("http")) {
-      window.location.href = link;
-      return;
-    }
-
-    router.push(link);
+  if (!link) {
+    props.fallbackAction?.();
     return;
   }
 
-  if (props.fallbackAction) {
-    props.fallbackAction();
+  if (link.startsWith("http")) {
+    window.location.href = link;
+  } else {
+    router.push(link);
   }
 }
 
-onMounted(fetchBanner);
+onMounted(fetchBanners);
+
+onBeforeUnmount(() => {
+  clearInterval(timer);
+});
 </script>
+
+<style scoped>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
