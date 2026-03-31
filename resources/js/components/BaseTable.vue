@@ -217,9 +217,6 @@
             <span class="font-medium text-slate-800">{{ pagination.total }}</span> 
             Bản ghi
           </template>
-          <template v-else>
-            {{ emptyText }}
-          </template>
         </div>
 
         <div class="flex items-center justify-end gap-2">

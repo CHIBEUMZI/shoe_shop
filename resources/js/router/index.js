@@ -46,6 +46,9 @@ import BannerList from "../pages/admin/banners/BannerList.vue";
 import BannerCreate from "../pages/admin/banners/BannerCreate.vue";
 import BannerEdit from "../pages/admin/banners/BannerEdit.vue";
 
+import ReviewsList from "../pages/admin/reviews/ReviewsList.vue";
+import ReviewDetail from "../pages/admin/reviews/ReviewDetail.vue";
+
 const routes = [
   { path: "/", redirect: "/shop" },
 
@@ -108,6 +111,10 @@ const routes = [
       { path: "banners", component: BannerList },
       { path: "banners/create", component: BannerCreate },
       { path: "banners/:id/edit", component: BannerEdit },
+
+      // reviews
+      { path: "reviews", component: ReviewsList },
+      { path: "reviews/:id", component: ReviewDetail },
     ],
   },
 ];

@@ -46,6 +46,7 @@ const menus = [
   { to: "/admin/orders", icon: "shopping_cart", label: "Quản lý đơn hàng" },
   // { to: "/admin/settings", icon: "settings", label: "Settings" },
   { to: "/admin/users", icon: "people", label: "Quản lý người dùng" },
+  { to: "/admin/reviews", icon: "rate_review", label: "Quản lý đánh giá" },
   { to: "/admin/banners", icon: "image", label: "Quản lý banner" },
   
 ];

@@ -488,8 +488,10 @@
             </template>
 
             <template v-else>
-              <div class="rounded-xl bg-slate-50 p-4 text-sm text-slate-500">
-                Hiện chưa có API reviews. Sau này bạn có thể thêm phần đánh giá khách hàng ở đây.
+              <div class="space-y-8">
+                <ReviewStats :product-id="product.id" />
+                <ReviewForm :product-id="product.id" @success="refreshReviews" />
+                <ReviewList :product-id="product.id" :refresh-trigger="refreshCounter" />
               </div>
             </template>
           </div>
@@ -617,6 +619,9 @@ import { useCartStore } from "../../../stores/cart";
 import { useAuthStore } from "../../../stores/auth";
 import { buildImageUrl } from "../../../utils/image";
 import { useAlert } from "../../../composables/useAlert";
+import ReviewStats from "../../../components/shop/ReviewStats.vue";
+import ReviewForm from "../../../components/shop/ReviewForm.vue";
+import ReviewList from "../../../components/shop/ReviewList.vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -629,6 +634,7 @@ const error = ref("");
 const product = ref(null);
 const activeImage = ref("");
 const tab = ref("desc");
+const refreshCounter = ref(0);
 
 const selectedSize = ref(null);
 const selectedColor = ref(null);
@@ -948,6 +954,10 @@ function goCategory(c) {
 
 function goBrand(b) {
   router.push({ path: "/shop/products", query: { brand: b.id } });
+}
+
+function refreshReviews() {
+  refreshCounter.value++;
 }
 
 onMounted(fetchDetail);

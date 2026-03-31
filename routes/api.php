@@ -65,6 +65,10 @@ Route::prefix('v1')->group(function () {
     Route::get('/banners/position/{position}', [App\Http\Controllers\Api\Public\BannerController::class, 'showByPosition']);
 
     Route::post('/chatbot', [App\Http\Controllers\Api\Public\ChatbotController::class, 'message']);
+
+    // REVIEWS - Public endpoints
+    Route::get('products/{product}/reviews', [App\Http\Controllers\Api\Public\ReviewController::class, 'index']);
+    Route::get('products/{product}/reviews/stats', [App\Http\Controllers\Api\Public\ReviewController::class, 'productStats']);
 });
 
 // USER: CART + ORDER
@@ -83,6 +87,13 @@ Route::prefix('v1')
         Route::get('orders', [App\Http\Controllers\Api\Public\OrderController::class, 'index']);
         Route::get('orders/{order}', [App\Http\Controllers\Api\Public\OrderController::class, 'show']);
         Route::post('orders/{order}/payment', [App\Http\Controllers\Api\Public\OrderController::class, 'createPayment']);
+
+        // REVIEWS - Authenticated endpoints
+        Route::post('reviews', [App\Http\Controllers\Api\Public\ReviewController::class, 'store']);
+        Route::get('reviews/my', [App\Http\Controllers\Api\Public\ReviewController::class, 'myReviews']);
+        Route::get('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'show']);
+        Route::patch('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'update']);
+        Route::delete('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'destroy']);
     });
 
 // VNPAY CALLBACK
@@ -119,6 +130,15 @@ Route::prefix('v1/admin')
         Route::get('orders', [App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
         Route::get('orders/{order}', [App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
         Route::patch('orders/{order}/status', [App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
+        
+        // REVIEWS
+        Route::get('reviews/stats', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'stats']);
+        Route::get('reviews', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'index']);
+        Route::post('reviews/bulk-action', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'bulkAction']);
+        Route::get('reviews/{review}', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'show']);
+        Route::patch('reviews/{review}/approve', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'approve']);
+        Route::patch('reviews/{review}/reject', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'reject']);
+        Route::delete('reviews/{review}', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'delete']);
         
         // BANNER 
         Route::apiResource('banners', App\Http\Controllers\Api\Admin\BannerController::class);
