@@ -1,9 +1,8 @@
-# 🥿 Shoe Shop
+# 🥿 BMC Shoes - Website Bán Giày
 
-**Shoe Shop** là website bán giày được xây dựng theo kiến trúc **RESTful API + Single Page Application (SPA)**, tích hợp **chatbot tư vấn giày** dùng **Rasa**.
+**BMC Shoes** là website bán giày trực tuyến được xây dựng theo kiến trúc **RESTful API + Single Page Application (SPA)**, tích hợp **chatbot tư vấn giày** thông minh sử dụng **Rasa**.
 
-Dự án sử dụng **Laravel 12** để xây dựng Backend API, **Vue 3** để phát triển Frontend và **Rasa (Pro + SDK)** để xử lý hội thoại/chatbot.
-Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dàng cài đặt và chạy trên nhiều môi trường khác nhau.
+Dự án sử dụng **Laravel 12** để xây dựng Backend API, **Vue 3** để phát triển Frontend và **Rasa (Pro + SDK)** để xử lý hội thoại/chatbot. Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dàng cài đặt và chạy trên nhiều môi trường khác nhau.
 
 ---
 
@@ -12,14 +11,226 @@ Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dà
 | Technology | Description                           |
 | ---------- | ------------------------------------- |
 | Laravel 12 | Backend RESTful API                   |
-| Vue 3      | Frontend SPA                          |
+| Vue 3      | Frontend SPA (Composition API)        |
+| Vite       | Build tool & Hot Reload               |
 | Rasa Pro   | Chatbot (NLU + Dialogue)              |
 | Rasa SDK   | Custom actions gọi API sản phẩm       |
-| Vite       | Frontend build tool & Hot Reload      |
-| Docker     | Containerized development environment |
 | MySQL 8    | Relational Database                   |
-| Nginx      | Web Server                            |
+| Nginx      | Web Server                           |
+| Docker     | Containerized development environment|
 | phpMyAdmin | Database management                   |
+| Mailpit    | Email testing (dev environment)       |
+
+---
+
+# ✨ Tính Năng Đầy Đủ
+
+## 🛒 Dành Cho Khách Hàng
+
+### 1. Xác thực & Tài khoản
+- **Đăng ký tài khoản** với email, mật khẩu, ngày sinh, địa chỉ
+- **Đăng nhập/Đăng xuất** với session-based authentication
+- **Quản lý hồ sơ cá nhân**: cập nhật tên, ngày sinh, địa chỉ
+- **Upload avatar** với preview và xóa avatar
+- **Đổi mật khẩu** với xác minh mật khẩu hiện tại
+- **Khóa tài khoản** bởi admin (is_active)
+
+### 2. Trang chủ & Banner
+- **Banner quảng cáo** xoay vòng trên trang chủ (hỗ trợ desktop/mobile)
+- **Sản phẩm nổi bật** (Featured Products)
+- **Danh mục sản phẩm** với hình ảnh
+- **Thương hiệu** nổi bật
+
+### 3. Danh sách & Tìm kiếm sản phẩm
+- **Grid sản phẩm** với phân trang
+- **Tìm kiếm theo từ khóa** (tên sản phẩm)
+- **Bộ lọc đa dạng**:
+  - Lọc theo **danh mục** (Category)
+  - Lọc theo **thương hiệu** (Brand)
+  - Lọc theo **khoảng giá** (Price range)
+  - Lọc theo **size giày** (Shoe size)
+  - Lọc theo **màu sắc** (Color)
+- **Sắp xếp** theo giá, tên, sản phẩm mới
+- **Facet Search** - tìm kiếm theo nhiều tiêu chí kết hợp
+- **Phân trang** sản phẩm
+
+### 4. Chi tiết sản phẩm
+- **Hình ảnh sản phẩm** với gallery nhiều ảnh theo màu
+- **Chọn màu sắc** và **kích thước** (biến thể sản phẩm)
+- **Giá sản phẩm** với hiển thị giảm giá
+- **Thông tin tồn kho** theo từng biến thể
+- **Mô tả sản phẩm** chi tiết
+- **Đánh giá sản phẩm** với rating và bình luận
+- **Thống kê đánh giá**: điểm trung bình, phân bố rating
+- **Sản phẩm liên quan**
+
+### 5. Giỏ hàng (Shopping Cart)
+- **Thêm sản phẩm** vào giỏ với chọn màu/size
+- **Tăng/giảm số lượng** sản phẩm
+- **Xóa sản phẩm** khỏi giỏ
+- **Xóa toàn bộ** giỏ hàng
+- **Hiển thị tổng tiền** theo thời gian thực
+- **Kiểm tra tồn kho** trước khi thêm
+
+### 6. Đặt hàng & Thanh toán
+
+#### Quy trình đặt hàng:
+- **Nhập thông tin giao hàng**: tên, SĐT, email, địa chỉ, ghi chú
+- **Chọn phương thức thanh toán**:
+  - **COD** (Cash on Delivery) - Thanh toán khi nhận hàng
+  - **VNPay** - Thanh toán qua cổng VNPay
+  - **MoMo** - Thanh toán qua ví MoMo
+- **Tạo đơn hàng** với mã đơn tự động
+- **Tự động trừ tồn kho** khi thanh toán thành công
+
+#### Tích hợp thanh toán:
+- **VNPay**:
+  - Tạo URL thanh toán với HMAC-SHA512 signature
+  - Xử lý return URL và IPN (Instant Payment Notification)
+  - Hỗ trợ nhiều ngân hàng
+- **MoMo**:
+  - Tạo payment với signature HMAC-SHA256
+  - Hỗ trợ QR Code và Deep Link
+  - Xử lý return và IPN callback
+- **COD**: Xác nhận đơn và trừ tồn kho
+
+### 7. Theo dõi đơn hàng
+- **Danh sách đơn hàng** của tôi với phân trang
+- **Chi tiết đơn hàng**: mã, sản phẩm, tổng tiền, trạng thái
+- **Trạng thái đơn hàng**:
+  - `pending` - Chờ xử lý
+  - `confirmed` - Đã xác nhận
+  - `paid` - Đã thanh toán
+  - `processing` - Đang xử lý
+  - `shipping` - Đang giao
+  - `completed` - Hoàn thành
+  - `cancelled` - Đã hủy
+- **Thanh toán lại** nếu thanh toán online thất bại
+- **Trang thành công** sau khi đặt hàng
+
+### 8. Đánh giá sản phẩm
+- **Viết đánh giá** với rating 1-5 sao và bình luận
+- **Chỉ đánh giá 1 lần** cho mỗi sản phẩm
+- **Xác minh mua hàng** (Verified Purchase) nếu đã mua sản phẩm
+- **Sửa/Xóa** đánh giá của mình
+- **Xem đánh giá** của người khác (đã duyệt)
+- **Lọc đánh giá** theo rating
+
+### 9. 🤖 Chatbot tư vấn giày (Rasa)
+- **Hội thoại tự nhiên** với chatbot
+- **Hiểu intent**: tìm kiếm sản phẩm, hỏi giá, hỏi size, khuyến mãi...
+- **Trích xuất entity**:
+  - `brand` - Thương hiệu (Nike, Adidas...)
+  - `purpose` - Mục đích (chạy bộ, đi bộ, bóng rổ...)
+  - `shoe_size` - Kích thước giày
+  - `price_range` - Khoảng giá
+- **Tìm kiếm sản phẩm** theo bộ lọc từ chatbot
+- **Hiển thị sản phẩm** dạng card trong chat
+- **Gợi ý thương hiệu/danh mục** dạng chips có thể bấm
+- **Custom Actions** gọi API Laravel để lấy dữ liệu sản phẩm
+
+---
+
+## 🔧 Dành Cho Quản Trị Viên (Admin)
+
+### 1. Dashboard
+- **Tổng quan thống kê**:
+  - Doanh thu (và % tăng trưởng)
+  - Số đơn hàng (và % tăng trưởng)
+  - Số khách hàng mới (và % tăng trưởng)
+  - Số sản phẩm (và % tăng trưởng)
+- **Biểu đồ doanh thu** theo ngày/tháng
+- **Top 5 sản phẩm** bán chạy
+- **Đơn hàng gần đây** (5 đơn mới nhất)
+- **Phân bố trạng thái đơn hàng** (biểu đồ tròn)
+- **Khách hàng mới** đăng ký trong kỳ
+- **Bộ lọc thời gian**: 7 ngày, 30 ngày, 12 tháng
+- **So sánh** với kỳ trước
+- **Cache** dữ liệu 60 giây
+
+### 2. Quản lý Sản phẩm
+- **Danh sách sản phẩm** với tìm kiếm và lọc
+- **Tạo sản phẩm mới**:
+  - Thông tin cơ bản: tên, slug, SKU, mô tả, thumbnail
+  - Liên kết thương hiệu và danh mục
+  - **Biến thể sản phẩm** (Variants):
+    - Màu sắc
+    - Kích thước (size)
+    - SKU riêng
+    - Giá gốc / Giá sale
+    - Tồn kho
+    - Trạng thái hoạt động
+    - Nhiều hình ảnh theo biến thể
+  - Sản phẩm nổi bật (featured)
+  - Trạng thái (active/inactive)
+- **Chỉnh sửa sản phẩm**:
+  - Cập nhật thông tin cơ bản
+  - Thêm/sửa/xóa biến thể
+  - Cập nhật hình ảnh biến thể
+  - Tự động tính lại giá cơ bản
+- **Xóa sản phẩm**
+- **Quản lý tồn kho** theo từng biến thể
+
+### 3. Quản lý Danh mục (Categories)
+- **Danh sách danh mục** với hình ảnh
+- **Tạo danh mục**: tên, slug, mô tả, hình ảnh, trạng thái
+- **Chỉnh sửa danh mục**
+- **Xóa danh mục**
+
+### 4. Quản lý Thương hiệu (Brands)
+- **Danh sách thương hiệu**
+- **Tạo thương hiệu**: tên, slug, logo, mô tả, trạng thái
+- **Chỉnh sửa thương hiệu**
+- **Xóa thương hiệu**
+
+### 5. Quản lý Banner
+- **Danh sách banner** trang chủ
+- **Tạo banner**: hình ảnh, tiêu đề, mô tả, liên kết, vị trí
+- **Chỉnh sửa banner**
+- **Xóa banner**
+- **Sắp xếp thứ tự** banner
+
+### 6. Quản lý Đơn hàng
+- **Danh sách đơn hàng** với:
+  - Tìm kiếm (mã, tên, SĐT, email)
+  - Lọc theo trạng thái đơn hàng
+  - Lọc theo trạng thái thanh toán
+  - Sắp xếp (ngày, giá, trạng thái)
+  - Phân trang
+- **Chi tiết đơn hàng**:
+  - Thông tin khách hàng
+  - Danh sách sản phẩm
+  - Thông tin thanh toán
+  - Trạng thái thanh toán
+- **Cập nhật trạng thái đơn hàng**:
+  - `pending` → `confirmed` / `cancelled`
+  - `confirmed` → `processing` / `cancelled`
+  - `processing` → `shipping` / `cancelled`
+  - `shipping` → `completed`
+- **Tự động trừ tồn kho** khi xác nhận đơn COD
+- **Gửi email thông báo** khi cập nhật trạng thái
+- **Kiểm tra quyền** chuyển trạng thái hợp lệ
+
+### 7. Quản lý Đánh giá (Reviews)
+- **Danh sách đánh giá** tất cả sản phẩm
+- **Xem chi tiết** đánh giá
+- **Duyệt đánh giá** (approve/reject)
+- **Xóa đánh giá**
+- **Lọc theo** sản phẩm, trạng thái duyệt
+
+### 8. Quản lý Người dùng (Users)
+- **Danh sách khách hàng**
+- **Tìm kiếm** theo tên, email
+- **Xem chi tiết** thông tin khách hàng
+- **Quản lý tài khoản**:
+  - Khóa/Mở khóa tài khoản (is_active)
+  - Xem lịch sử đơn hàng của khách
+
+### 9. Upload & Media
+- **Upload hình ảnh** sản phẩm
+- **Quản lý thư viện media**
+- **Hỗ trợ nhiều định dạng** (jpg, png, webp...)
+- **Validate kích thước** file
 
 ---
 
@@ -27,7 +238,7 @@ Toàn bộ hệ thống được container hóa bằng **Docker** giúp dễ dà
 
 Trước khi chạy project, cần cài đặt các công cụ sau:
 
-* **Docker Desktop** (WSL2 enabled)
+* **Docker Desktop** (WSL2 enabled trên Windows)
 * **Node.js ≥ 18**
 * **Git**
 
@@ -72,6 +283,31 @@ DB_USERNAME=user
 DB_PASSWORD=123456
 ```
 
+Cấu hình thanh toán (tùy chọn):
+
+```env
+# VNPay
+VNPAY_URL=https://sandbox.vnpayment.vn/paymentv2/vpcpay.html
+VNPAY_TMN_CODE=your_tmn_code
+VNPAY_HASH_SECRET=your_hash_secret
+VNPAY_RETURN_URL=http://localhost:8080/payment/vnpay/return
+VNPAY_FRONTEND_SUCCESS_URL=http://localhost:8080/payment/success
+VNPAY_FRONTEND_FAIL_URL=http://localhost:8080/payment/fail
+
+# MoMo
+MOMO_ENDPOINT=https://test-payment.momo.vn/v2/gateway/api/create
+MOMO_PARTNER_CODE=your_partner_code
+MOMO_ACCESS_KEY=your_access_key
+MOMO_SECRET_KEY=your_secret_key
+MOMO_REDIRECT_URL=http://localhost:8080/payment/momo/return
+MOMO_IPN_URL=http://localhost:8080/api/v1/payments/momo/ipn
+MOMO_FRONTEND_SUCCESS_URL=http://localhost:8080/payment/success
+MOMO_FRONTEND_FAIL_URL=http://localhost:8080/payment/fail
+
+# Rasa Chatbot
+RASA_URL=http://rasa:5005/webhooks/rest/webhook
+```
+
 ---
 
 # 🐳 Start Docker Containers
@@ -98,6 +334,7 @@ nginx_shoe_shop
 phpmyadmin_shoe_shop
 rasa_shoe_shop
 rasa_actions_shoe_shop
+mailpit_shoe_shop
 ```
 
 ---
@@ -182,6 +419,16 @@ Password: 123456
 
 ---
 
+# 📧 Email Testing
+
+Truy cập **Mailpit** (dev email testing):
+
+```
+http://localhost:8025
+```
+
+---
+
 # 🔄 Reset Project (Fix lỗi nặng)
 
 Nếu gặp lỗi database hoặc container:
@@ -261,20 +508,152 @@ docker compose restart rasa rasa-actions
 
 ---
 
+# 🏗️ Cấu trúc Database Models
+
+```
+Users
+├── avatar, name, email, password
+├── role (customer/admin)
+├── is_active (boolean)
+├── birth_date, address
+└── orders, reviews, cart
+
+Products
+├── name, slug, sku
+├── thumbnail, short_description, description
+├── base_price, base_sale_price
+├── status (active/inactive)
+├── is_featured
+├── brand_id, categories[]
+└── variants[]
+
+ProductVariants
+├── product_id
+├── color, size
+├── sku, price, sale_price
+├── stock
+├── is_active
+└── images[]
+
+ProductVariantImages
+├── product_variant_id
+├── url
+└── sort_order
+
+Categories
+├── name, slug
+├── description
+├── image
+└── status
+
+Brands
+├── name, slug
+├── logo
+├── description
+└── status
+
+Banners
+├── title, subtitle
+├── image
+├── link
+├── position
+└── status
+
+Orders
+├── user_id
+├── code (auto-generated)
+├── customer_name, phone, email, address, note
+├── items[] (product_id, variant_id, quantity, price)
+├── subtotal, shipping_fee, grand_total
+├── status (pending/confirmed/processing/shipping/completed/cancelled)
+├── payment_method (cod/vnpay/momo)
+├── payment_status (pending/paid/failed)
+├── paid_at, stock_deducted_at, mail_sent_at
+└── payments[]
+
+Payments
+├── order_id
+├── method, provider
+├── status (pending/paid/failed)
+├── amount
+├── transaction_code
+├── response_payload
+└── paid_at
+
+Reviews
+├── user_id, product_id
+├── rating (1-5)
+├── comment
+├── status (pending/approved/rejected)
+├── verified_purchase (boolean)
+└── created_at
+
+Cart
+├── user_id
+└── items[]
+
+CartItems
+├── cart_id
+├── product_id
+├── product_variant_id
+└── quantity
+```
+
+---
+
 # 📂 Project Structure
 
 ```
 shoe-shop
 │
-├── app/                # Laravel backend
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Api/
+│   │   │   │   ├── Auth/           # Auth, Avatar
+│   │   │   │   ├── Admin/          # Dashboard, Products, Orders, Users...
+│   │   │   │   └── Public/         # Products, Cart, Orders, Reviews...
+│   │   ├── Requests/               # Form Request validation
+│   │   ├── Resources/              # API Resources (transformers)
+│   │   └── Middleware/
+│   ├── Models/                     # Eloquent Models
+│   ├── Services/                   # Business logic services
+│   ├── Mail/                       # Email templates
+│   └── Providers/
+│
 ├── bootstrap/
 ├── config/
-├── database/           # Migrations & Seeders
-├── docker/             # Docker configuration
+├── database/
+│   ├── migrations/                 # Database migrations
+│   └── seeders/                    # Sample data seeders
+│
+├── docker/                         # Docker configuration
 ├── public/
-├── rasa/               # chatbot 
-├── resources/          # Vue frontend
-├── routes/             # API routes
+├── rasa/                           # Chatbot Rasa
+│   ├── actions/
+│   │   └── actions.py              # Custom actions
+│   ├── data/
+│   │   ├── nlu.yml                 # NLU training data
+│   │   ├── rules.yml               # Rules
+│   │   └── stories.yml             # Stories
+│   ├── domain.yml                  # Domain
+│   └── models/                     # Trained models
+│
+├── resources/
+│   └── js/
+│       ├── components/
+│       │   ├── shop/               # Shop components
+│       │   └── admin/              # Admin components
+│       ├── pages/
+│       │   ├── shop/               # Shop pages
+│       │   ├── admin/              # Admin pages
+│       │   └── auth/               # Auth pages
+│       ├── composables/            # Vue composables
+│       └── router/                 # Vue Router
+│
+├── routes/
+│   └── api.php                     # API routes
+│
 ├── storage/
 ├── tests/
 │
@@ -286,16 +665,111 @@ shoe-shop
 
 ---
 
-# ✨ Features
+# 🌐 API Endpoints
 
-* User authentication
-* Product catalog
-* Shopping cart
-* Order management
-* Online payment integration
-* Admin dashboard
-* Order history
-* Customer management
+## Authentication
+| Method | Endpoint                    | Description              |
+|--------|----------------------------|--------------------------|
+| POST   | /api/v1/auth/register      | Đăng ký                 |
+| POST   | /api/v1/auth/login         | Đăng nhập               |
+| POST   | /api/v1/auth/logout        | Đăng xuất               |
+| GET    | /api/v1/auth/me            | Thông tin user hiện tại |
+| PUT    | /api/v1/auth/profile       | Cập nhật hồ sơ          |
+| PUT    | /api/v1/auth/password      | Đổi mật khẩu            |
+| POST   | /api/v1/auth/avatar        | Upload avatar           |
+| DELETE | /api/v1/auth/avatar        | Xóa avatar              |
+
+## Products (Public)
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/products                  | Danh sách sản phẩm       |
+| GET    | /api/v1/products/{slug}           | Chi tiết sản phẩm       |
+| GET    | /api/v1/products/facets           | Tìm kiếm facet          |
+
+## Categories & Brands (Public)
+| Method | Endpoint                    | Description              |
+|--------|----------------------------|--------------------------|
+| GET    | /api/v1/categories         | Danh sách danh mục      |
+| GET    | /api/v1/brands             | Danh sách thương hiệu   |
+| GET    | /api/v1/banners            | Danh sách banner        |
+
+## Cart & Orders
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/cart                      | Xem giỏ hàng            |
+| POST   | /api/v1/cart/items                | Thêm vào giỏ            |
+| PUT    | /api/v1/cart/items/{id}           | Cập nhật số lượng       |
+| DELETE | /api/v1/cart/items/{id}           | Xóa khỏi giỏ            |
+| DELETE | /api/v1/cart                      | Xóa toàn bộ giỏ        |
+| GET    | /api/v1/orders                   | Danh sách đơn hàng      |
+| GET    | /api/v1/orders/{id}              | Chi tiết đơn hàng       |
+| POST   | /api/v1/orders                   | Tạo đơn hàng            |
+| POST   | /api/v1/orders/{id}/payment      | Tạo thanh toán online   |
+
+## Reviews
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/products/{id}/reviews     | Danh sách đánh giá      |
+| POST   | /api/v1/reviews                  | Tạo đánh giá            |
+| GET    | /api/v1/reviews/mine             | Đánh giá của tôi        |
+| GET    | /api/v1/products/{id}/reviews/stats | Thống kê đánh giá    |
+
+## Chatbot
+| Method | Endpoint                    | Description              |
+|--------|----------------------------|--------------------------|
+| POST   | /api/v1/chatbot            | Gửi tin nhắn chatbot    |
+
+## Admin - Dashboard
+| Method | Endpoint                    | Description              |
+|--------|----------------------------|--------------------------|
+| GET    | /api/v1/admin/dashboard    | Thống kê dashboard      |
+
+## Admin - Products
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/admin/products            | Danh sách sản phẩm      |
+| POST   | /api/v1/admin/products            | Tạo sản phẩm            |
+| GET    | /api/v1/admin/products/{id}       | Chi tiết sản phẩm      |
+| PUT    | /api/v1/admin/products/{id}      | Cập nhật sản phẩm      |
+| DELETE | /api/v1/admin/products/{id}      | Xóa sản phẩm            |
+
+## Admin - Categories & Brands
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/admin/categories          | Danh sách danh mục      |
+| POST   | /api/v1/admin/categories          | Tạo danh mục            |
+| PUT    | /api/v1/admin/categories/{id}    | Cập nhật danh mục      |
+| DELETE | /api/v1/admin/categories/{id}    | Xóa danh mục            |
+| GET    | /api/v1/admin/brands             | Danh sách thương hiệu   |
+| POST   | /api/v1/admin/brands             | Tạo thương hiệu         |
+| PUT    | /api/v1/admin/brands/{id}        | Cập nhật thương hiệu   |
+| DELETE | /api/v1/admin/brands/{id}        | Xóa thương hiệu         |
+
+## Admin - Orders
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/admin/orders              | Danh sách đơn hàng      |
+| GET    | /api/v1/admin/orders/{id}         | Chi tiết đơn hàng       |
+| PUT    | /api/v1/admin/orders/{id}/status | Cập nhật trạng thái    |
+
+## Admin - Reviews & Users
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/admin/reviews             | Danh sách đánh giá      |
+| PUT    | /api/v1/admin/reviews/{id}        | Cập nhật đánh giá      |
+| DELETE | /api/v1/admin/reviews/{id}        | Xóa đánh giá            |
+| GET    | /api/v1/admin/users               | Danh sách khách hàng    |
+| GET    | /api/v1/admin/users/{id}          | Chi tiết khách hàng     |
+| PUT    | /api/v1/admin/users/{id}          | Cập nhật khách hàng    |
+
+## Admin - Banners & Upload
+| Method | Endpoint                           | Description              |
+|--------|-----------------------------------|--------------------------|
+| GET    | /api/v1/admin/banners              | Danh sách banner        |
+| POST   | /api/v1/admin/banners              | Tạo banner              |
+| PUT    | /api/v1/admin/banners/{id}         | Cập nhật banner         |
+| DELETE | /api/v1/admin/banners/{id}        | Xóa banner               |
+| POST   | /api/v1/admin/upload/image         | Upload hình ảnh         |
 
 ---
 
@@ -307,12 +781,28 @@ Laravel commands:
 docker compose exec app php artisan migrate
 docker compose exec app php artisan db:seed
 docker compose exec app php artisan route:list
+docker compose exec app php artisan make:model ModelName
+docker compose exec app php artisan make:controller ControllerName
 ```
 
 Clear cache:
 
 ```bash
 docker compose exec app php artisan optimize:clear
+docker compose exec app php artisan cache:clear
+```
+
+Rasa commands:
+
+```bash
+# Train model
+docker compose run --rm rasa rasa train
+
+# Run shell for testing
+docker compose run --rm rasa rasa shell
+
+# Evaluate model
+docker compose run --rm rasa rasa test
 ```
 
 ---
@@ -323,21 +813,31 @@ docker compose exec app php artisan optimize:clear
 | ---------- | --------------------- |
 | Website    | http://localhost:8080 |
 | phpMyAdmin | http://localhost:8081 |
+| Mailpit    | http://localhost:8025 |
+| API Base   | http://localhost:8080/api/v1 |
 
 ---
 
-# 👨‍💻 Author
+# 👨‍💻 Tài khoản Demo
 
-**BMC Shoes Project**
+## Admin
+```
+Email: admin@gmail.com
+Password: 123456
+```
 
-Built with ❤️ using:
-
-* Laravel
-* Vue
-* Docker
+## Customer
+```
+Email: customer@example.com
+Password: 123456
+```
 
 ---
 
 # 📜 License
 
 This project is for **learning and educational purposes**.
+
+---
+
+Built with ❤️ using **Laravel**, **Vue 3**, **Rasa**, and **Docker**.
