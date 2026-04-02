@@ -17,6 +17,7 @@ import Cart from "../pages/shop/carts/Cart.vue";
 import Checkout from "../pages/shop/orders/Checkout.vue";
 import OrderSuccess from "../pages/shop/orders/OrderSuccess.vue";
 import MyOrders from "../pages/shop/orders/MyOrders.vue";
+import ProfileEdit from "../pages/shop/ProfileEdit.vue";
 
 // Admin pages
 import ProductList from "../pages/admin/products/ProductList.vue";
@@ -67,6 +68,7 @@ const routes = [
       { path: "checkout", component: Checkout },
       { path: "orders/success/:id", component: OrderSuccess },
       { path: "orders", component: MyOrders, meta: { requiresAuth: true } },
+      { path: "profile", component: ProfileEdit, meta: { requiresAuth: true } },
     ],
   },
 

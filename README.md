@@ -272,6 +272,7 @@ shoe-shop
 ├── database/           # Migrations & Seeders
 ├── docker/             # Docker configuration
 ├── public/
+├── rasa/               # chatbot 
 ├── resources/          # Vue frontend
 ├── routes/             # API routes
 ├── storage/

@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { login, logout, me, register } from "../composables/auth";
+import { updateProfile, changePassword } from "../composables/profile";
 
 export const useAuthStore = defineStore("auth", {
   state: () => ({
@@ -39,6 +40,15 @@ export const useAuthStore = defineStore("auth", {
       await logout();
       this.user = null;
       this.loaded = true;
+    },
+
+    async saveProfile(payload) {
+      this.user = await updateProfile(payload);
+      return this.user;
+    },
+
+    async savePassword(payload) {
+      return await changePassword(payload);
     },
   },
 });

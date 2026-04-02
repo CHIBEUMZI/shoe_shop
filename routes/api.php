@@ -50,6 +50,10 @@ Route::prefix('auth')->group(function () {
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [App\Http\Controllers\Api\Auth\AuthController::class, 'me']);
+        Route::put('/profile', [App\Http\Controllers\Api\Auth\AuthController::class, 'updateProfile']);
+        Route::post('/profile/change-password', [App\Http\Controllers\Api\Auth\AuthController::class, 'changePassword']);
+        Route::post('/avatar', [App\Http\Controllers\Api\Auth\AvatarUploadController::class, 'store']);
+        Route::delete('/avatar', [App\Http\Controllers\Api\Auth\AvatarUploadController::class, 'destroy']);
     });
 });
 
@@ -134,7 +138,7 @@ Route::prefix('v1/admin')
         // REVIEWS
         Route::get('reviews/stats', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'stats']);
         Route::get('reviews', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'index']);
-        Route::post('reviews/bulk-action', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'bulkAction']);
+        // Route::post('reviews/bulk-action', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'bulkAction']);
         Route::get('reviews/{review}', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'show']);
         Route::patch('reviews/{review}/approve', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'approve']);
         Route::patch('reviews/{review}/reject', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'reject']);
