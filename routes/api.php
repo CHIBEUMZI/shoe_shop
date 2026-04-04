@@ -98,6 +98,12 @@ Route::prefix('v1')
         Route::get('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'show']);
         Route::patch('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'update']);
         Route::delete('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'destroy']);
+
+        // COUPONS - User validation
+        Route::post('coupons/validate', [App\Http\Controllers\Api\Public\CouponController::class, 'validate']);
+        Route::get('coupons/available', [App\Http\Controllers\Api\Public\CouponController::class, 'available']);
+        Route::post('coupons/claim', [App\Http\Controllers\Api\Public\CouponController::class, 'claim']);
+        Route::get('coupons/my', [App\Http\Controllers\Api\Public\CouponController::class, 'myCoupons']);
     });
 
 // VNPAY CALLBACK
@@ -146,4 +152,8 @@ Route::prefix('v1/admin')
         
         // BANNER 
         Route::apiResource('banners', App\Http\Controllers\Api\Admin\BannerController::class);
+
+        // COUPONS
+        Route::apiResource('coupons', App\Http\Controllers\Api\Admin\CouponController::class);
+        Route::patch('coupons/{id}/toggle-status', [App\Http\Controllers\Api\Admin\CouponController::class, 'toggleStatus']);
     });

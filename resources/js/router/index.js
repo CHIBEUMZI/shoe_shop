@@ -18,6 +18,8 @@ import Checkout from "../pages/shop/orders/Checkout.vue";
 import OrderSuccess from "../pages/shop/orders/OrderSuccess.vue";
 import MyOrders from "../pages/shop/orders/MyOrders.vue";
 import ProfileEdit from "../pages/shop/ProfileEdit.vue";
+import Coupons from "../pages/shop/coupons/Coupons.vue";
+import MyCoupons from "../pages/shop/coupons/MyCoupons.vue";
 
 // Admin pages
 import ProductList from "../pages/admin/products/ProductList.vue";
@@ -50,6 +52,11 @@ import BannerEdit from "../pages/admin/banners/BannerEdit.vue";
 import ReviewsList from "../pages/admin/reviews/ReviewsList.vue";
 import ReviewDetail from "../pages/admin/reviews/ReviewDetail.vue";
 
+import CouponList from "../pages/admin/coupons/CouponList.vue";
+import CouponCreate from "../pages/admin/coupons/CouponCreate.vue";
+import CouponEdit from "../pages/admin/coupons/CouponEdit.vue";
+import CouponDetail from "../pages/admin/coupons/CouponDetail.vue";
+
 const routes = [
   { path: "/", redirect: "/shop" },
 
@@ -69,6 +76,8 @@ const routes = [
       { path: "orders/success/:id", component: OrderSuccess },
       { path: "orders", component: MyOrders, meta: { requiresAuth: true } },
       { path: "profile", component: ProfileEdit, meta: { requiresAuth: true } },
+      { path: "coupons", component: Coupons },
+      { path: "my-coupons", component: MyCoupons, meta: { requiresAuth: true } },
     ],
   },
 
@@ -117,6 +126,12 @@ const routes = [
       // reviews
       { path: "reviews", component: ReviewsList },
       { path: "reviews/:id", component: ReviewDetail },
+
+      // coupons
+      { path: "coupons", component: CouponList },
+      { path: "coupons/create", component: CouponCreate },
+      { path: "coupons/:id", component: CouponDetail },
+      { path: "coupons/:id/edit", component: CouponEdit },
     ],
   },
 ];

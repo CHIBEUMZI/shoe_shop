@@ -48,6 +48,6 @@ const menus = [
   { to: "/admin/users", icon: "people", label: "Quản lý người dùng" },
   { to: "/admin/reviews", icon: "rate_review", label: "Quản lý đánh giá" },
   { to: "/admin/banners", icon: "image", label: "Quản lý banner" },
-  
+  { to: "/admin/coupons", icon: "sell", label: "Mã giảm giá" },
 ];
 </script>

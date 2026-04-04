@@ -3,8 +3,10 @@
 namespace App\Services;
 
 use App\Models\Cart;
+use App\Models\Coupon;
 use App\Models\Order;
 use App\Models\Payment;
+use App\Models\UserCoupon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use RuntimeException;
@@ -16,6 +18,7 @@ class OrderService
         $cart = Cart::query()
             ->with([
                 'items.product',
+                'items.product.categories',
                 'items.variant',
             ])
             ->where('user_id', $user->id)
@@ -25,9 +28,28 @@ class OrderService
             throw new RuntimeException('Giỏ hàng đang trống.');
         }
 
-        return DB::transaction(function () use ($user, $data, $cart) {
+        $coupon = null;
+        $discountTotal = 0;
+        $couponCode = $data['coupon_code'] ?? null;
+
+        if ($couponCode) {
+            $coupon = Coupon::where('code', $couponCode)->first();
+            if ($coupon) {
+                $couponService = app(CouponService::class);
+                $validation = $couponService->validate($couponCode, $user->id);
+
+                if (!$validation['valid']) {
+                    throw new RuntimeException($validation['message']);
+                }
+
+                $discountResult = $couponService->calculateDiscountForCart($coupon, $cart);
+                $discountTotal = $discountResult['discount'];
+            }
+        }
+
+        return DB::transaction(function () use ($user, $data, $cart, $coupon, $discountTotal) {
             $subtotal = 0;
-            $discountTotal = 0;
+
             $shippingFee = ($data['shipping_method'] ?? 'standard') === 'express' ? 30000 : 15000;
 
             $preparedItems = [];
@@ -95,10 +117,14 @@ class OrderService
 
             $grandTotal = $subtotal + $shippingFee - $discountTotal;
 
+            if ($grandTotal < 0) {
+                $grandTotal = 0;
+            }
+
             $paymentMethod = $data['payment_method'];
             $paymentStatus = $paymentMethod === 'cod' ? 'unpaid' : 'pending';
 
-            $order = Order::create([
+            $orderData = [
                 'user_id' => $user->id,
                 'code' => $this->generateOrderCode(),
 
@@ -123,7 +149,14 @@ class OrderService
                 'subtotal' => $subtotal,
                 'discount_total' => $discountTotal,
                 'grand_total' => $grandTotal,
-            ]);
+            ];
+
+            if ($coupon) {
+                $orderData['coupon_id'] = $coupon->id;
+                $orderData['coupon_code'] = $coupon->code;
+            }
+
+            $order = Order::create($orderData);
 
             foreach ($preparedItems as $itemData) {
                 $order->items()->create($itemData);
@@ -137,9 +170,18 @@ class OrderService
                 'amount' => $grandTotal,
             ]);
 
+            if ($coupon) {
+                $coupon->increment('used_count');
+
+                UserCoupon::where('user_id', $user->id)
+                    ->where('coupon_id', $coupon->id)
+                    ->whereNull('used_at')
+                    ->update(['used_at' => now()]);
+            }
+
             $cart->items()->delete();
 
-            return $order->load(['items', 'payments']);
+            return $order->load(['items', 'payments', 'coupon']);
         });
     }
 

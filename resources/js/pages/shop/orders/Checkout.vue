@@ -258,6 +258,46 @@
                 </div>
               </div>
 
+              <div class="rounded-lg bg-slate-50 dark:bg-slate-700/30 p-4">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Mã giảm giá
+                </h3>
+                <div class="flex gap-2">
+                  <input
+                    v-model="couponCode"
+                    type="text"
+                    class="flex-1 rounded-lg border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-3 py-2 text-sm outline-none focus:border-primary"
+                    placeholder="Nhập mã giảm giá"
+                    :disabled="applyingCoupon"
+                  />
+                  <button
+                    v-if="!appliedCoupon"
+                    type="button"
+                    class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+                    :disabled="!couponCode.trim() || applyingCoupon"
+                    @click="applyCoupon"
+                  >
+                    {{ applyingCoupon ? "..." : "Áp dụng" }}
+                  </button>
+                  <button
+                    v-else
+                    type="button"
+                    class="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-100"
+                    @click="removeCoupon"
+                  >
+                    Bỏ
+                  </button>
+                </div>
+
+                <div v-if="couponError" class="mt-2 text-xs text-red-500">
+                  {{ couponError }}
+                </div>
+                <div v-if="appliedCoupon" class="mt-2 text-xs text-emerald-600 dark:text-emerald-400">
+                  <span class="font-medium">{{ appliedCoupon.name }}</span>
+                  - Giảm {{ appliedCoupon.type === 'percentage' ? appliedCoupon.value + '%' : moneyVND(appliedCoupon.value) }}
+                </div>
+              </div>
+
               <div class="space-y-3 pt-2">
                 <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
                   <span>Tạm tính</span>
@@ -267,9 +307,9 @@
                   <span>Phí vận chuyển</span>
                   <span class="font-medium text-slate-900 dark:text-slate-100">{{ moneyVND(shippingFee) }}</span>
                 </div>
-                <div class="flex items-center justify-between text-sm text-slate-600 dark:text-slate-400">
+                <div class="flex items-center justify-between text-sm text-emerald-600 dark:text-emerald-400">
                   <span>Giảm giá</span>
-                  <span class="font-medium text-slate-900 dark:text-slate-100">{{ moneyVND(0) }}</span>
+                  <span class="font-medium">-{{ moneyVND(discountAmount) }}</span>
                 </div>
                 <div class="border-t border-slate-100 dark:border-slate-700 pt-4 flex items-center justify-between">
                   <span class="text-base font-bold text-slate-900 dark:text-slate-100">Tổng thanh toán</span>
@@ -298,13 +338,14 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCartStore } from "../../../stores/cart";
 import { buildImageUrl } from "../../../utils/image";
 import orderService from "../../../services/public/orderService";
+import couponService from "../../../services/public/couponService";
 import { useAlert } from "../../../composables/useAlert";
-import { useAddress } from "../../../composables/useAddress"; 
+import { useAddress } from "../../../composables/useAddress";
 
 const router = useRouter();
 const route = useRoute();
@@ -315,6 +356,11 @@ const pageLoading = ref(true);
 const pageError = ref("");
 const submitting = ref(false);
 const submitError = ref("");
+const couponCode = ref("");
+const applyingCoupon = ref(false);
+const couponError = ref("");
+const appliedCoupon = ref(null);
+const discountAmount = ref(0);
 
 const fallbackImage = "https://via.placeholder.com/400x400?text=Shoe";
 
@@ -345,7 +391,7 @@ const subtotal = computed(() =>
 
 const shippingFee = computed(() => (form.shipping_method === "express" ? 30000 : 15000));
 
-const grandTotal = computed(() => subtotal.value + shippingFee.value);
+const grandTotal = computed(() => Math.max(0, subtotal.value + shippingFee.value - discountAmount.value));
 
 const buttonText = computed(() => {
   if (form.payment_method === "vnpay") return "Tiếp tục đến VNPay";
@@ -397,6 +443,54 @@ function goCart() {
   router.push("/shop/cart");
 }
 
+async function applyCoupon() {
+  if (!couponCode.value.trim()) return;
+
+  applyingCoupon.value = true;
+  couponError.value = "";
+
+  try {
+    const res = await couponService.validateCoupon(couponCode.value.trim().toUpperCase());
+    const data = res?.data;
+
+    if (data?.valid) {
+      appliedCoupon.value = data.coupon;
+      discountAmount.value = Number(data.discount) || 0;
+      couponError.value = "";
+      const msg = data.message || "";
+      if (discountAmount.value <= 0) {
+        notify.warning(msg || "Mã hợp lệ nhưng không áp dụng được cho giỏ hàng hiện tại.", {
+          title: "Lưu ý",
+          duration: 3500,
+        });
+      } else {
+        notify.success(msg || "Áp dụng mã giảm giá thành công.", {
+          title: "Thành công",
+          duration: 2000,
+        });
+      }
+    } else {
+      couponError.value = data?.message || "Mã giảm giá không hợp lệ.";
+      appliedCoupon.value = null;
+      discountAmount.value = 0;
+    }
+  } catch (e) {
+    const errMsg = e?.response?.data?.message || "Mã giảm giá không hợp lệ hoặc đã hết hạn.";
+    couponError.value = errMsg;
+    appliedCoupon.value = null;
+    discountAmount.value = 0;
+  } finally {
+    applyingCoupon.value = false;
+  }
+}
+
+function removeCoupon() {
+  appliedCoupon.value = null;
+  discountAmount.value = 0;
+  couponCode.value = "";
+  couponError.value = "";
+}
+
 function validateForm() {
   if (!form.customer_name.trim()) return "Vui lòng nhập họ và tên.";
   if (!form.customer_phone.trim()) return "Vui lòng nhập số điện thoại.";
@@ -422,13 +516,14 @@ async function submitOrder() {
       customer_name: form.customer_name,
       customer_phone: form.customer_phone,
       customer_email: form.customer_email || null,
-      province: form.province || null,   
-      district: form.district || null,   
-      ward: form.ward || null,           
+      province: form.province || null,
+      district: form.district || null,
+      ward: form.ward || null,
       address_line: form.address_line,
       note: form.note || null,
       shipping_method: form.shipping_method,
       payment_method: form.payment_method,
+      coupon_code: appliedCoupon.value ? appliedCoupon.value.code : null,
     };
 
     const res = await orderService.createOrder(payload);
@@ -462,6 +557,7 @@ async function submitOrder() {
     submitting.value = false;
   }
 }
+
 function selectProvince() {
   if (form.province_obj) {
     form.province = form.province_obj.label || "";

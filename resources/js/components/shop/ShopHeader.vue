@@ -205,6 +205,17 @@
                       <span>Danh sách yêu thích</span>
                     </button>
 
+                    <button
+                      type="button"
+                      class="w-full px-4 py-3 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors flex items-center gap-3"
+                      @click="goMyCoupons"
+                    >
+                      <span class="material-symbols-outlined text-[20px] text-slate-500">
+                        local_offer
+                      </span>
+                      <span>Mã giảm giá của tôi</span>
+                    </button>
+
                     <div class="border-t border-slate-100 dark:border-slate-800 my-2"></div>
 
                     <button
@@ -337,6 +348,17 @@
               Sale
             </a>
           </li>
+
+          <li>
+            <a
+              class="inline-flex items-center gap-1 px-3 py-2 rounded-xl text-sm font-medium text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+              href="#"
+              @click.prevent="goCoupons"
+            >
+              <span class="material-symbols-outlined text-[18px]">local_offer</span>
+              Mã giảm giá
+            </a>
+          </li>
         </ul>
       </div>
     </nav>
@@ -383,6 +405,12 @@ function onSaleClick() {
   emit("sale");
 }
 
+function goCoupons() {
+  closeSuggest();
+  closeAccountMenu();
+  router.push("/shop/coupons");
+}
+
 /** ===== ACCOUNT DROPDOWN ===== */
 const accountWrap = ref(null);
 const showAccountMenu = ref(false);
@@ -419,6 +447,11 @@ function goWishlist() {
 function goOrders() {
   closeAccountMenu();
   router.push("/shop/orders");
+}
+
+function goMyCoupons() {
+  closeAccountMenu();
+  router.push("/shop/my-coupons");
 }
 
 /** ===== SEARCH SUGGEST ===== */

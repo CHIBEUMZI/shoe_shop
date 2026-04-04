@@ -41,6 +41,15 @@ class OrderResource extends JsonResource
 
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),
+            'coupon' => $this->whenLoaded('coupon', function () {
+                return $this->coupon ? [
+                    'id' => $this->coupon->id,
+                    'code' => $this->coupon->code,
+                    'name' => $this->coupon->name,
+                    'type' => $this->coupon->type,
+                ] : null;
+            }),
+            'coupon_code' => $this->coupon_code,
 
             'created_at' => optional($this->created_at)?->toDateTimeString(),
             'updated_at' => optional($this->updated_at)?->toDateTimeString(),
