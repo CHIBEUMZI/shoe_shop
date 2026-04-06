@@ -47,6 +47,9 @@ Route::prefix('auth')->group(function () {
     Route::post('/register', [App\Http\Controllers\Api\Auth\AuthController::class, 'register']);
     Route::post('/login', [App\Http\Controllers\Api\Auth\AuthController::class, 'login']);
     Route::post('/logout', [App\Http\Controllers\Api\Auth\AuthController::class, 'logout']);
+    Route::post('/forgot-password', [App\Http\Controllers\Api\Auth\AuthController::class, 'forgotPassword']);
+    Route::post('/verify-reset-code', [App\Http\Controllers\Api\Auth\AuthController::class, 'verifyResetCode']);
+    Route::post('/reset-password', [App\Http\Controllers\Api\Auth\AuthController::class, 'resetPassword']);
 
     Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [App\Http\Controllers\Api\Auth\AuthController::class, 'me']);

@@ -4,6 +4,8 @@ import { useAuthStore } from "../stores/auth";
 // Auth
 import Login from "../pages/auth/Login.vue";
 import Register from "../pages/auth/Register.vue";
+import ForgotPassword from "../pages/auth/ForgotPassword.vue";
+import ResetPassword from "../pages/auth/ResetPassword.vue";
 
 // Layouts
 import ShopLayout from "../pages/shop/Shop.vue";
@@ -62,6 +64,8 @@ const routes = [
 
   { path: "/login", component: Login, meta: { guestOnly: true } },
   { path: "/register", component: Register, meta: { guestOnly: true } },
+  { path: "/forgot-password", component: ForgotPassword, meta: { guestOnly: true } },
+  { path: "/reset-password", component: ResetPassword, meta: { guestOnly: true } },
 
   // SHOP
   {

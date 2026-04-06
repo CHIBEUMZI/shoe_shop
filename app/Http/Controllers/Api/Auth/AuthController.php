@@ -3,9 +3,13 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\PasswordResetCodeMail;
+use App\Models\PasswordResetCode;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
@@ -128,6 +132,122 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Đổi mật khẩu thành công.',
+        ]);
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::where('email', $data['email'])->first();
+
+        if (!$user) {
+            return response()->json([
+                'message' => 'Nếu email tồn tại trong hệ thống, mã xác nhận sẽ được gửi.',
+            ]);
+        }
+
+        // Invalidate old codes
+        PasswordResetCode::where('email', $data['email'])
+            ->whereNull('used_at')
+            ->update(['used_at' => now()]);
+
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $token = Str::random(64);
+
+        PasswordResetCode::create([
+            'email' => $data['email'],
+            'code' => $code,
+            'token' => $token,
+            'expires_at' => now()->addMinutes(10),
+        ]);
+
+        Mail::to($data['email'])->queue(
+            new PasswordResetCodeMail($data['email'], $code, $token)
+        );
+
+        return response()->json([
+            'message' => 'Nếu email tồn tại trong hệ thống, mã xác nhận sẽ được gửi.',
+        ]);
+    }
+
+    public function verifyResetCode(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        $record = PasswordResetCode::where('email', $data['email'])
+            ->where('code', $data['code'])
+            ->whereNull('used_at')
+            ->first();
+
+        if (!$record) {
+            throw ValidationException::withMessages([
+                'code' => ['Mã xác nhận không hợp lệ hoặc đã hết hạn.'],
+            ]);
+        }
+
+        if ($record->isExpired()) {
+            throw ValidationException::withMessages([
+                'code' => ['Mã xác nhận đã hết hạn. Vui lòng yêu cầu mã mới.'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Mã xác nhận hợp lệ.',
+            'token' => $record->token,
+        ]);
+    }
+
+    public function resetPassword(Request $request)
+    {
+        $data = $request->validate([
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
+        ]);
+
+        $record = PasswordResetCode::where('token', $data['token'])
+            ->whereNull('used_at')
+            ->first();
+
+        if (!$record) {
+            throw ValidationException::withMessages([
+                'token' => ['Liên kết đặt lại mật khẩu không hợp lệ.'],
+            ]);
+        }
+
+        if ($record->isExpired()) {
+            throw ValidationException::withMessages([
+                'token' => ['Liên kết đặt lại mật khẩu đã hết hạn.'],
+            ]);
+        }
+
+        $user = User::where('email', $record->email)->first();
+
+        if (!$user) {
+            throw ValidationException::withMessages([
+                'token' => ['Không tìm thấy tài khoản liên kết.'],
+            ]);
+        }
+
+        $user->update([
+            'password' => Hash::make($data['password']),
+        ]);
+
+        $record->update(['used_at' => now()]);
+
+        // Invalidate all other codes for this email
+        PasswordResetCode::where('email', $record->email)
+            ->whereNull('used_at')
+            ->where('id', '!=', $record->id)
+            ->update(['used_at' => now()]);
+
+        return response()->json([
+            'message' => 'Mật khẩu đã được đặt lại thành công.',
         ]);
     }
 

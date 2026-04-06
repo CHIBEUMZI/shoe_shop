@@ -29,7 +29,7 @@ __pycache__/
 
 # Rasa cache & models
 .rasa/
-models/
+/models/
 *.tar.gz
 
 # ========================

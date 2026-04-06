@@ -194,6 +194,13 @@
             Đăng ký ngay
           </RouterLink>
         </p>
+
+        <p class="text-center text-sm text-gray-500">
+          Quên mật khẩu?
+          <RouterLink to="/forgot-password" class="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
+            Khôi phục mật khẩu
+          </RouterLink>
+        </p>
       </form>
     </div>
   </div>
