@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Mail\EmailVerificationMail;
 use App\Mail\PasswordResetCodeMail;
+use App\Models\EmailVerificationCode;
 use App\Models\PasswordResetCode;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -14,36 +16,156 @@ use Illuminate\Validation\ValidationException;
 
 class AuthController extends Controller
 {
-    public function register(Request $request)
+    /**
+     * Step 1: Initiate registration - validate data and send verification code
+     */
+    public function initRegister(Request $request)
     {
         $data = $request->validate([
-            'name' => ['required','string','max:255'],
-            'email' => ['required','email','max:255','unique:users,email'],
-            'password' => ['required','string','min:6','confirmed'],
-
-            'birth_date' => ['nullable','date'],
-            'address' => ['nullable','string','max:255'],
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password' => ['required', 'string', 'min:6', 'confirmed'],
+            'birth_date' => ['nullable', 'date'],
+            'address' => ['nullable', 'string', 'max:255'],
         ]);
 
-        $user = User::create([
-            'name' => $data['name'],
+        // Invalidate old verification codes for this email
+        EmailVerificationCode::where('email', $data['email'])
+            ->whereNull('verified_at')
+            ->update(['verified_at' => now()]);
+
+        // Generate new verification code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $token = Str::random(64);
+
+        EmailVerificationCode::create([
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-
-            'role' => 'customer',
-            'is_active' => true,
-
-            'avatar' => null,
-            'birth_date' => $data['birth_date'] ?? null,
-            'address' => $data['address'] ?? null,
+            'code' => $code,
+            'token' => $token,
+            'expires_at' => now()->addMinutes(15),
+            'user_data' => json_encode([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
+                'role' => 'customer',
+                'is_active' => true,
+                'avatar' => null,
+                'birth_date' => $data['birth_date'] ?? null,
+                'address' => $data['address'] ?? null,
+            ]),
         ]);
 
+        // Send verification email
+        Mail::to($data['email'])->queue(
+            new EmailVerificationMail($data['email'], $code, $token)
+        );
+
+        return response()->json([
+            'message' => 'Mã xác nhận đã được gửi đến email của bạn.',
+            'email' => $data['email'],
+        ]);
+    }
+
+    /**
+     * Step 2: Verify email code and complete registration
+     */
+    public function verifyEmail(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+            'code' => ['required', 'string', 'size:6'],
+        ]);
+
+        $record = EmailVerificationCode::where('email', $data['email'])
+            ->where('code', $data['code'])
+            ->whereNull('verified_at')
+            ->first();
+
+        if (!$record) {
+            throw ValidationException::withMessages([
+                'code' => ['Mã xác nhận không hợp lệ hoặc đã được sử dụng.'],
+            ]);
+        }
+
+        if ($record->isExpired()) {
+            throw ValidationException::withMessages([
+                'code' => ['Mã xác nhận đã hết hạn. Vui lòng yêu cầu mã mới.'],
+            ]);
+        }
+
+        // Create the user
+        $userData = json_decode($record->user_data, true);
+        $user = User::create($userData);
+
+        // Mark verification code as used
+        $record->update(['verified_at' => now()]);
+
+        // Auto login
         auth()->login($user);
         $request->session()->regenerate();
 
         return response()->json([
             'user' => $this->userResponse($user),
         ], 201);
+    }
+
+    /**
+     * Resend verification code
+     */
+    public function resendVerificationCode(Request $request)
+    {
+        $data = $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        // Check if user already exists
+        if (User::where('email', $data['email'])->exists()) {
+            return response()->json([
+                'message' => 'Email này đã được đăng ký. Vui lòng sử dụng email khác hoặc đăng nhập.',
+            ], 422);
+        }
+
+        // Check if there's an active (unused, not expired) code
+        $existingRecord = EmailVerificationCode::where('email', $data['email'])
+            ->whereNull('verified_at')
+            ->first();
+
+        // If there's a recent code (less than 60 seconds ago), don't send yet
+        if ($existingRecord && $existingRecord->created_at->diffInSeconds(now()) < 60) {
+            return response()->json([
+                'message' => 'Vui lòng chờ một chút trước khi yêu cầu mã mới.',
+            ], 429);
+        }
+
+        // Invalidate old codes
+        EmailVerificationCode::where('email', $data['email'])
+            ->whereNull('verified_at')
+            ->update(['verified_at' => now()]);
+
+        // Generate new code
+        $code = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+        $token = Str::random(64);
+
+        // If there was previous registration data, use it
+        $userData = $existingRecord && $existingRecord->user_data
+            ? $existingRecord->user_data
+            : null;
+
+        EmailVerificationCode::create([
+            'email' => $data['email'],
+            'code' => $code,
+            'token' => $token,
+            'expires_at' => now()->addMinutes(15),
+            'user_data' => $userData,
+        ]);
+
+        Mail::to($data['email'])->queue(
+            new EmailVerificationMail($data['email'], $code, $token)
+        );
+
+        return response()->json([
+            'message' => 'Mã xác nhận mới đã được gửi đến email của bạn.',
+        ]);
     }
 
     public function login(Request $request)

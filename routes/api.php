@@ -44,7 +44,9 @@ use Illuminate\Support\Facades\Route;
 
 // AUTH
 Route::prefix('auth')->group(function () {
-    Route::post('/register', [App\Http\Controllers\Api\Auth\AuthController::class, 'register']);
+    Route::post('/register/init', [App\Http\Controllers\Api\Auth\AuthController::class, 'initRegister']);
+    Route::post('/register/verify', [App\Http\Controllers\Api\Auth\AuthController::class, 'verifyEmail']);
+    Route::post('/register/resend', [App\Http\Controllers\Api\Auth\AuthController::class, 'resendVerificationCode']);
     Route::post('/login', [App\Http\Controllers\Api\Auth\AuthController::class, 'login']);
     Route::post('/logout', [App\Http\Controllers\Api\Auth\AuthController::class, 'logout']);
     Route::post('/forgot-password', [App\Http\Controllers\Api\Auth\AuthController::class, 'forgotPassword']);

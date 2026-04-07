@@ -327,7 +327,7 @@
               </button>
 
               <p class="text-xs text-center text-slate-500 dark:text-slate-400">
-                Bằng việc đặt hàng, bạn đồng ý với các điều khoản mua hàng của Shoe Shop.
+                Bằng việc đặt hàng, bạn đồng ý với các điều khoản mua hàng của BMC Shoes.
               </p>
             </div>
           </div>

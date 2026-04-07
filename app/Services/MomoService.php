@@ -42,8 +42,8 @@ class MomoService
 
         $payload = [
             'partnerCode' => $partnerCode,
-            'partnerName' => 'Shoe Shop',
-            'storeId' => 'ShoeShopStore',
+            'partnerName' => 'BMC Shoes',
+            'storeId' => 'BMC Shoes Store',
             'requestId' => $requestId,
             'amount' => $amount,
             'orderId' => $orderId,

@@ -17,7 +17,7 @@
             Đặt hàng thành công
           </h1>
           <p class="mt-2 text-slate-500 dark:text-slate-400">
-            Cảm ơn bạn đã mua hàng tại Shoe Shop.
+            Cảm ơn bạn đã mua hàng tại BMC Shoes.
           </p>
         </div>
 

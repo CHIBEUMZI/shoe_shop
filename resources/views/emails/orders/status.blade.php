@@ -7,7 +7,7 @@
 <body style="margin:0; padding:20px; background:#f8fafc; font-family:Arial, Helvetica, sans-serif; color:#334155;">
     <div style="max-width:720px; margin:0 auto; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
         <div style="background:#0f172a; color:#ffffff; padding:20px 24px;">
-            <h1 style="margin:0; font-size:24px;">Shoe Shop</h1>
+            <h1 style="margin:0; font-size:24px;">BMC Shoes</h1>
             <p style="margin:8px 0 0; font-size:14px; opacity:.9;">
                 @if($type === 'paid')
                     Thanh toán đơn hàng thành công

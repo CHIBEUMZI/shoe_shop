@@ -140,41 +140,98 @@
       <!-- Row 1 -->
       <section class="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-12">
         <!-- Revenue chart -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm 2xl:col-span-7">
-          <div class="mb-5 flex items-center justify-between gap-3">
+        <article class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm 2xl:col-span-7">
+          <!-- Background decoration -->
+          <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-50 to-transparent opacity-60"></div>
+
+          <div class="mb-5 flex items-start justify-between gap-3">
             <div>
               <h2 class="text-lg font-extrabold text-slate-900">Biểu đồ doanh thu</h2>
               <p class="text-sm text-slate-500">Doanh thu theo {{ revenueLabel }}</p>
             </div>
 
-            <div class="rounded-xl bg-slate-100 px-3 py-1.5 text-xs font-semibold text-slate-600">
-              Tổng: {{ formatCurrency(totalRevenueInChart) }}
+            <div class="flex items-center gap-3">
+              <div v-if="revenueTrend >= 0" class="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                +{{ revenueTrend }}%
+              </div>
+              <div v-else class="flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
+                  <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                {{ revenueTrend }}%
+              </div>
+
+              <div class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white">
+                {{ formatCurrency(totalRevenueInChart) }}
+              </div>
             </div>
           </div>
 
           <template v-if="dashboard.chart.length">
             <div class="overflow-x-auto">
-              <div class="flex min-w-[680px] items-end gap-4 pt-6">
-                <div
-                  v-for="item in dashboard.chart"
-                  :key="item.label"
-                  class="flex flex-1 flex-col items-center gap-3"
-                >
-                  <div class="flex h-72 w-full items-end">
-                    <div
-                      class="w-full rounded-t-2xl bg-gradient-to-t from-indigo-600 to-sky-400 transition hover:opacity-90"
-                      :style="{ height: getBarHeight(item.value) }"
-                      :title="`${item.label}: ${formatCurrency(item.value)}`"
-                    ></div>
-                  </div>
+              <!-- Y-axis labels -->
+              <div class="relative flex min-w-[680px] gap-4 pl-12">
+                <!-- Grid lines -->
+                <div class="absolute inset-x-0 bottom-12 left-12 right-0 top-0 flex flex-col justify-between pointer-events-none">
+                  <div v-for="i in 5" :key="i" class="border-b border-dashed border-slate-100"></div>
+                </div>
 
-                  <div class="text-center">
-                    <div class="text-xs font-bold text-slate-700">{{ item.label }}</div>
-                    <div class="mt-1 text-[11px] text-slate-500">
-                      {{ formatCompactCurrency(item.value) }}
+                <!-- Y-axis -->
+                <div class="absolute left-0 top-12 bottom-12 flex flex-col justify-between text-[10px] text-slate-400 font-medium">
+                  <span>{{ formatCompactCurrency(maxChartValue) }}</span>
+                  <span>{{ formatCompactCurrency(maxChartValue * 0.75) }}</span>
+                  <span>{{ formatCompactCurrency(maxChartValue * 0.5) }}</span>
+                  <span>{{ formatCompactCurrency(maxChartValue * 0.25) }}</span>
+                  <span>0</span>
+                </div>
+
+                <!-- Bars container -->
+                <div class="flex flex-1 items-end gap-4 pt-6">
+                  <div
+                    v-for="item in dashboard.chart"
+                    :key="item.label"
+                    class="group relative flex flex-1 flex-col items-center gap-3"
+                  >
+                    <!-- Tooltip -->
+                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
+                      <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center shadow-lg">
+                        <div class="text-xs font-bold text-slate-900">{{ formatCurrency(item.value) }}</div>
+                        <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 border-l border-t border-slate-200 bg-white"></div>
+                      </div>
+                    </div>
+
+                    <!-- Bar -->
+                    <div class="flex h-72 w-full items-end">
+                      <div
+                        class="group-hover:opacity-80 relative w-full rounded-t-2xl bg-gradient-to-t transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
+                        :style="{ height: getBarHeight(item.value) }"
+                        :class="getBarGradient(item.value)"
+                      >
+                        <!-- Shine effect -->
+                        <div class="absolute inset-0 rounded-t-2xl bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                      </div>
+                    </div>
+
+                    <!-- Label -->
+                    <div class="text-center">
+                      <div class="text-xs font-bold text-slate-700">{{ item.label }}</div>
+                      <div class="mt-1 text-[11px] text-slate-500">
+                        {{ formatCompactCurrency(item.value) }}
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <!-- Legend -->
+            <div class="mt-6 flex items-center justify-center gap-6 border-t border-slate-100 pt-4">
+              <div class="flex items-center gap-2">
+                <div class="h-3 w-3 rounded-full bg-gradient-to-r from-indigo-600 to-sky-400"></div>
+                <span class="text-xs font-medium text-slate-500">Doanh thu</span>
               </div>
             </div>
           </template>
@@ -183,7 +240,13 @@
             v-else
             class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
-            Chưa có dữ liệu doanh thu
+            <div class="text-center">
+              <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-slate-300" viewBox="0 0 24 24" fill="none">
+                <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M7 12l4-4 4 4 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+              <p class="mt-2">Chưa có dữ liệu doanh thu</p>
+            </div>
           </div>
         </article>
 
@@ -505,6 +568,10 @@ const totalRevenueInChart = computed(() =>
   (dashboard.value.chart || []).reduce((sum, item) => sum + Number(item.value || 0), 0)
 );
 
+const revenueTrend = computed(() => {
+  return dashboard.value.overview.revenue_growth || 0;
+});
+
 const maxChartValue = computed(() => {
   const values = (dashboard.value.chart || []).map((item) => Number(item.value || 0));
   return Math.max(...values, 1);
@@ -533,6 +600,14 @@ function formatCompactCurrency(value) {
 function getBarHeight(value) {
   const height = (Number(value || 0) / maxChartValue.value) * 100;
   return `${Math.max(height, 8)}%`;
+}
+
+function getBarGradient(value) {
+  const ratio = Number(value || 0) / maxChartValue.value;
+  if (ratio >= 0.75) return "from-indigo-600 to-violet-500";
+  if (ratio >= 0.5) return "from-indigo-500 to-sky-500";
+  if (ratio >= 0.25) return "from-sky-500 to-cyan-400";
+  return "from-cyan-400 to-teal-400";
 }
 
 function getStatusPercent(count) {

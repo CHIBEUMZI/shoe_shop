@@ -2,14 +2,14 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Mã xác nhận đặt lại mật khẩu</title>
+    <title>Xác nhận email đăng ký</title>
 </head>
 <body style="margin:0; padding:20px; background:#f8fafc; font-family:Arial, Helvetica, sans-serif; color:#334155;">
     <div style="max-width:600px; margin:0 auto; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
         <div style="background:#0f172a; color:#ffffff; padding:20px 24px;">
             <h1 style="margin:0; font-size:24px;">BMC Shoes</h1>
             <p style="margin:8px 0 0; font-size:14px; opacity:.9;">
-                Mã xác nhận đặt lại mật khẩu
+                Xác nhận email đăng ký
             </p>
         </div>
 
@@ -19,7 +19,7 @@
             </p>
 
             <p style="margin:0 0 16px;">
-                Chúng tôi đã nhận được yêu cầu đặt lại mật khẩu cho tài khoản <strong>{{ $email }}</strong>.
+                Cảm ơn bạn đã đăng ký tài khoản <strong>{{ $email }}</strong>.
                 Dưới đây là mã xác nhận của bạn:
             </p>
 
@@ -31,11 +31,11 @@
             </div>
 
             <p style="margin:0 0 16px; font-size:13px; color:#64748b;">
-                Mã này sẽ hết hạn sau <strong>10 phút</strong>. Vui lòng không chia sẻ mã này với bất kỳ ai.
+                Mã này sẽ hết hạn sau <strong>15 phút</strong>. Vui lòng không chia sẻ mã này với bất kỳ ai.
             </p>
 
             <p style="margin:0 0 16px; font-size:13px; color:#64748b;">
-                Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này. Tài khoản của bạn vẫn an toàn.
+                Nếu bạn không thực hiện đăng ký, vui lòng bỏ qua email này.
             </p>
 
             <hr style="border:none; border-top:1px solid #e2e8f0; margin:20px 0;">

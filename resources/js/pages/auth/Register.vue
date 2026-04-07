@@ -11,8 +11,36 @@
           </svg>
         </div>
 
-        <h1 class="text-xl font-semibold text-gray-900">Tạo tài khoản mới</h1>
-        <p class="text-sm text-gray-500 mt-1">Điền thông tin của bạn để tạo tài khoản mới</p>
+        <h1 class="text-xl font-semibold text-gray-900">
+          {{ currentStep === 'register' ? 'Tạo tài khoản mới' : 'Xác nhận email' }}
+        </h1>
+        <p class="text-sm text-gray-500 mt-1">
+          {{ currentStep === 'register' ? 'Điền thông tin của bạn để tạo tài khoản mới' : 'Nhập mã xác nhận đã được gửi đến email của bạn' }}
+        </p>
+      </div>
+
+      <!-- Step Indicator -->
+      <div v-if="currentStep === 'verify'" class="mb-6">
+        <div class="flex items-center justify-center gap-2 text-sm">
+          <span class="flex items-center gap-1 text-gray-500">
+            <svg viewBox="0 0 24 24" class="h-4 w-4 text-green-500" fill="currentColor">
+              <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+            </svg>
+            Đăng ký
+          </span>
+          <svg viewBox="0 0 24 24" class="h-4 w-4 text-gray-300" fill="currentColor">
+            <path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/>
+          </svg>
+          <span class="flex items-center gap-1 font-medium text-blue-600">
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor">
+              <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
+            </svg>
+            Xác nhận
+          </span>
+        </div>
+        <p class="text-center text-sm text-gray-500 mt-2">
+          Mã đã gửi đến: <strong>{{ pendingEmail }}</strong>
+        </p>
       </div>
 
       <!-- General Error -->
@@ -33,7 +61,8 @@
         <span class="leading-5">{{ error }}</span>
       </div>
 
-      <form class="space-y-4" @submit.prevent="onSubmit">
+      <!-- Registration Form -->
+      <form v-if="currentStep === 'register'" class="space-y-4" @submit.prevent="onSubmit">
         <!-- Name -->
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1" for="name">Họ và tên</label>
@@ -255,7 +284,7 @@
           :disabled="loading"
         >
           <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
-          {{ loading ? "Đang tạo..." : "Đăng ký" }}
+          {{ loading ? "Đang gửi mã..." : "Đăng ký" }}
         </button>
 
         <p class="text-center text-sm text-gray-600 pt-2">
@@ -265,6 +294,87 @@
           </RouterLink>
         </p>
       </form>
+
+      <!-- Verification Form -->
+      <form v-else-if="currentStep === 'verify'" class="space-y-4" @submit.prevent="onVerifySubmit">
+        <!-- Verification Code -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1" for="code">Mã xác nhận</label>
+          <div class="relative">
+            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
+              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true">
+                <path
+                  d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"
+                />
+              </svg>
+            </span>
+
+            <input
+              id="code"
+              v-model="verificationCode"
+              type="text"
+              maxlength="6"
+              class="w-full rounded-lg border bg-gray-50 pl-10 pr-3 py-2 text-sm outline-none transition text-center text-lg tracking-widest font-mono
+                     focus:ring-2 disabled:opacity-60"
+              :class="fieldClass('code')"
+              placeholder="• • • • • •"
+              :disabled="loading"
+              @input="onCodeInput"
+            />
+          </div>
+          <p v-if="shouldShowFieldError('code')" class="mt-1 text-xs text-red-600">{{ errors.code }}</p>
+        </div>
+
+        <!-- Submit -->
+        <button
+          class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
+                 transition hover:bg-blue-700 active:translate-y-[1px] disabled:opacity-60 disabled:cursor-not-allowed"
+          :disabled="loading"
+        >
+          <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+          {{ loading ? "Đang xác nhận..." : "Xác nhận" }}
+        </button>
+
+        <!-- Resend Code -->
+        <div class="text-center">
+          <p class="text-sm text-gray-500">
+            Không nhận được mã?
+            <button
+              v-if="!canResend"
+              type="button"
+              class="font-medium text-gray-400 cursor-not-allowed"
+              disabled
+            >
+              Gửi lại sau {{ resendCountdown }}s
+            </button>
+            <button
+              v-else
+              type="button"
+              class="font-semibold text-blue-600 hover:text-blue-700 hover:underline"
+              @click="onResendCode"
+              :disabled="resending"
+            >
+              {{ resending ? 'Đang gửi...' : 'Gửi lại mã' }}
+            </button>
+          </p>
+        </div>
+
+        <!-- Back to Register -->
+        <div class="text-center pt-2 border-t border-gray-100">
+          <button
+            type="button"
+            class="text-sm text-gray-500 hover:text-gray-700 hover:underline"
+            @click="onBackToRegister"
+          >
+            <span class="inline-flex items-center gap-1">
+              <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+              </svg>
+              Quay lại đăng ký
+            </span>
+          </button>
+        </div>
+      </form>
     </div>
   </div>
 </template>
@@ -273,9 +383,12 @@
 import { ref, reactive } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/auth";
+import { initRegister, verifyEmail, resendVerificationCode } from "../../composables/auth";
+import { useAlert } from "../../composables/useAlert";
 
 const router = useRouter();
 const auth = useAuthStore();
+const alert = useAlert();
 
 const name = ref("");
 const email = ref("");
@@ -291,6 +404,14 @@ const loading = ref(false);
 const error = ref("");
 const submitted = ref(false);
 
+// Email verification state
+const currentStep = ref("register"); // 'register' or 'verify'
+const pendingEmail = ref("");
+const verificationCode = ref("");
+const resendCountdown = ref(60);
+const canResend = ref(false);
+const resending = ref(false);
+
 const errors = reactive({
   name: "",
   email: "",
@@ -298,6 +419,7 @@ const errors = reactive({
   address: "",
   password: "",
   password_confirmation: "",
+  code: "",
 });
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -342,6 +464,13 @@ function validateField(field) {
       errors.password_confirmation = "Mật khẩu nhập lại không khớp";
   }
 
+  if (field === "code") {
+    const v = verificationCode.value.trim();
+    if (!v) errors.code = "Vui lòng nhập mã xác nhận";
+    else if (v.length !== 6) errors.code = "Mã xác nhận gồm 6 chữ số";
+    else if (!/^\d{6}$/.test(v)) errors.code = "Mã xác nhận chỉ chứa số";
+  }
+
   // birth_date/address: đang nullable như code bạn => không bắt buộc
   // Nếu muốn bắt buộc thì mở 2 dòng dưới:
   // if (field === "birth_date" && !birth_date.value) errors.birth_date = "Vui lòng chọn ngày sinh";
@@ -356,6 +485,12 @@ function validateAll() {
 
   return !errors.name && !errors.email && !errors.password && !errors.password_confirmation && !errors.birth_date && !errors.address;
 }
+
+function validateCode() {
+  validateField("code");
+  return !errors.code;
+}
+
 function onFieldInput(field) {
   if (!submitted.value) return;
   validateField(field);
@@ -371,6 +506,13 @@ function onConfirmPasswordInput() {
   if (!submitted.value) return;
   validateField("password_confirmation");
 }
+
+function onCodeInput() {
+  // Only allow numbers
+  verificationCode.value = verificationCode.value.replace(/\D/g, "").slice(0, 6);
+  if (submitted.value) validateField("code");
+}
+
 function applyBackendErrors(e) {
   const data = e?.response?.data;
   const backendErrors = data?.errors;
@@ -391,7 +533,7 @@ async function onSubmit() {
 
   loading.value = true;
   try {
-    const user = await auth.register({
+    await initRegister({
       name: name.value,
       email: email.value,
       birth_date: birth_date.value || null,
@@ -400,16 +542,116 @@ async function onSubmit() {
       password_confirmation: password_confirmation.value,
     });
 
-    router.push(user.role === "admin" ? "/admin" : "/shop");
+    // Move to verification step
+    pendingEmail.value = email.value;
+    currentStep.value = "verify";
+    submitted.value = false;
+    alert.success("Mã xác nhận đã được gửi đến email của bạn.", { title: "Đăng ký" });
+
+    // Start countdown for resend
+    startResendCountdown();
   } catch (e) {
     if (e?.response?.status === 422) {
       applyBackendErrors(e);
       error.value = e?.response?.data?.message || "Dữ liệu không hợp lệ";
+    } else if (e?.response?.status === 429) {
+      error.value = e?.response?.data?.message || "Vui lòng chờ trước khi thử lại.";
     } else {
-      error.value = e?.response?.data?.message || "Đăng ký thất bại";
+      error.value = e?.response?.data?.message || "Đăng ký thất bại. Vui lòng thử lại.";
     }
   } finally {
     loading.value = false;
+  }
+}
+
+async function onVerifySubmit() {
+  submitted.value = true;
+
+  clearAllErrors();
+
+  if (!validateCode()) return;
+
+  loading.value = true;
+  try {
+    const user = await verifyEmail({
+      email: pendingEmail.value,
+      code: verificationCode.value,
+    });
+
+    // Set user in auth store
+    auth.user = user;
+    auth.loaded = true;
+
+    // Show success toast
+    alert.success(`Chào mừng ${user.name}! Đăng ký thành công.`, { title: "Xác nhận thành công" });
+
+    // Navigate after a short delay for the toast to be visible
+    setTimeout(() => {
+      router.push(user.role === "admin" ? "/admin" : "/shop");
+    }, 1500);
+  } catch (e) {
+    if (e?.response?.status === 422) {
+      applyBackendErrors(e);
+      error.value = e?.response?.data?.message || "Mã xác nhận không hợp lệ.";
+    } else if (e?.response?.status === 429) {
+      error.value = e?.response?.data?.message || "Quá nhiều yêu cầu. Vui lòng thử lại sau.";
+    } else {
+      error.value = e?.response?.data?.message || "Xác nhận thất bại. Vui lòng thử lại.";
+    }
+  } finally {
+    loading.value = false;
+  }
+}
+
+let countdownInterval = null;
+
+function startResendCountdown() {
+  canResend.value = false;
+  resendCountdown.value = 60;
+
+  if (countdownInterval) clearInterval(countdownInterval);
+
+  countdownInterval = setInterval(() => {
+    resendCountdown.value--;
+    if (resendCountdown.value <= 0) {
+      canResend.value = true;
+      clearInterval(countdownInterval);
+    }
+  }, 1000);
+}
+
+async function onResendCode() {
+  if (!canResend.value || resending.value) return;
+
+  resending.value = true;
+  clearAllErrors();
+
+  try {
+    await resendVerificationCode(pendingEmail.value);
+    alert.success("Mã xác nhận mới đã được gửi đến email của bạn.", { title: "Gửi lại mã" });
+    startResendCountdown();
+  } catch (e) {
+    if (e?.response?.status === 422) {
+      error.value = e?.response?.data?.message || "Không thể gửi lại mã.";
+    } else if (e?.response?.status === 429) {
+      error.value = e?.response?.data?.message || "Vui lòng chờ một chút trước khi yêu cầu mã mới.";
+    } else {
+      error.value = e?.response?.data?.message || "Gửi lại mã thất bại. Vui lòng thử lại.";
+    }
+  } finally {
+    resending.value = false;
+  }
+}
+
+function onBackToRegister() {
+  currentStep.value = "register";
+  verificationCode.value = "";
+  submitted.value = false;
+  clearAllErrors();
+
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
   }
 }
 </script>
