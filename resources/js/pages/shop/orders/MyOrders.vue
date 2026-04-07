@@ -27,30 +27,19 @@
             />
           </div>
 
-          <select
+          <BaseSelect
             v-model="statusFilter"
-            class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="">Tất cả trạng thái đơn</option>
-            <option value="pending">Chờ xử lý</option>
-            <option value="confirmed">Đã xác nhận</option>
-            <option value="processing">Đang chuẩn bị hàng</option>
-            <option value="shipping">Đang giao</option>
-            <option value="completed">Hoàn thành</option>
-            <option value="cancelled">Đã hủy</option>
-          </select>
+            :options="statusOptions"
+            placeholder="Tất cả trạng thái đơn"
+            wrapper-class="w-full sm:w-auto"
+          />
 
-          <select
+          <BaseSelect
             v-model="paymentStatusFilter"
-            class="rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-          >
-            <option value="">Tất cả thanh toán</option>
-            <option value="unpaid">Chưa thanh toán</option>
-            <option value="pending">Đang chờ thanh toán</option>
-            <option value="paid">Đã thanh toán</option>
-            <option value="failed">Thất bại</option>
-            <option value="refunded">Đã hoàn tiền</option>
-          </select>
+            :options="paymentStatusOptions"
+            placeholder="Tất cả thanh toán"
+            wrapper-class="w-full sm:w-auto"
+          />
         </div>
       </div>
 
@@ -209,42 +198,109 @@
               v-if="expandedIds[order.id]"
               class="border-t border-slate-100 dark:border-slate-700 px-6 py-5 bg-slate-50/70 dark:bg-slate-900/30"
             >
+              <!-- Order Progress -->
+              <div class="mb-6">
+                <h3 class="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wide mb-4">
+                  Tiến trình đơn hàng
+                </h3>
+                <div class="relative">
+                  <div class="absolute top-4 left-0 right-0 h-1 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                  <div
+                    class="absolute top-4 left-0 h-1 bg-primary rounded-full transition-all duration-500"
+                    :style="{ width: getProgressWidth(order.status) }"
+                  ></div>
+                  <div class="relative flex justify-between">
+                    <div
+                      v-for="(step, index) in getOrderSteps()"
+                      :key="step.key"
+                      class="flex flex-col items-center"
+                    >
+                      <div
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-sm transition-all duration-300"
+                        :class="getStepClass(order.status, step.key)"
+                      >
+                        <span class="material-symbols-outlined text-base">{{ step.icon }}</span>
+                      </div>
+                      <span class="mt-2 text-xs font-medium text-slate-500 dark:text-slate-400 text-center max-w-[70px]">
+                        {{ step.label }}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="space-y-3">
-                  <h3 class="font-bold text-slate-900 dark:text-slate-100">Thông tin giao hàng</h3>
-                  <div class="text-sm text-slate-600 dark:text-slate-400 space-y-1.5">
-                    <p><b class="text-slate-900 dark:text-slate-100">Người nhận:</b> {{ order.customer_name || "-" }}</p>
-                    <p><b class="text-slate-900 dark:text-slate-100">Số điện thoại:</b> {{ order.customer_phone || "-" }}</p>
-                    <p><b class="text-slate-900 dark:text-slate-100">Email:</b> {{ order.customer_email || "-" }}</p>
-                    <p><b class="text-slate-900 dark:text-slate-100">Địa chỉ:</b> {{ fullAddress(order) }}</p>
-                    <p><b class="text-slate-900 dark:text-slate-100">Ghi chú:</b> {{ order.note || "-" }}</p>
+                <div class="rounded-xl bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
+                  <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-lg text-primary">local_shipping</span>
+                    Thông tin giao hàng
+                  </h3>
+                  <div class="space-y-3">
+                    <div class="flex items-start gap-3">
+                      <span class="material-symbols-outlined text-lg text-slate-400 dark:text-slate-500 mt-0.5">person</span>
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Người nhận</div>
+                        <div class="font-medium text-slate-900 dark:text-slate-100">{{ order.customer_name || "-" }}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="material-symbols-outlined text-lg text-slate-400 dark:text-slate-500 mt-0.5">phone</span>
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Số điện thoại</div>
+                        <div class="font-medium text-slate-900 dark:text-slate-100">{{ order.customer_phone || "-" }}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="material-symbols-outlined text-lg text-slate-400 dark:text-slate-500 mt-0.5">mail</span>
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Email</div>
+                        <div class="font-medium text-slate-900 dark:text-slate-100">{{ order.customer_email || "-" }}</div>
+                      </div>
+                    </div>
+                    <div class="flex items-start gap-3">
+                      <span class="material-symbols-outlined text-lg text-slate-400 dark:text-slate-500 mt-0.5">home</span>
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Địa chỉ giao hàng</div>
+                        <div class="font-medium text-slate-900 dark:text-slate-100">{{ fullAddress(order) }}</div>
+                      </div>
+                    </div>
+                    <div v-if="order.note" class="flex items-start gap-3">
+                      <span class="material-symbols-outlined text-lg text-slate-400 dark:text-slate-500 mt-0.5">note</span>
+                      <div>
+                        <div class="text-xs text-slate-500 dark:text-slate-400">Ghi chú</div>
+                        <div class="font-medium text-slate-900 dark:text-slate-100">{{ order.note }}</div>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
-                <div class="space-y-3">
-                  <h3 class="font-bold text-slate-900 dark:text-slate-100">Tóm tắt thanh toán</h3>
-                  <div class="space-y-2 text-sm">
-                    <div class="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                      <span>Tạm tính</span>
+                <div class="rounded-xl bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
+                  <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
+                    <span class="material-symbols-outlined text-lg text-primary">payments</span>
+                    Tóm tắt thanh toán
+                  </h3>
+                  <div class="space-y-3">
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-600 dark:text-slate-400">Tạm tính</span>
                       <span class="font-medium text-slate-900 dark:text-slate-100">
                         {{ moneyVND(order.subtotal || 0) }}
                       </span>
                     </div>
-                    <div class="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                      <span>Phí vận chuyển</span>
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-600 dark:text-slate-400">Phí vận chuyển</span>
                       <span class="font-medium text-slate-900 dark:text-slate-100">
                         {{ moneyVND(order.shipping_fee || 0) }}
                       </span>
                     </div>
-                    <div class="flex items-center justify-between text-slate-600 dark:text-slate-400">
-                      <span>Giảm giá</span>
-                      <span class="font-medium text-slate-900 dark:text-slate-100">
-                        {{ moneyVND(order.discount_total || 0) }}
+                    <div class="flex items-center justify-between">
+                      <span class="text-slate-600 dark:text-slate-400">Giảm giá</span>
+                      <span class="font-medium text-green-600 dark:text-green-400">
+                        -{{ moneyVND(order.discount_total || 0) }}
                       </span>
                     </div>
-                    <div class="border-t border-slate-200 dark:border-slate-700 pt-3 flex items-center justify-between">
+                    <div class="pt-3 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                       <span class="font-bold text-slate-900 dark:text-slate-100">Tổng thanh toán</span>
-                      <span class="text-lg font-bold text-primary">
+                      <span class="text-xl font-bold text-primary">
                         {{ moneyVND(order.grand_total || 0) }}
                       </span>
                     </div>
@@ -299,6 +355,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
+import BaseSelect from "../../../components/BaseSelect.vue";
 import orderService from "../../../services/public/orderService";
 import { buildImageUrl } from "../../../utils/image";
 
@@ -326,6 +383,25 @@ const meta = ref({
 });
 
 const fallbackImage = "https://via.placeholder.com/400x400?text=Shoe";
+
+const statusOptions = [
+  { value: "", label: "Tất cả trạng thái đơn" },
+  { value: "pending", label: "Chờ xử lý" },
+  { value: "confirmed", label: "Đã xác nhận" },
+  { value: "processing", label: "Đang chuẩn bị hàng" },
+  { value: "shipping", label: "Đang giao" },
+  { value: "completed", label: "Hoàn thành" },
+  { value: "cancelled", label: "Đã hủy" },
+];
+
+const paymentStatusOptions = [
+  { value: "", label: "Tất cả thanh toán" },
+  { value: "unpaid", label: "Chưa thanh toán" },
+  { value: "pending", label: "Đang chờ thanh toán" },
+  { value: "paid", label: "Đã thanh toán" },
+  { value: "failed", label: "Thất bại" },
+  { value: "refunded", label: "Đã hoàn tiền" },
+];
 
 onMounted(async () => {
   await fetchOrders(1, true);
@@ -523,6 +599,46 @@ function canRepay(order) {
     ["vnpay", "momo"].includes(String(order.payment_method || "")) &&
     ["pending", "unpaid", "failed"].includes(String(order.payment_status || ""))
   );
+}
+
+// Các bước tiến trình đơn hàng
+function getOrderSteps() {
+  return [
+    { key: "pending", label: "Chờ xử lý", icon: "hourglass_empty" },
+    { key: "confirmed", label: "Xác nhận", icon: "check_circle" },
+    { key: "processing", label: "Chuẩn bị", icon: "inventory_2" },
+    { key: "shipping", label: "Giao hàng", icon: "local_shipping" },
+    { key: "completed", label: "Hoàn thành", icon: "task_alt" },
+  ];
+}
+
+// CSS class cho từng bước
+function getStepClass(currentStatus, stepKey) {
+  const statusOrder = ["pending", "confirmed", "processing", "shipping", "completed"];
+  const currentIndex = statusOrder.indexOf(currentStatus);
+  const stepIndex = statusOrder.indexOf(stepKey);
+
+  if (stepKey === "cancelled") {
+    return currentStatus === "cancelled"
+      ? "bg-red-500 text-white"
+      : "bg-slate-200 dark:bg-slate-700 text-slate-400";
+  }
+
+  if (stepIndex <= currentIndex) {
+    return "bg-primary text-white";
+  }
+  return "bg-slate-200 dark:bg-slate-700 text-slate-400";
+}
+
+// Độ rộng thanh tiến trình
+function getProgressWidth(status) {
+  const statusOrder = ["pending", "confirmed", "processing", "shipping", "completed"];
+  const index = statusOrder.indexOf(status);
+
+  if (status === "cancelled") return "0%";
+  if (index === -1) return "0%";
+
+  return `${(index / (statusOrder.length - 1)) * 100}%`;
 }
 
 async function payNow(order) {
