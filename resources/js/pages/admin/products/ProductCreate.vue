@@ -1073,14 +1073,17 @@ onMounted(async () => {
   position: sticky; top: 0;
   background: #f5f7ff;
   border-bottom: 1.5px solid #e8ecf4;
-  padding: 11px 12px;
+  padding: 10px 12px;
   text-align: left;
+  vertical-align: middle;
   font-size: 11px;
   color: #64748b;
   text-transform: uppercase;
   letter-spacing: .06em;
   font-weight: 700;
 }
+.variants thead th.num { text-align: right; }
+.variants thead th.center { text-align: center; }
 .variants tr:hover td { background: #fafbff; }
 .variants td { border-top: 1px solid #f1f4fa; padding: 10px 12px; vertical-align: middle; }
 .num { text-align: right; }

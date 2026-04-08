@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import productAdminService from "../../../services/admin/productAdminService";
 
@@ -11,6 +11,7 @@ const loading = ref(false);
 const error = ref("");
 const product = ref(null);
 
+/** ================= helpers ================= */
 function imgSrc(url) {
   if (!url) return "";
   return url.startsWith("http") ? url : "/storage/" + url;
@@ -35,14 +36,11 @@ function goBack() {
   router.push("/admin/products");
 }
 
-const statusText = computed(() =>
-  Number(product.value?.status) === 1 ? "Hoạt động" : "Tạm tắt"
-);
+function goEdit() {
+  router.push(`/admin/products/edit/${id.value}`);
+}
 
-const statusClass = computed(() =>
-  Number(product.value?.status) === 1 ? "ok" : "off"
-);
-
+/** ================= display helpers ================= */
 function moneyVND(v) {
   return new Intl.NumberFormat("vi-VN", {
     style: "currency",
@@ -50,64 +48,119 @@ function moneyVND(v) {
   }).format(Number(v || 0));
 }
 
-const basicInfoItems = computed(() => {
-  if (!product.value) return [];
-  return [
-    { label: "Tên sản phẩm", value: product.value.name || "-" },
-    { label: "Slug", value: product.value.slug || "-", mono: true },
-    { label: "SKU", value: product.value.sku || "-", mono: true },
-    { label: "Trạng thái", value: statusText.value, status: true },
-    { label: "Nổi bật", value: product.value.is_featured ? "Có" : "Không" },
-    { label: "Thương hiệu", value: product.value.brand?.name || "-" },
-    {
-      label: "Giá gốc",
-      value: moneyVND(product.value.base_price),
-    },
-    {
-      label: "Giá khuyến mãi",
-      value:
-        product.value.base_sale_price !== null &&
-        product.value.base_sale_price !== undefined
-          ? moneyVND(product.value.base_sale_price)
-          : "-",
-    },
-    {
-      label: "Mô tả ngắn",
-      value: product.value.short_description || "Không có mô tả ngắn",
-      full: true,
-      pre: true,
-    },
-    {
-      label: "Mô tả chi tiết",
-      value: product.value.description || "Không có mô tả",
-      full: true,
-      pre: true,
-    },
-  ];
+const COLOR_META = {
+  White:  "#ffffff",
+  Black:  "#1a1a1a",
+  Red:    "#ef4444",
+  Blue:   "#3b82f6",
+  Green:  "#22c55e",
+  Yellow: "#eab308",
+  Grey:   "#94a3b8",
+  Brown:  "#92400e",
+  Cyan:   "#06b6d4",
+};
+
+const ALL_COLORS = ["White", "Black", "Red", "Blue", "Green", "Yellow", "Grey", "Brown", "Cyan"];
+const ALL_SIZES  = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+
+function matrixKey(color, size) {
+  return `${color}__${size}`;
+}
+
+/** ================= build matrix checked from product ================= */
+const matrixChecked = computed(() => {
+  const set = new Set();
+  for (const v of product.value?.variants || []) {
+    if (v.color && v.size) {
+      set.add(matrixKey(v.color, v.size));
+    }
+  }
+  return set;
 });
+
+/** ================= active colors from product ================= */
+const activeColors = computed(() => {
+  const colors = new Set();
+  for (const v of product.value?.variants || []) {
+    if (v.color) colors.add(v.color);
+  }
+  return Array.from(colors);
+});
+
+/** ================= color images (per color) ================= */
+const colorImages = computed(() => {
+  const map = {};
+  for (const v of product.value?.variants || []) {
+    if (!v.color) continue;
+    if (!map[v.color]) map[v.color] = [];
+    for (const img of v.images || []) {
+      if (img.url && !map[v.color].some(x => x.url === img.url)) {
+        map[v.color].push(img);
+      }
+    }
+  }
+  return map;
+});
+
+/** ================= thumbnail ================= */
+const thumbUrl = computed(() => {
+  if (!product.value?.thumbnail) return "";
+  return imgSrc(product.value.thumbnail);
+});
+
+/** ================= schema display values ================= */
+const brandName = computed(() => product.value?.brand?.name || "-");
+const categoryNames = computed(() =>
+  (product.value?.categories || []).map(c => c.name).join(", ") || "-"
+);
+
+const statusText = computed(() =>
+  Number(product.value?.status) === 1 ? "Hoạt động" : "Tạm tắt"
+);
+
+const featuredText = computed(() =>
+  product.value?.is_featured ? "Có" : "Không"
+);
+
+/** ================= check state helpers ================= */
+function isChecked(color, size) {
+  return matrixChecked.value.has(matrixKey(color, size));
+}
+
+function rowState(color) {
+  const count = ALL_SIZES.filter((s) => matrixChecked.value.has(matrixKey(color, s))).length;
+  return { checked: count === ALL_SIZES.length, indeterminate: count > 0 && count < ALL_SIZES.length };
+}
+
+function colState(size) {
+  const count = ALL_COLORS.filter((c) => matrixChecked.value.has(matrixKey(c, size))).length;
+  return { checked: count === ALL_COLORS.length, indeterminate: count > 0 && count < ALL_COLORS.length };
+}
 </script>
 
 <template>
+  <!-- ==================== PAGE WRAPPER ==================== -->
   <div class="page">
-    <!-- header -->
+    <!-- TOPBAR -->
     <div class="topbar">
       <div class="topbar-left">
         <div>
           <div class="page-title">Chi tiết sản phẩm</div>
           <div class="page-subtitle" v-if="product">
-            #{{ product.id }} • {{ product.name }}
+            #{{ product.id }} · {{ product.name }}
           </div>
         </div>
       </div>
 
       <div class="topbar-actions">
         <button class="btn btn-ghost" type="button" @click="goBack">
+          <span class="material-symbols-outlined">arrow_back</span>
           Quay lại
         </button>
       </div>
     </div>
 
-    <!-- error -->
+    <!-- ERROR -->
     <div v-if="error" class="alert">
       <div>
         <div class="alert-title">Lỗi</div>
@@ -115,195 +168,313 @@ const basicInfoItems = computed(() => {
       </div>
     </div>
 
+    <!-- LOADING -->
     <div v-if="loading" class="loading">Đang tải...</div>
 
-    <div v-else class="wrap">
-      <div v-if="product" class="layout two-col">
-        <!-- LEFT -->
-        <div class="left">
-          <div class="section">
-            <div class="section-head">
-              <div class="section-icon">📦</div>
-              <div class="section-title">Thông tin sản phẩm</div>
-            </div>
+    <!-- ==================== MAIN WRAP ==================== -->
+    <div v-if="!loading && product" class="wrap">
 
-            <div class="section-body">
-              <div class="detail-grid">
-                <div
-                  v-for="(item, idx) in basicInfoItems"
-                  :key="idx"
-                  class="detail-item"
-                  :class="item.full ? 'full' : ''"
-                >
-                  <div class="detail-label">{{ item.label }}</div>
-
-                  <div v-if="item.status" class="detail-value">
-                    <span class="pill" :class="statusClass">
-                      {{ item.value }}
-                    </span>
-                  </div>
-
-                  <div
-                    v-else
-                    class="detail-value"
-                    :class="[item.mono ? 'mono' : '', item.pre ? 'pre' : '']"
-                  >
-                    {{ item.value }}
-                  </div>
-                </div>
-
-                <div class="detail-item full">
-                  <div class="detail-label">Danh mục</div>
-                  <div class="detail-value chips-wrap">
-                    <template v-if="(product.categories || []).length">
-                      <span
-                        class="chip"
-                        v-for="c in product.categories || []"
-                        :key="c.id"
-                      >
-                        {{ c.name }}
-                      </span>
-                    </template>
-                    <template v-else>-</template>
-                  </div>
-                </div>
-              </div>
+      <!-- ==================== THÔNG TIN CƠ BẢN ==================== -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-head-icon">📝</div>
+            <div>
+              <div class="card-title">Thông tin cơ bản</div>
             </div>
           </div>
-
-          <!-- variants -->
-          <div class="section">
-            <div class="section-head">
-              <div class="section-icon">🧩</div>
-              <div class="section-title">Biến thể sản phẩm</div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <!-- Tên sản phẩm -->
+            <div class="field full">
+              <div class="label">Tên sản phẩm</div>
+              <div class="control readonly">{{ product.name || "-" }}</div>
             </div>
 
-            <div class="section-body">
-              <div v-if="!(product.variants || []).length" class="empty-state">
-                Chưa có biến thể nào.
+            <div class="field">
+              <div class="label">Slug</div>
+              <div class="control readonly mono">{{ product.slug || "-" }}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">SKU</div>
+              <div class="control readonly mono">{{ product.sku || "-" }}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">Trạng thái</div>
+              <div class="control readonly">
+                <span class="badge-green" v-if="Number(product.status) === 1">Hoạt động</span>
+                <span class="badge-gray" v-else>Tạm tắt</span>
               </div>
+            </div>
 
-              <div v-else class="variants">
-                <div
-                  v-for="v in product.variants || []"
-                  :key="v.id"
-                  class="variant-card"
-                >
-                  <div class="variant-top">
-                    <div>
-                      <div class="variant-title">
-                        {{ v.color || "-" }} / {{ v.size || "-" }}
-                      </div>
-                      <div class="variant-sub mono">
-                        {{ v.sku || "-" }}
-                      </div>
-                    </div>
+            <div class="field">
+              <div class="label">Nổi bật</div>
+              <div class="control readonly">
+                <span class="badge-green" v-if="product.is_featured">Có</span>
+                <span class="badge-gray" v-else>Không</span>
+              </div>
+            </div>
 
-                    <span class="pill" :class="v.is_active ? 'ok' : 'off'">
-                      {{ v.is_active ? "Hoạt động" : "Tạm tắt" }}
-                    </span>
-                  </div>
+            <div class="field">
+              <div class="label">Thương hiệu</div>
+              <div class="control readonly">{{ brandName }}</div>
+            </div>
 
-                  <div class="variant-meta">
-                    <div class="meta-box">
-                      <div class="meta-label">Giá</div>
-                      <div class="meta-value">{{ moneyVND(v.price) }}</div>
-                    </div>
-
-                    <div class="meta-box">
-                      <div class="meta-label">Giá sale</div>
-                      <div class="meta-value">
-                        {{
-                          v.sale_price !== null && v.sale_price !== undefined
-                            ? moneyVND(v.sale_price)
-                            : "-"
-                        }}
-                      </div>
-                    </div>
-
-                    <div class="meta-box">
-                      <div class="meta-label">Tồn kho</div>
-                      <div class="meta-value">{{ v.stock ?? 0 }}</div>
-                    </div>
-                  </div>
-
-                  <div v-if="(v.images || []).length" class="variant-images">
-                    <img
-                      v-for="img in v.images || []"
-                      :key="img.id || img.url"
-                      :src="imgSrc(img.url)"
-                      :alt="`${product.name} variant`"
-                    />
-                  </div>
+            <div class="field">
+              <div class="label">Danh mục</div>
+              <div class="control readonly">
+                <div class="chips-wrap">
+                  <span class="chip" v-for="c in (product.categories || [])" :key="c.id">
+                    {{ c.name }}
+                  </span>
                 </div>
               </div>
+            </div>
+
+            <div class="field">
+              <div class="label">Giá gốc</div>
+              <div class="control readonly price">{{ moneyVND(product.base_price) }}</div>
+            </div>
+
+            <div class="field">
+              <div class="label">Giá khuyến mãi</div>
+              <div class="control readonly" :class="product.base_sale_price ? 'sale-price' : ''">
+                <template v-if="product.base_sale_price !== null && product.base_sale_price !== undefined">
+                  {{ moneyVND(product.base_sale_price) }}
+                </template>
+                <template v-else>-</template>
+              </div>
+            </div>
+
+            <div class="field full">
+              <div class="label">Mô tả ngắn</div>
+              <div class="control readonly textarea pre">{{ product.short_description || "Không có mô tả ngắn." }}</div>
+            </div>
+
+            <div class="field full">
+              <div class="label">Mô tả chi tiết</div>
+              <div class="control readonly textarea pre">{{ product.description || "Không có mô tả." }}</div>
             </div>
           </div>
+        </div>
+      </div>
 
-          <!-- metadata -->
-          <div class="section" v-if="product.created_at || product.updated_at">
-            <div class="section-head">
-              <div class="section-icon">🕒</div>
-              <div class="section-title">Thông tin hệ thống</div>
+      <!-- ==================== MEDIA ==================== -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-head-icon">🖼️</div>
+            <div>
+              <div class="card-title">Hình ảnh đại diện</div>
             </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="thumb-area">
+            <div v-if="thumbUrl" class="thumb-box">
+              <img :src="thumbUrl" :alt="product.name" />
+            </div>
+            <div v-else class="thumb-empty">
+              <span class="material-symbols-outlined">image_not_supported</span>
+              <span>Không có ảnh đại diện</span>
+            </div>
+          </div>
+        </div>
+      </div>
 
-            <div class="section-body">
-              <div class="detail-grid">
-                <div class="detail-item">
-                  <div class="detail-label">ID</div>
-                  <div class="detail-value mono">#{{ product.id }}</div>
-                </div>
 
-                <div class="detail-item" v-if="product.created_at">
-                  <div class="detail-label">Ngày tạo</div>
-                  <div class="detail-value">{{ product.created_at }}</div>
-                </div>
+      <!-- ==================== VARIANT TABLE (readonly) ==================== -->
+      <div class="card" v-if="(product.variants || []).length > 0">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-head-icon">📦</div>
+            <div>
+              <div class="card-title">Chi tiết biến thể</div>
+              <div class="card-subtitle">Thông tin giá, tồn kho của từng biến thể.</div>
+            </div>
+          </div>
+          <div class="variant-count-badge">{{ product.variants.length }} biến thể</div>
+        </div>
 
-                <div class="detail-item" v-if="product.updated_at">
-                  <div class="detail-label">Cập nhật lần cuối</div>
-                  <div class="detail-value">{{ product.updated_at }}</div>
-                </div>
+        <div class="card-body">
+          <div class="table-wrap">
+            <table class="variants">
+              <thead>
+                <tr>
+                  <th>Màu</th>
+                  <th>Size</th>
+                  <th>SKU</th>
+                  <th class="num">Giá</th>
+                  <th class="num">Giá KM</th>
+                  <th class="num">Tồn kho</th>
+                  <th class="center">Trạng thái</th>
+                </tr>
+              </thead>
+
+              <tbody>
+                <tr v-for="v in product.variants || []" :key="v.id">
+                  <td>
+                    <div class="color-cell">
+                      <span class="color-swatch sm" :style="{ background: COLOR_META[v.color] || '#94a3b8' }"></span>
+                      <span class="color-text">{{ v.color || "-" }}</span>
+                    </div>
+                  </td>
+
+                  <td>
+                    <span class="size-chip">{{ v.size || "-" }}</span>
+                  </td>
+
+                  <td>
+                    <span class="mono-sm">{{ v.sku || "-" }}</span>
+                  </td>
+
+                  <td class="num">
+                    {{ moneyVND(v.price) }}
+                  </td>
+
+                  <td class="num">
+                    <span v-if="v.sale_price !== null && v.sale_price !== undefined">
+                      {{ moneyVND(v.sale_price) }}
+                    </span>
+                    <span v-else class="text-muted">-</span>
+                  </td>
+
+                  <td class="num">
+                    <span class="stock-val" :class="{ 'stock-zero': Number(v.stock) <= 0 }">
+                      {{ v.stock ?? 0 }}
+                    </span>
+                  </td>
+
+                  <td class="center">
+                    <span class="badge-green" v-if="v.is_active">Hoạt động</span>
+                    <span class="badge-gray" v-else>Tạm tắt</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ==================== COLOR IMAGES (readonly) ==================== -->
+      <div class="card" v-if="activeColors.length > 0">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-head-icon">🖼️</div>
+            <div>
+              <div class="card-title">Ảnh theo màu</div>
+              <div class="card-subtitle">
+                Ảnh của từng màu trong sản phẩm.
+                <span class="badge">{{ activeColors.length }} màu</span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- RIGHT -->
-        <div class="right">
-          <div class="section">
-            <div class="section-head">
-              <div class="section-icon">🖼️</div>
-              <div class="section-title">Ảnh đại diện</div>
+        <div class="card-body color-imgs-body">
+          <div
+            class="color-imgs-block"
+            v-for="color in activeColors"
+            :key="color"
+          >
+            <!-- color header -->
+            <div class="color-imgs-header">
+              <div class="color-imgs-title">
+                <span class="color-swatch lg" :style="{ background: COLOR_META[color] }"></span>
+                <span class="color-name-lg">{{ color }}</span>
+                <span class="color-size-chips">
+                  <span
+                    class="size-chip xs"
+                    v-for="size in ALL_SIZES.filter(s => isChecked(color, s))"
+                    :key="size"
+                  >{{ size }}</span>
+                </span>
+              </div>
             </div>
 
-            <div class="section-body">
-              <div v-if="product.thumbnail" class="thumb-box">
-                <img :src="imgSrc(product.thumbnail)" :alt="product.name" />
+            <!-- image list -->
+            <div class="imgs-grid">
+              <div
+                class="img-row"
+                v-for="(img, j) in (colorImages[color] || [])"
+                :key="j"
+              >
+                <div class="img-preview" v-if="img.url">
+                  <img :src="imgSrc(img.url)" :alt="`${color} image ${j + 1}`" />
+                </div>
+                <div class="img-preview placeholder" v-else>Preview</div>
+
+                <div class="fieldx">
+                  <div class="labelx">URL / Path</div>
+                  <div class="control readonly tcontrol">{{ img.url || "-" }}</div>
+                </div>
+
+                <div class="fieldx sortx">
+                  <div class="labelx">Sort</div>
+                  <div class="control readonly tcontrol">{{ img.sort_order ?? 0 }}</div>
+                </div>
               </div>
-              <div v-else class="empty-thumb">
-                Không có ảnh đại diện
+
+              <!-- empty images for color -->
+              <div
+                v-if="!colorImages[color] || colorImages[color].length === 0"
+                class="imgs-empty"
+              >
+                Chưa có ảnh cho màu này.
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <div v-else class="section">
-        <div class="section-body empty-state">
-          Không có dữ liệu sản phẩm.
+      <!-- ==================== THÔNG TIN HỆ THỐNG ==================== -->
+      <div class="card" v-if="product.created_at || product.updated_at">
+        <div class="card-head">
+          <div class="card-head-left">
+            <div class="card-head-icon gray-icon">⚙️</div>
+            <div>
+              <div class="card-title">Thông tin hệ thống</div>
+            </div>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="form-grid">
+            <div class="field">
+              <div class="label">ID</div>
+              <div class="control readonly mono">#{{ product.id }}</div>
+            </div>
+            <div class="field" v-if="product.created_at">
+              <div class="label">Ngày tạo</div>
+              <div class="control readonly">{{ product.created_at }}</div>
+            </div>
+            <div class="field" v-if="product.updated_at">
+              <div class="label">Cập nhật lần cuối</div>
+              <div class="control readonly">{{ product.updated_at }}</div>
+            </div>
+          </div>
         </div>
       </div>
+
+    </div>
+
+    <!-- NOT FOUND -->
+    <div v-if="!loading && !error && !product" class="not-found">
+      <span class="material-symbols-outlined">search_off</span>
+      <div class="not-found-title">Không tìm thấy sản phẩm</div>
+      <button class="btn btn-ghost" type="button" @click="goBack">Quay lại danh sách</button>
     </div>
   </div>
 </template>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
+/* ===== PAGE ===== */
 .page {
   min-height: 100vh;
   padding: 24px 28px 40px;
@@ -316,26 +487,22 @@ const basicInfoItems = computed(() => {
   margin: 0 auto;
 }
 
-/* ── Topbar ── */
+/* ===== TOPBAR ===== */
 .topbar {
   max-width: 1360px;
   margin: 0 auto 20px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
   background: #fff;
   border: 1px solid #e8ecf4;
   border-radius: 14px;
   padding: 16px 20px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
-}
-
-.topbar-left {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 14px;
+  box-shadow: 0 1px 3px rgba(15,23,42,.05);
 }
+
+.topbar-left { display: flex; align-items: center; gap: 14px; }
 
 .topbar-left::before {
   content: "";
@@ -360,47 +527,76 @@ const basicInfoItems = computed(() => {
   font-size: 13px;
   color: #64748b;
   font-weight: 500;
+  max-width: 600px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.topbar-actions {
-  display: flex;
+.topbar-actions { display: flex; align-items: center; gap: 10px; }
+
+/* ===== BUTTONS ===== */
+.btn {
+  border-radius: 10px;
+  padding: 9px 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  border: none;
+  display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
+  transition: all .15s;
+  font-family: 'DM Sans', sans-serif;
+}
+.btn .material-symbols-outlined { font-size: 18px; }
+
+.btn-ghost {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  color: #475569;
+}
+.btn-ghost:hover {
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  color: #334155;
 }
 
-/* ── Alert ── */
+.btn-primary {
+  background: linear-gradient(135deg, #3b82f6, #4f46e5);
+  color: #fff;
+  box-shadow: 0 2px 8px rgba(59,130,246,.35);
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, #2563eb, #4338ca);
+  box-shadow: 0 4px 14px rgba(59,130,246,.4);
+  transform: translateY(-1px);
+}
+
+/* ===== ALERT ===== */
 .alert {
   max-width: 1360px;
   margin: 0 auto 16px;
-  border: 1px solid rgba(239, 68, 68, 0.2);
-  background: linear-gradient(135deg, rgba(239, 68, 68, 0.07), rgba(239, 68, 68, 0.03));
+  border: 1px solid rgba(239,68,68,.2);
+  background: linear-gradient(135deg, rgba(239,68,68,.07), rgba(239,68,68,.03));
   border-radius: 12px;
   padding: 12px 16px;
   color: #991b1b;
   display: flex;
   gap: 10px;
   align-items: flex-start;
+  font-size: 13px;
 }
-
 .alert::before {
   content: "⚠";
   font-size: 15px;
   flex-shrink: 0;
   margin-top: 1px;
 }
+.alert-title { font-weight: 700; }
+.alert-body { color: #b91c1c; margin-top: 2px; }
 
-.alert-title {
-  font-weight: 700;
-  font-size: 13px;
-}
-
-.alert-body {
-  margin-top: 2px;
-  font-size: 13px;
-  color: #b91c1c;
-}
-
-/* ── Loading ── */
+/* ===== LOADING ===== */
 .loading {
   max-width: 1360px;
   margin: 0 auto;
@@ -412,7 +608,6 @@ const basicInfoItems = computed(() => {
   gap: 10px;
   font-size: 14px;
 }
-
 .loading::before {
   content: "";
   width: 18px;
@@ -420,327 +615,509 @@ const basicInfoItems = computed(() => {
   border: 2px solid #e2e8f0;
   border-top-color: #3b82f6;
   border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+  animation: spin .8s linear infinite;
 }
 
-/* ── Layout ── */
-.layout.two-col {
-  display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 18px;
-}
-
-.left,
-.right {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-@media (max-width: 980px) {
-  .layout.two-col {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── Section ── */
-.section {
+/* ===== CARD ===== */
+.card {
   background: #fff;
   border: 1px solid #e8ecf4;
   border-radius: 16px;
   overflow: hidden;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 4px rgba(15, 23, 42, 0.04);
-  transition: box-shadow 0.2s;
+  margin-top: 16px;
+  box-shadow: 0 1px 4px rgba(15,23,42,.04);
+  transition: box-shadow .2s;
+  font-family: 'DM Sans', sans-serif;
 }
+.card:hover { box-shadow: 0 4px 16px rgba(15,23,42,.07); }
 
-.section:hover {
-  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.07);
-}
-
-.section-head {
-  padding: 16px 20px 14px;
+.card-head {
+  padding: 16px 20px;
   border-bottom: 1px solid #f1f4fa;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
+  background: #fafbfd;
 }
+.card-head-left { display: flex; align-items: center; gap: 12px; }
 
-.section-icon {
-  width: 34px;
-  height: 34px;
+.card-head-icon {
+  width: 36px; height: 36px;
   background: linear-gradient(135deg, #eff6ff, #dbeafe);
   border-radius: 10px;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  flex-shrink: 0;
+  display: grid; place-items: center;
+  font-size: 16px; flex-shrink: 0;
 }
+.gray-icon { background: linear-gradient(135deg, #f8fafc, #f1f5f9); }
 
-.section-title {
-  font-size: 14px;
+.card-title { font-size: 14px; font-weight: 700; color: #0d1117; }
+.card-subtitle { margin-top: 2px; font-size: 12px; color: #94a3b8; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+.card-body { padding: 20px; }
+
+/* ===== BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  padding: 1px 9px;
+  font-size: 11px;
   font-weight: 700;
-  color: #0f172a;
-  letter-spacing: -0.01em;
 }
 
-.section-body {
-  padding: 18px 20px 20px;
+.badge-green {
+  display: inline-flex;
+  align-items: center;
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
 }
 
-/* ── Detail Grid ── */
-.detail-grid {
+.badge-gray {
+  display: inline-flex;
+  align-items: center;
+  background: #f1f5f9;
+  color: #475569;
+  border: 1px solid #e2e8f0;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+.variant-count-badge {
+  background: #f0fdf4;
+  color: #16a34a;
+  border: 1px solid #bbf7d0;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+/* ===== FORM GRID ===== */
+.form-grid {
   display: grid;
-  gap: 16px 20px;
   grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
 }
 
-.detail-item {
+.field {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
+.field.full { grid-column: 1 / -1; }
 
-.detail-item.full {
-  grid-column: 1 / -1;
-}
-
-.detail-label {
+.label {
   font-size: 12.5px;
-  font-weight: 600;
+  font-weight: 700;
   color: #374151;
-  letter-spacing: 0.01em;
+  letter-spacing: .01em;
 }
 
-.detail-value {
-  border: 1.5px solid #dbe3ee;
+/* ===== READONLY CONTROL ===== */
+.control {
+  border: 1.5px solid #e2e8f0;
   border-radius: 10px;
-  padding: 11px 14px;
-  background: #ffffff;
+  padding: 10px 14px;
+  background: #fafbfd;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
-  font-size: 14px;
-  font-weight: 700;
-  line-height: 1.6;
-  min-height: 46px;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.5;
+  min-height: 42px;
   display: flex;
   align-items: center;
 }
-
-.detail-value.pre {
-  white-space: pre-wrap;
+.control.textarea {
+  min-height: 80px;
   align-items: flex-start;
-  line-height: 1.6;
 }
+.control.pre { white-space: pre-wrap; }
+.control.readonly { cursor: default; }
+.control.price { color: #059669; }
+.control.sale-price { color: #dc2626; }
 
-.mono {
-  font-family: "DM Sans", sans-serif;
-  font-size: 12.5px;
-}
 
+/* ===== CHIPS ===== */
 .chips-wrap {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
   align-items: center;
 }
-
 .chip {
-  background: #f1f5f9;
-  border: 1px solid #e2e8f0;
-  padding: 5px 10px;
-  border-radius: 999px;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 3px 10px;
+  border-radius: 20px;
   font-size: 12px;
   font-weight: 700;
-  color: #334155;
+  color: #2563eb;
 }
 
-@media (max-width: 980px) {
-  .detail-grid {
-    grid-template-columns: 1fr;
-  }
+@media (max-width: 700px) {
+  .form-grid { grid-template-columns: 1fr; }
 }
 
-/* ── Pills ── */
-.pill {
+/* ===== MATRIX ===== */
+.matrix-wrap {
+  overflow: auto;
+  border: 1.5px solid #e8ecf4;
+  border-radius: 12px;
+}
+
+.matrix {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 720px;
+}
+
+.matrix-corner {
+  background: #f5f7ff;
+  border-bottom: 1.5px solid #e8ecf4;
+  border-right: 1.5px solid #e8ecf4;
+  padding: 10px 14px;
+  position: relative;
+  min-width: 110px;
+}
+.axis-label {
+  position: absolute;
+  font-size: 10px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.color-axis { top: 10px; left: 10px; }
+.size-axis  { bottom: 10px; right: 10px; }
+
+.matrix-col-head {
+  background: #f5f7ff;
+  border-bottom: 1.5px solid #e8ecf4;
+  border-right: 1px solid #eef0f6;
+  padding: 8px 6px;
+  user-select: none;
+}
+
+.col-head-inner {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.size-label { font-size: 12px; font-weight: 700; color: #374151; }
+
+.matrix-row-head {
+  background: #fafbfd;
+  border-right: 1.5px solid #e8ecf4;
+  border-top: 1px solid #eef0f6;
+  padding: 6px 12px;
+  user-select: none;
+}
+
+.row-head-inner {
+  display: flex; align-items: center; gap: 8px;
+}
+
+.matrix-cell {
+  border-top: 1px solid #eef0f6;
+  border-right: 1px solid #eef0f6;
+  width: 48px; height: 44px;
+  text-align: center;
+  user-select: none;
+}
+.matrix-cell.checked { background: #eff6ff; }
+
+.cell-inner {
+  width: 100%; height: 100%;
+  display: grid; place-items: center;
+}
+.check-icon {
+  width: 22px; height: 22px;
+  background: #3b82f6;
+  color: #fff;
+  border-radius: 6px;
+  display: grid; place-items: center;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.matrix-cb {
+  accent-color: #3b82f6;
+  width: 14px; height: 14px;
+  flex-shrink: 0;
+}
+
+.color-swatch {
+  width: 16px; height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,.12);
+  flex-shrink: 0;
+  display: inline-block;
+}
+.color-swatch.sm { width: 12px; height: 12px; }
+.color-name { font-size: 12.5px; font-weight: 600; color: #374151; }
+
+.matrix-empty {
+  margin-top: 14px;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 12px;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 10px;
+}
+
+/* ===== VARIANT TABLE ===== */
+.table-wrap {
+  overflow: auto;
+  border: 1.5px solid #e8ecf4;
+  border-radius: 12px;
+}
+.variants {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 900px;
+}
+.variants thead th {
+  position: sticky; top: 0;
+  background: #f5f7ff;
+  border-bottom: 1.5px solid #e8ecf4;
+  padding: 10px 12px;
+  text-align: left;
+  vertical-align: middle;
+  font-size: 11px;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  font-weight: 700;
+}
+/* Hai class → specificity cao hơn .variants thead th, tránh text-align: left ghi đè */
+.variants thead th.num {
+  text-align: right;
+}
+.variants thead th.center {
+  text-align: center;
+}
+.variants tr:hover td { background: #fafbff; }
+.variants td {
+  border-top: 1px solid #f1f4fa;
+  padding: 10px 12px;
+  vertical-align: middle;
+  font-size: 13px;
+  color: #374151;
+}
+.num { text-align: right; }
+.center { text-align: center; }
+
+.color-cell { display: flex; align-items: center; gap: 7px; }
+.color-text { font-size: 13px; font-weight: 600; color: #374151; }
+
+.size-chip {
   display: inline-flex;
   align-items: center;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-weight: 800;
-  font-size: 12px;
-  border: 1px solid transparent;
-}
-
-.pill.ok {
-  background: #ecfdf5;
-  color: #047857;
-  border-color: #a7f3d0;
-}
-
-.pill.off {
+  justify-content: center;
   background: #f1f5f9;
-  color: #475569;
-  border-color: #e2e8f0;
+  color: #374151;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 2px 10px;
+  font-size: 12px;
+  font-weight: 700;
 }
 
-/* ── Thumb ── */
-.thumb-box {
+.stock-val { font-weight: 700; color: #0f172a; }
+.stock-zero { color: #dc2626; }
+
+.text-muted { color: #94a3b8; }
+
+/* ===== THUMB ===== */
+.thumb-area {
   width: 100%;
+}
+.thumb-box {
   border: 2px dashed #c7d4e8;
   border-radius: 14px;
   padding: 12px;
   background: #fafbfd;
 }
-
 .thumb-box img {
   width: 100%;
   border-radius: 12px;
   object-fit: cover;
-  max-height: 320px;
+  max-height: 400px;
   display: block;
 }
 
-.empty-thumb {
+.thumb-empty {
   border: 2px dashed #e2e8f0;
   border-radius: 14px;
-  min-height: 220px;
-  display: grid;
-  place-items: center;
-  color: #94a3b8;
-  font-weight: 600;
-  background: #fafbfd;
-}
-
-/* ── Variants ── */
-.variants {
+  min-height: 200px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 13px;
+  background: #fafbfd;
 }
+.thumb-empty .material-symbols-outlined { font-size: 44px; color: #cbd5e1; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
 
-.variant-card {
-  border: 1px solid #e8ecf4;
-  border-radius: 14px;
-  padding: 14px;
-  background: #fbfdff;
-}
-
-.variant-top {
+/* ===== COLOR IMAGES ===== */
+.color-imgs-body {
   display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.color-imgs-block {
+  border: 1.5px solid #e8ecf4;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.color-imgs-header {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
   gap: 12px;
-  align-items: flex-start;
+  padding: 12px 16px;
+  background: #fafbfd;
+  border-bottom: 1px solid #f1f4fa;
 }
 
-.variant-title {
-  font-size: 14px;
-  font-weight: 800;
-  color: #0f172a;
-}
-
-.variant-sub {
-  margin-top: 4px;
-  color: #64748b;
-}
-
-.variant-meta {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-top: 12px;
-}
-
-.meta-box {
-  border: 1px solid #e8ecf4;
-  border-radius: 12px;
-  background: #fff;
-  padding: 10px 12px;
-}
-
-.meta-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: #94a3b8;
-  font-weight: 700;
-}
-
-.meta-value {
-  margin-top: 4px;
-  font-size: 13px;
-  font-weight: 700;
-  color: #0f172a;
-}
-
-.variant-images {
+.color-imgs-title {
   display: flex;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 12px;
 }
 
-.variant-images img {
-  width: 76px;
-  height: 76px;
-  object-fit: cover;
-  border-radius: 12px;
-  border: 1px solid #e2e8f0;
-  background: #fff;
+.color-swatch.lg {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 2px solid rgba(0,0,0,.12);
+  flex-shrink: 0;
+  display: inline-block;
 }
 
-@media (max-width: 980px) {
-  .variant-meta {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ── Buttons ── */
-.btn {
-  border-radius: 10px;
-  padding: 9px 18px;
+.color-name-lg {
   font-size: 13.5px;
   font-weight: 700;
-  cursor: pointer;
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all 0.15s;
-  font-family: "DM Sans", sans-serif;
+  color: #0d1117;
 }
 
-.btn-ghost {
+.color-size-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.size-chip.xs {
+  padding: 1px 7px;
+  font-size: 11px;
+  border-radius: 5px;
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.imgs-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+}
+
+.img-row {
+  display: grid;
+  grid-template-columns: 90px 1fr 120px;
+  gap: 12px;
+  align-items: start;
+  padding: 12px;
+  border: 1.5px solid #e8ecf4;
+  border-radius: 12px;
   background: #fff;
-  border: 1.5px solid #e2e8f0;
-  color: #475569;
+  transition: .15s;
 }
+.img-row:hover { border-color: #c7d4e8; }
 
-.btn-ghost:hover {
-  background: #f8fafc;
-  border-color: #cbd5e1;
-  color: #334155;
-}
-
-.empty-state {
-  color: #64748b;
+.img-preview {
+  width: 90px; height: 90px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1.5px solid #e8ecf4;
+  display: grid; place-items: center;
+  background: #f5f7ff;
+  color: #94a3b8;
   font-weight: 600;
+  font-size: 11px;
+}
+.img-preview img { width: 100%; height: 100%; object-fit: cover; }
+
+.fieldx { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.labelx { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
+
+.tcontrol {
+  height: 40px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 13px;
+  font-family: 'DM Sans', sans-serif;
+  background: #fafbfd;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.tcontrol.readonly { cursor: default; }
+.sortx .tcontrol { justify-content: flex-end; text-align: right; }
+
+.imgs-empty {
+  text-align: center;
+  color: #94a3b8;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 16px;
+  border: 1.5px dashed #e2e8f0;
+  border-radius: 10px;
 }
 
+/* ===== NOT FOUND ===== */
+.not-found {
+  max-width: 1360px;
+  margin: 60px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #94a3b8;
+}
+.not-found .material-symbols-outlined { font-size: 60px; color: #cbd5e1; font-variation-settings: 'FILL' 0, 'wght' 300, 'GRAD' 0, 'opsz' 24; }
+.not-found-title { font-size: 18px; font-weight: 700; color: #475569; }
+
+/* ===== ANIMATIONS ===== */
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }
 }
 
-@media (max-width: 980px) {
-  .topbar {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .topbar-actions {
-    width: 100%;
-  }
+/* ===== RESPONSIVE ===== */
+@media (max-width: 700px) {
+  .topbar { flex-direction: column; align-items: flex-start; }
+  .topbar-actions { width: 100%; }
+  .btn { width: 100%; justify-content: center; }
+  .img-row { grid-template-columns: 80px 1fr; }
+  .sortx { display: none; }
 }
 </style>
