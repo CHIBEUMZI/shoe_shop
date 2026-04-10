@@ -41,6 +41,7 @@ class ProductResource extends JsonResource
                     return [
                         'id' => (int) $v->id,
                         'color' => $v->color,
+                        'color_hex' => $v->color_hex,
                         'size' => $v->size,
                         'sku' => $v->sku,
 

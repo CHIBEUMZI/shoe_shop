@@ -19,6 +19,7 @@ intents:
   - provide_info
   - affirm
   - deny
+  - occasion_search
 
 entities:
   - purpose
@@ -26,6 +27,38 @@ entities:
   - price_max
   - shoe_size
   - brand
+  - occasion
+  - color
+  - shoe_feature
+  - material
+
+synonyms:
+  valentine:
+    - ngày valentine
+    - lễ tình nhân
+    - tặng người yêu
+    - lãng mạn
+  interview:
+    - phỏng vấn
+    - xin việc
+    - công sở
+    - văn phòng
+    - đi làm
+  casual:
+    - dạo phố
+    - đi chơi
+    - cuối tuần
+    - thường ngày
+  travel:
+    - du lịch
+    - phượt
+    - đi xa
+    - resort
+  party:
+    - tiệc
+    - club
+    - bar
+    - party
 
 slots:
   brand:
@@ -60,6 +93,15 @@ slots:
         conditions:
           - active_loop: shoe_recommendation_form
             requested_slot: price_range
+  occasion:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: occasion
+      - type: from_text
+        conditions:
+          - active_loop: null
 
 forms:
   shoe_recommendation_form:
@@ -71,6 +113,8 @@ forms:
 responses:
   utter_greet:
     - text: "Chào bạn 👋, mình là trợ lý tư vấn giày. Bạn đang cần tìm giày để làm gì vậy (đi làm, chạy bộ, đá bóng...)?"
+  utter_occasion_search:
+    - text: "Mình hiểu rồi! Để mình tìm giày phù hợp cho bạn nhé..."
   utter_ask_purpose:
     - text: "Bạn đang cần giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi..."
   utter_ask_shoe_size:
@@ -98,6 +142,7 @@ actions:
   - action_search_products
   - action_list_brands
   - action_list_categories
+  - action_search_by_occasion
 
 session_config:
   session_expiration_time: 60

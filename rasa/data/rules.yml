@@ -70,3 +70,9 @@ rules:
     steps:
       - intent: ask_categories
       - action: action_list_categories
+                 
+  - rule: occasion search rule
+    steps:
+      - intent: occasion_search
+      - action: utter_occasion_search
+      - action: action_search_by_occasion

@@ -39,6 +39,7 @@ class ProductResource extends JsonResource
                 $this->variants->map(fn ($v) => [
                     'id' => $v->id,
                     'color' => $v->color,
+                    'color_hex' => $v->color_hex,
                     'size' => $v->size,
                     'price' => $v->price,
                     'sale_price' => $v->sale_price,

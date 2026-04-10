@@ -10,6 +10,44 @@ nlu:
       - chào shop
       - chào bạn
 
+  - intent: occasion_search
+    examples: |
+      - tôi muốn giày đi chơi valentine
+      - giày cho ngày lễ tình nhân
+      - giày đi hẹn hò lãng mạn
+      - giày màu đỏ cho valentine
+      - giày tặng người yêu ngày 14/2
+      - giày lãng mạn cho cặp đôi
+      - giày hồng đỏ đi chơi valentine
+      - tôi cần giày đi phỏng vấn
+      - giày mặc đồng phục công sở
+      - giày đi làm văn phòng
+      - giày nam đi phỏng vấn xin việc
+      - giày công sở thanh lịch
+      - giày đi họp quan trọng
+      - giày phỏng vấn nhà tuyển dụng
+      - giày đi dạo phố thôi
+      - giày casual đi chơi cuối tuần
+      - giày đi mall đi dạo
+      - giày năng động đi chơi
+      - giày mặc quần áo thường ngày
+      - giày đi cafe đi dạo
+      - giày cho chuyến du lịch
+      - giày đi du lịch thoải mái
+      - giày đi phượt đi bộ nhiều
+      - giày đi chơi xa cả ngày
+      - giày đi biển đi resort
+      - giày đi tiệc
+      - giày lên phố đi bar
+      - giày đi party cuối năm
+      - giày đi club đi bar
+      - giày nữ đi tiệc sang trọng
+      - giày chạy bộ mỗi sáng
+      - giày tập gym
+      - giày đá bóng cuối tuần
+      - giày chơi cầu lông
+      - giày tập yoga
+
   - intent: goodbye
     examples: |
       - tạm biệt
@@ -56,7 +94,6 @@ nlu:
       - giày để đi làm
       - giày đi học cho nam
       - mình muốn giày sneaker đi chơi
-      - giày tập gym
       - giày đi bộ hằng ngày
 
   - intent: provide_size

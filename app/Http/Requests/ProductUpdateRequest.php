@@ -46,6 +46,7 @@ class ProductUpdateRequest extends FormRequest
             'variants.*.id' => ['nullable', 'integer'],
 
             'variants.*.color' => ['required_with:variants', 'string', 'max:100'],
+            'variants.*.color_hex' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'variants.*.size'  => ['required_with:variants', 'string', 'max:50'],
             'variants.*.sku' => ['nullable', 'string', 'max:255', 'distinct'],
 

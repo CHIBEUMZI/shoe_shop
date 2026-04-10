@@ -111,6 +111,82 @@ class ProductController extends Controller
 
             ->when($request->filled('featured'), function ($q) use ($request) {
                 $q->where('is_featured', (int) $request->query('featured') === 1);
+            })
+
+            // =============================================
+            // STYLE FILTER - Hỗ trợ occasion-based search
+            // =============================================
+            ->when($request->filled('style'), function ($q) use ($request) {
+                $styles = (array) $request->query('style');
+                $styles = array_values(array_filter(array_map('strval', $styles)));
+                if (count($styles)) {
+                    $q->where(function ($qq) use ($styles) {
+                        foreach ($styles as $style) {
+                            $qq->orWhere(function ($q1) use ($style) {
+                                $style = trim(strtolower($style));
+                                
+                                // Map style keywords to categories/products
+                                $styleMap = [
+                                    'thời trang' => ['sneaker', 'fashion', 'thời trang'],
+                                    'sang trọng' => ['lịch sự', 'formal', 'premium'],
+                                    'lịch sự' => ['lịch sự', 'formal', 'công sở'],
+                                    'casual' => ['casual', 'thoải mái', 'đời thường'],
+                                    'thể thao' => ['running', 'sport', 'thể thao', 'gym'],
+                                    'lãng mạn' => ['romantic', 'valentine', 'đỏ', 'hồng'],
+                                    'năng động' => ['sporty', 'năng động', 'trẻ trung'],
+                                    'đi bộ' => ['walking', 'đi bộ', 'comfort'],
+                                ];
+                                
+                                $mappedTerms = $styleMap[$style] ?? [$style];
+                                
+                                $q1->where(function ($q2) use ($mappedTerms) {
+                                    foreach ($mappedTerms as $term) {
+                                        $q2->orWhere('name', 'like', "%{$term}%")
+                                           ->orWhere('short_description', 'like', "%{$term}%")
+                                           ->orWhere('description', 'like', "%{$term}%");
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
+            })
+
+            // =============================================
+            // OCCASION FILTER - Tìm giày theo dịp sử dụng
+            // =============================================
+            ->when($request->filled('occasion'), function ($q) use ($request) {
+                $occasions = (array) $request->query('occasion');
+                $occasions = array_values(array_filter(array_map('strval', $occasions)));
+                if (count($occasions)) {
+                    $q->where(function ($qq) use ($occasions) {
+                        foreach ($occasions as $occasion) {
+                            $qq->orWhere(function ($q1) use ($occasion) {
+                                $occasion = trim(strtolower($occasion));
+                                
+                                // Occasion to search terms mapping
+                                $occasionMap = [
+                                    'valentine' => ['valentine', 'lãng mạn', 'hồng', 'đỏ', 'tình nhân'],
+                                    'interview' => ['phỏng vấn', 'công sở', 'văn phòng', 'lịch sự', 'formal'],
+                                    'casual' => ['casual', 'dạo phố', 'đi chơi', 'thoải mái', 'cuối tuần'],
+                                    'travel' => ['du lịch', 'phượt', 'travel', 'đi bộ nhiều'],
+                                    'party' => ['party', 'tiệc', 'club', 'sang trọng', 'nổi bật'],
+                                    'sports' => ['thể thao', 'chạy bộ', 'gym', 'running', 'sport'],
+                                ];
+                                
+                                $terms = $occasionMap[$occasion] ?? [$occasion];
+                                
+                                $q1->where(function ($q2) use ($terms) {
+                                    foreach ($terms as $term) {
+                                        $q2->orWhere('name', 'like', "%{$term}%")
+                                           ->orWhere('short_description', 'like', "%{$term}%")
+                                           ->orWhere('description', 'like', "%{$term}%");
+                                    }
+                                });
+                            });
+                        }
+                    });
+                }
             });
 
         $sort = (string) $request->query('sort', 'latest');

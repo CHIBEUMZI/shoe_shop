@@ -60,6 +60,7 @@ class ProductController extends Controller
             foreach ($data['variants'] as $v) {
                 $variant = $product->variants()->create([
                     'color' => $v['color'],
+                    'color_hex' => $v['color_hex'] ?? null,
                     'size' => $v['size'],
                     'sku' => $v['sku'] ?? null,
                     'price' => $v['price'],
@@ -124,6 +125,7 @@ class ProductController extends Controller
 
                     $variant->update([
                         'color' => $v['color'],
+                        'color_hex' => array_key_exists('color_hex', $v) ? $v['color_hex'] : $variant->color_hex,
                         'size' => $v['size'],
                         'sku' => $v['sku'] ?? null,
                         'price' => $v['price'],
@@ -134,6 +136,7 @@ class ProductController extends Controller
                 } else {
                     $variant = $product->variants()->create([
                         'color' => $v['color'],
+                        'color_hex' => $v['color_hex'] ?? null,
                         'size' => $v['size'],
                         'sku' => $v['sku'] ?? null,
                         'price' => $v['price'],

@@ -33,6 +33,7 @@ class ProductStoreRequest extends FormRequest
             'variants' => ['required', 'array', 'min:1'],
 
             'variants.*.color' => ['required', 'string', 'max:100'],
+            'variants.*.color_hex' => ['nullable', 'string', 'regex:/^#[0-9A-Fa-f]{6}$/'],
             'variants.*.size' => ['required', 'string', 'max:50'],
             'variants.*.sku' => ['nullable', 'string', 'max:255', 'distinct'], 
             'variants.*.price' => ['required', 'integer', 'min:0'],

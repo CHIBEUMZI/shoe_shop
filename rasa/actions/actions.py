@@ -582,3 +582,211 @@ class ActionListCategories(Action):
         )
         dispatcher.utter_message(text="Bạn muốn chọn danh mục nào, hay mình tìm nhanh theo nhu cầu (chạy bộ/đi làm...)?")
         return []
+
+
+# =============================================
+# ACTION MỚI: Tìm giày theo dịp/cảnh (Occasion)
+# =============================================
+
+# Scene mapping: occasion -> search filters
+OCCASION_SCENE_MAP = {
+    # Valentine - Lãng mạn, ngày lễ tình nhân
+    "valentine": {
+        "description": "💕 Lãng mạn cho ngày Valentine",
+        "colors": ["đỏ", "hồng", "đen", "trắng"],
+        "style_keywords": ["thời trang", "sang trọng", "lịch sự", "nữ tính", "lãng mạn"],
+        # Giày limited / collab thường > 3tr; API occasion đã match mô tả "valentine", "tình nhân"
+        "price_range": "1-5m",
+        "advice": "💕 Đây là những mẫu giày lãng mạn, thời trang - phù hợp cho ngày Valentine và các dịp đặc biệt!",
+    },
+    
+    # Interview - Phỏng vấn, công sở
+    "interview": {
+        "description": "💼 Chuyên nghiệp cho phỏng vấn & công sở",
+        "colors": ["đen", "nâu", "xám", "trắng"],
+        "style_keywords": ["lịch sự", "formal", "công sở", "văn phòng", "chuyên nghiệp"],
+        "price_range": "1-2m",
+        "advice": "💼 Những mẫu giày thanh lịch, chuyên nghiệp - giúp bạn tự tin hơn trong buổi phỏng vấn!",
+    },
+    
+    # Casual - Dạo phố, đi chơi
+    "casual": {
+        "description": "🌟 Năng động cho dạo phố & đi chơi",
+        "colors": ["trắng", "đen", "xám", "be", "nâu nhạt"],
+        "style_keywords": ["casual", "thoải mái", "năng động", "trẻ trung", "dễ phối đồ"],
+        "price_range": "lt1m",
+        "advice": "🌟 Những mẫu giày casual, dễ phối đồ - hoàn hảo cho ngày nghỉ và cuối tuần!",
+    },
+    
+    # Travel - Du lịch, đi xa
+    "travel": {
+        "description": "✈️ Thoải mái cho du lịch & đi phượt",
+        "colors": ["trắng", "đen", "be", "xám", "nâu"],
+        "style_keywords": ["thoải mái", "nhẹ", "đi bộ", "du lịch", "phượt", " trekking"],
+        "price_range": "1-2m",
+        "advice": "✈️ Giày nhẹ, thoải mái, phù hợp đi bộ nhiều - lý tưởng cho chuyến đi xa!",
+    },
+    
+    # Party - Tiệc, club, bar
+    "party": {
+        "description": "✨ Sang trọng cho party & tiệc",
+        "colors": ["đen", "vàng", "bạc", "đỏ", "hồng"],
+        "style_keywords": ["thời trang", "sang trọng", "nổi bật", "party", "club"],
+        "price_range": "1-3m",
+        "advice": "✨ Những mẫu giày thời trang, nổi bật - giúp bạn tỏa sáng trong các bữa tiệc!",
+    },
+    
+    # Sports - Thể thao
+    "sports": {
+        "description": "🏃 Năng động cho thể thao & tập luyện",
+        "colors": ["đen", "trắng", "xám", "đỏ", "xanh"],
+        "style_keywords": ["thể thao", "chạy bộ", "gym", "đá bóng", "tập luyện"],
+        "price_range": "1-3m",
+        "advice": "🏃 Những mẫu giày thể thao chuyên dụng - hỗ trợ tốt cho việc tập luyện!",
+    },
+}
+
+
+def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
+    """Infer occasion type from raw user text."""
+    if not text:
+        return None
+    
+    t = (text or "").strip().lower()
+    
+    # Valentine patterns
+    valentine_keywords = ["valentine", "lễ tình nhân", "ngày 14/2", "tặng người yêu", 
+                         "ngày lễ", "hẹn hò", "lãng mạn", "romantic"]
+    if any(kw in t for kw in valentine_keywords):
+        return "valentine"
+    
+    # Interview patterns
+    interview_keywords = ["phỏng vấn", "xin việc", "công sở", "văn phòng", "đi làm", 
+                         "đi họp", "quan trọng", "formal"]
+    if any(kw in t for kw in interview_keywords):
+        return "interview"
+    
+    # Casual patterns
+    casual_keywords = ["dạo phố", "đi chơi", "cuối tuần", "thường ngày", "casual", 
+                       "đi cafe", "mall", "walking", "cafe"]
+    if any(kw in t for kw in casual_keywords):
+        return "casual"
+    
+    # Travel patterns
+    travel_keywords = ["du lịch", "phượt", "đi xa", "resort", "biển", "trekking", 
+                       "travel", "tour", "nghỉ mát"]
+    if any(kw in t for kw in travel_keywords):
+        return "travel"
+    
+    # Party patterns
+    party_keywords = ["tiệc", "party", "club", "bar", "đi bar", "đêm", "sang trọng"]
+    if any(kw in t for kw in party_keywords):
+        return "party"
+    
+    # Sports patterns (more specific)
+    sports_keywords = ["chạy bộ", "tập gym", "đá bóng", "thể thao", "running", 
+                      "yoga", "cardio", "cầu lông", "tennis"]
+    if any(kw in t for kw in sports_keywords):
+        return "sports"
+    
+    return None
+
+
+def _fetch_products_by_occasion(occasion: str, limit: int = 5) -> List[Dict[Text, Any]]:
+    """Fetch products filtered by occasion scene.
+
+    Dùng query `occasion` của API (tìm trong name / mô tả), không gộp style_keywords
+    thành một chuỗi `search` — backend chỉ LIKE nguyên chuỗi đó lên name/slug/sku nên
+    gần như không bao giờ khớp. Không gửi `color` theo từ tiếng Việt khi DB variant
+    đang là tiếng Anh (vd. White) sẽ loại nhầm giày Valentine edition.
+    """
+    api = os.getenv("SHOP_API_BASE_URL", "http://nginx").rstrip("/")
+
+    scene = OCCASION_SCENE_MAP.get(occasion, {})
+    price_range = scene.get("price_range", None)
+
+    params: Dict[str, Any] = {
+        "per_page": 12,
+        "sort": "popular",
+        "occasion": [occasion],
+    }
+
+    min_vnd, max_vnd = _parse_budget_text_to_range(price_range)
+    if min_vnd is not None:
+        params["price_min"] = min_vnd
+    if max_vnd is not None:
+        params["price_max"] = max_vnd
+
+    def _get_items(p: Dict[str, Any]) -> List[Dict[Text, Any]]:
+        res = requests.get(f"{api}/api/v1/products", params=p, timeout=8)
+        res.raise_for_status()
+        payload = res.json()
+        items = payload.get("data") if isinstance(payload, dict) else None
+        return items if isinstance(items, list) else []
+
+    try:
+        items = _get_items(params)
+        if not items:
+            p2 = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
+            items = _get_items(p2)
+        return items[:limit]
+    except Exception:
+        return []
+
+
+class ActionSearchByOccasion(Action):
+    """Action để tìm giày theo dịp/cảnh sử dụng (occasion/scenario)."""
+    
+    def name(self) -> Text:
+        return "action_search_by_occasion"
+    
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        text = (tracker.latest_message or {}).get("text") or ""
+        entities = (tracker.latest_message or {}).get("entities") or []
+        
+        # Get occasion from entity
+        ent_occasion = _get_entity(entities, "occasion")
+        
+        # Or infer from text
+        occasion = ent_occasion or _infer_occasion_from_text(text)
+        
+        if not occasion:
+            dispatcher.utter_message(
+                text="Mình chưa hiểu bạn muốn tìm giày cho dịp gì. Bạn có thể mô tả cụ thể hơn không (ví dụ: đi chơi Valentine, phỏng vấn, dạo phố...)?"
+            )
+            return []
+        
+        # Get scene info
+        scene = OCCASION_SCENE_MAP.get(occasion, {})
+        advice = scene.get("advice", "Mình đã tìm được một số mẫu giày phù hợp cho bạn:")
+        
+        # Fetch products by occasion
+        try:
+            items = _fetch_products_by_occasion(occasion, limit=5)
+        except Exception:
+            items = []
+        
+        if not items:
+            dispatcher.utter_message(
+                text=f"Mình chưa tìm được giày phù hợp cho dịp này 😢 Bạn thử mô tả cụ thể hơn (brand/size/tầm giá) nhé."
+            )
+            return []
+        
+        # Build response message
+        dispatcher.utter_message(
+            json_message={
+                "type": "products",
+                "title": advice,
+                "items": [_product_to_card(p) for p in items[:5]],
+            }
+        )
+        dispatcher.utter_message(
+            text="Bạn muốn mình lọc thêm theo brand, size hoặc tầm giá cụ thể không?"
+        )
+        
+        return []

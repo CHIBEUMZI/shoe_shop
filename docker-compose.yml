@@ -82,7 +82,7 @@ services:
       - ./rasa:/bot
     entrypoint: []
     command: >
-      rasa run --enable-api --cors "*" --port 5005
+      rasa run --enable-api --cors "*" --port 5005 --endpoints /bot/endpoints.yml
     environment:
       - RASA_PRO_LICENSE=${RASA_PRO_LICENSE}
     ports:

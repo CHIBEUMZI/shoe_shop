@@ -21,4 +21,5 @@ policies:
 - name: MemoizationPolicy
 - name: TEDPolicy
   epochs: 50
-assistant_id: 20260317-144651-chewy-coyote
+
+assistant_id: 20260408-155722-serious-denotation

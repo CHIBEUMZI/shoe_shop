@@ -1,5 +1,13 @@
 version: "3.1"
 
+rules:
+  # Rule for occasion_search - handles any occasion entity value
+  - rule: Handle occasion search intent
+    steps:
+      - intent: occasion_search
+      - action: utter_occasion_search
+      - action: action_search_by_occasion
+
 stories:
   - story: greet then ask product
     steps:
@@ -21,3 +29,9 @@ stories:
       - active_loop: shoe_recommendation_form
       - active_loop: null
       - action: action_suggest_shoes
+
+  - story: occasion search followed by product suggestion
+    steps:
+      - intent: occasion_search
+      - action: utter_occasion_search
+      - action: action_search_by_occasion
