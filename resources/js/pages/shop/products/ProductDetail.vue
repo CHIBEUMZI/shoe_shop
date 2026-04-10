@@ -716,6 +716,18 @@ const colors = computed(() => {
   return Array.from(set);
 });
 
+/** Mã hex từ API (theo tên màu) — khớp với admin khi tạo/sửa */
+const colorHexByLabel = computed(() => {
+  const map = {};
+  for (const v of variants.value) {
+    const c = v.color;
+    if (!c || map[c] !== undefined) continue;
+    const raw = String(v.color_hex || "").trim();
+    if (/^#[0-9A-Fa-f]{6}$/i.test(raw)) map[String(c)] = raw;
+  }
+  return map;
+});
+
 const canAddToCart = computed(() => {
   if (!product.value) return false;
   if (variants.value.length) return !!selectedVariant.value;
@@ -826,7 +838,11 @@ function safeHtml(html) {
 }
 
 function colorToCss(name) {
-  const s = String(name || "").trim().toLowerCase();
+  const key = String(name || "").trim();
+  const fromApi = colorHexByLabel.value[key];
+  if (fromApi) return fromApi;
+
+  const s = key.toLowerCase();
   const map = {
     black: "#0f172a",
     trắng: "#ffffff",

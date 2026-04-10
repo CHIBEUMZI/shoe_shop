@@ -61,13 +61,81 @@ const route  = useRoute();
 const notify = useAlert();
 const id     = computed(() => route.params.id);
 
-const ALL_COLORS = ["White", "Black", "Red", "Blue", "Green", "Yellow", "Grey", "Brown", "Cyan"];
-const ALL_SIZES  = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
-
-const COLOR_META = {
+const DEFAULT_COLORS = ["White", "Black", "Red", "Blue", "Green", "Yellow", "Grey", "Brown", "Cyan"];
+const DEFAULT_COLOR_META = {
   White: "#ffffff", Black: "#1a1a1a", Red: "#ef4444", Blue: "#3b82f6",
   Green: "#22c55e", Yellow: "#eab308", Grey: "#94a3b8", Brown: "#92400e", Cyan: "#06b6d4",
 };
+
+// Danh sách màu động: default + custom
+const customColors = ref([]); // [{name, hex}]
+const customColorInput = ref("");
+const customColorHex = ref("#808080");
+
+const allColors = computed(() => [...DEFAULT_COLORS, ...customColors.value.map(c => c.name)]);
+const COLOR_META = computed(() => {
+  const meta = { ...DEFAULT_COLOR_META };
+  customColors.value.forEach(c => { meta[c.name] = c.hex; });
+  return meta;
+});
+
+const ALL_COLORS = allColors; // alias cho tương thích
+const ALL_SIZES  = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+
+function addCustomColor() {
+  const name = customColorInput.value.trim();
+  if (!name) {
+    notify.warning("Vui lòng nhập tên màu.", { title: "Thiếu tên màu", duration: 2000 });
+    return;
+  }
+  if (DEFAULT_COLORS.includes(name) || customColors.value.some(c => c.name === name)) {
+    notify.warning(`Màu "${name}" đã tồn tại.`, { title: "Trùng màu", duration: 2000 });
+    return;
+  }
+  customColors.value = [...customColors.value, { name, hex: customColorHex.value }];
+  customColorInput.value = "";
+  customColorHex.value = "#808080";
+  notify.success(`Đã thêm màu "${name}".`, { title: "Thêm màu", duration: 1500 });
+}
+
+function removeCustomColor(name) {
+  customColors.value = customColors.value.filter(c => c.name !== name);
+  // Xóa khỏi matrix
+  const next = new Set();
+  matrixChecked.value.forEach(key => {
+    if (!key.startsWith(`${name}__`)) next.add(key);
+  });
+  matrixChecked.value = next;
+  notify.info(`Đã xóa màu "${name}".`, { title: "Xóa màu", duration: 1500 });
+}
+
+function getRandomColor() {
+  const hue = Math.floor(Math.random() * 360);
+  const sat = 50 + Math.floor(Math.random() * 40);
+  const light = 35 + Math.floor(Math.random() * 30);
+  customColorHex.value = hslToHex(hue, sat, light);
+}
+
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
+
+function generateColorFromName(name) {
+  // Generate a consistent color from a string
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  return hslToHex(hue, 55, 45);
+}
 
 const matrixChecked = ref(new Set());
 const variantCache  = ref(new Map());
@@ -125,9 +193,9 @@ function toggleRow(color) {
 }
 
 function toggleCol(size) {
-  const allOn = ALL_COLORS.every((c) => matrixChecked.value.has(matrixKey(c, size)));
+  const allOn = ALL_COLORS.value.every((c) => matrixChecked.value.has(matrixKey(c, size)));
   const next  = new Set(matrixChecked.value);
-  ALL_COLORS.forEach((c) => allOn ? next.delete(matrixKey(c, size)) : next.add(matrixKey(c, size)));
+  ALL_COLORS.value.forEach((c) => allOn ? next.delete(matrixKey(c, size)) : next.add(matrixKey(c, size)));
   matrixChecked.value = next;
 }
 
@@ -137,8 +205,8 @@ function rowState(color) {
 }
 
 function colState(size) {
-  const count = ALL_COLORS.filter((c) => matrixChecked.value.has(matrixKey(c, size))).length;
-  return { checked: count === ALL_COLORS.length, indeterminate: count > 0 && count < ALL_COLORS.length };
+  const count = ALL_COLORS.value.filter((c) => matrixChecked.value.has(matrixKey(c, size))).length;
+  return { checked: count === ALL_COLORS.value.length, indeterminate: count > 0 && count < ALL_COLORS.value.length };
 }
 
 /** ================= touched flags ================= */
@@ -163,7 +231,7 @@ watch(
   () => matrixChecked.value,
   (checked) => {
     const desired = [];
-    for (const color of ALL_COLORS)
+    for (const color of allColors.value)
       for (const size of ALL_SIZES)
         if (checked.has(matrixKey(color, size))) desired.push({ color, size });
 
@@ -269,7 +337,7 @@ const colorImages      = ref({});
 const colorImagesCache = ref({});
 
 const activeColors = computed(() =>
-  ALL_COLORS.filter((c) => ALL_SIZES.some((s) => matrixChecked.value.has(matrixKey(c, s))))
+  allColors.value.filter((c) => ALL_SIZES.some((s) => matrixChecked.value.has(matrixKey(c, s))))
 );
 
 watch(
@@ -399,6 +467,12 @@ function validate(v) {
   return errs;
 }
 
+function hexForVariantColor(colorName) {
+  const c = String(colorName || "").trim();
+  const hex = COLOR_META.value[c];
+  return typeof hex === "string" && /^#[0-9A-Fa-f]{6}$/i.test(hex) ? hex : "#94a3b8";
+}
+
 function buildPayload(v) {
   return {
     brand_id:          v.brand_id ? Number(v.brand_id) : null,
@@ -414,6 +488,7 @@ function buildPayload(v) {
     variants: (v.variants || []).map((it) => ({
       id:         it.id ?? null,
       color:      String(it.color).trim(),
+      color_hex:  hexForVariantColor(it.color),
       size:       String(it.size).trim(),
       sku:        String(it.sku || "").trim() || null,
       price:      Number(it.price),
@@ -434,6 +509,21 @@ async function loadProduct(productId) {
     const { data } = await productAdminService.show(productId);
     const p = data?.data ?? data;
 
+    // --- custom colors từ DB (color_hex) hoặc fallback hash tên ---
+    const byColor = new Map();
+    if (Array.isArray(p?.variants)) {
+      p.variants.forEach((v) => {
+        const c = v.color ?? "";
+        if (!c || DEFAULT_COLORS.includes(c) || byColor.has(c)) return;
+        const raw = String(v.color_hex || "").trim();
+        const hex = /^#[0-9A-Fa-f]{6}$/i.test(raw) ? raw : generateColorFromName(c);
+        byColor.set(c, hex);
+      });
+      customColors.value = Array.from(byColor.entries()).map(([name, hex]) => ({ name, hex }));
+    } else {
+      customColors.value = [];
+    }
+
     // --- khôi phục matrix từ variants đã lưu ---
     const nextChecked = new Set();
     const nextColorImages = {};
@@ -443,8 +533,8 @@ async function loadProduct(productId) {
           const color = it.color ?? "";
           const size  = it.size  ?? "";
 
-          // tick ô matrix
-          if (color && size && ALL_COLORS.includes(color) && ALL_SIZES.includes(size)) {
+          // tick ô matrix (hỗ trợ cả màu default và custom)
+          if (color && size && allColors.value.includes(color) && ALL_SIZES.includes(size)) {
             nextChecked.add(matrixKey(color, size));
           }
 
@@ -564,6 +654,56 @@ onMounted(async () => {
         </div>
 
         <div class="card-body">
+
+          <!-- ==================== CUSTOM COLOR INPUT ==================== -->
+          <div class="custom-color-section">
+            <div class="custom-color-header">
+              <span class="custom-color-icon">✨</span>
+              <span class="custom-color-title">Màu tùy chỉnh</span>
+            </div>
+            <div class="custom-color-form">
+              <input
+                v-model="customColorInput"
+                type="text"
+                class="custom-color-name-input"
+                placeholder="Tên màu (VD: Navy, Beige, Burgundy...)"
+                @keyup.enter="addCustomColor"
+              />
+              <div class="custom-color-hex-group">
+                <input
+                  v-model="customColorHex"
+                  type="color"
+                  class="custom-color-picker"
+                />
+                <input
+                  v-model="customColorHex"
+                  type="text"
+                  class="custom-color-hex-input"
+                  placeholder="#808080"
+                  maxlength="7"
+                />
+              </div>
+              <button type="button" class="btn-random-color" @click="getRandomColor" title="Random màu">
+                <span class="material-symbols-outlined">shuffle</span>
+              </button>
+              <button type="button" class="btn-add-color" @click="addCustomColor">
+                <span class="material-symbols-outlined">add</span>
+                Thêm
+              </button>
+            </div>
+            <!-- Custom colors list -->
+            <div class="custom-colors-list" v-if="customColors.length > 0">
+              <div class="custom-color-chip" v-for="c in customColors" :key="c.name">
+                <span class="chip-swatch" :style="{ background: c.hex }"></span>
+                <span class="chip-name">{{ c.name }}</span>
+                <button type="button" class="chip-remove" @click="removeCustomColor(c.name)">
+                  <span class="material-symbols-outlined">close</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ==================== MATRIX ==================== -->
           <div class="matrix-wrap">
             <table class="matrix">
               <thead>
@@ -1016,4 +1156,172 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
 .sortx .tcontrol { text-align: right; }
 .hintx { font-size: 11px; color: #3b82f6; font-weight: 600; }
 .img-actions { display: flex; justify-content: center; margin-top: 21px; }
+
+/* ===== CUSTOM COLOR SECTION ===== */
+.custom-color-section {
+  background: linear-gradient(135deg, #f0f7ff 0%, #fafbff 100%);
+  border: 1.5px solid #bfdbfe;
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 20px;
+}
+
+.custom-color-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.custom-color-icon { font-size: 18px; }
+
+.custom-color-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e40af;
+  text-transform: uppercase;
+  letter-spacing: .03em;
+}
+
+.custom-color-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.custom-color-name-input {
+  flex: 1;
+  min-width: 200px;
+  height: 38px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 500;
+  background: #fff;
+  transition: border-color .15s;
+}
+.custom-color-name-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, .15);
+}
+
+.custom-color-hex-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.custom-color-picker {
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 2px;
+  cursor: pointer;
+  background: #fff;
+}
+
+.custom-color-hex-input {
+  width: 80px;
+  height: 38px;
+  border: 1.5px solid #d1d5db;
+  border-radius: 8px;
+  padding: 0 10px;
+  font-size: 12px;
+  font-family: "DM Mono", monospace;
+  text-transform: uppercase;
+  background: #fff;
+}
+.custom-color-hex-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.btn-random-color {
+  width: 38px;
+  height: 38px;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 8px;
+  background: #fff;
+  color: #6b7280;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+}
+.btn-random-color:hover {
+  border-color: #8b5cf6;
+  color: #8b5cf6;
+  background: #f5f3ff;
+}
+
+.btn-add-color {
+  height: 38px;
+  padding: 0 16px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background .15s;
+}
+.btn-add-color:hover { background: #1d4ed8; }
+.btn-add-color .material-symbols-outlined { font-size: 18px; }
+
+.custom-colors-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #bfdbfe;
+}
+
+.custom-color-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 10px;
+  background: #fff;
+  border: 1.5px solid #e5e7eb;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.chip-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(0,0,0,.1);
+  flex-shrink: 0;
+}
+
+.chip-name { color: #374151; }
+
+.chip-remove {
+  width: 20px;
+  height: 20px;
+  border: none;
+  border-radius: 50%;
+  background: #fee2e2;
+  color: #dc2626;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background .15s;
+}
+.chip-remove:hover { background: #fecaca; }
+.chip-remove .material-symbols-outlined { font-size: 14px; }
 </style>

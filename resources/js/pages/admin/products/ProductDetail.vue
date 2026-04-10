@@ -48,7 +48,8 @@ function moneyVND(v) {
   }).format(Number(v || 0));
 }
 
-const COLOR_META = {
+const DEFAULT_COLORS = ["White", "Black", "Red", "Blue", "Green", "Yellow", "Grey", "Brown", "Cyan"];
+const DEFAULT_COLOR_META = {
   White:  "#ffffff",
   Black:  "#1a1a1a",
   Red:    "#ef4444",
@@ -60,8 +61,59 @@ const COLOR_META = {
   Cyan:   "#06b6d4",
 };
 
-const ALL_COLORS = ["White", "Black", "Red", "Blue", "Green", "Yellow", "Grey", "Brown", "Cyan"];
 const ALL_SIZES  = ["36", "37", "38", "39", "40", "41", "42", "43", "44", "45"];
+
+// Lấy tất cả màu từ product (custom colors)
+const productColors = computed(() => {
+  const colors = new Set();
+  if (product.value?.variants) {
+    product.value.variants.forEach(v => {
+      if (v.color) colors.add(v.color);
+    });
+  }
+  return Array.from(colors);
+});
+
+// Màu ô vuông: ưu tiên color_hex đã lưu, sau đó preset, cuối cùng hash tên
+const COLOR_META = computed(() => {
+  const meta = { ...DEFAULT_COLOR_META };
+  for (const v of product.value?.variants || []) {
+    const c = v.color;
+    if (!c) continue;
+    const raw = String(v.color_hex || "").trim();
+    if (/^#[0-9A-Fa-f]{6}$/i.test(raw)) {
+      meta[c] = raw;
+    }
+  }
+  productColors.value.forEach((c) => {
+    if (!meta[c]) meta[c] = generateColorFromName(c);
+  });
+  return meta;
+});
+
+const ALL_COLORS = computed(() => [...DEFAULT_COLORS, ...productColors.value.filter(c => !DEFAULT_COLORS.includes(c))]);
+
+function generateColorFromName(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash % 360);
+  const sat = 55;
+  const light = 45;
+  return hslToHex(hue, sat, light);
+}
+
+function hslToHex(h, s, l) {
+  s /= 100; l /= 100;
+  const a = s * Math.min(l, 1 - l);
+  const f = n => {
+    const k = (n + h / 30) % 12;
+    const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+    return Math.round(255 * color).toString(16).padStart(2, '0');
+  };
+  return `#${f(0)}${f(8)}${f(4)}`;
+}
 
 function matrixKey(color, size) {
   return `${color}__${size}`;
@@ -133,8 +185,8 @@ function rowState(color) {
 }
 
 function colState(size) {
-  const count = ALL_COLORS.filter((c) => matrixChecked.value.has(matrixKey(c, size))).length;
-  return { checked: count === ALL_COLORS.length, indeterminate: count > 0 && count < ALL_COLORS.length };
+  const count = ALL_COLORS.value.filter((c) => matrixChecked.value.has(matrixKey(c, size))).length;
+  return { checked: count === ALL_COLORS.value.length, indeterminate: count > 0 && count < ALL_COLORS.value.length };
 }
 </script>
 
