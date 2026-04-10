@@ -1,7 +1,7 @@
 <template>
   <section v-if="banners.length > 0" class="mb-12">
     <div
-      class="relative w-full aspect-[16/7] rounded-2xl overflow-hidden shadow-xl bg-slate-200 group"
+      class="relative w-full aspect-[16/7] rounded-lg overflow-hidden shadow-xl bg-slate-200 group"
     >
       <div class="relative w-full h-full">
       <transition name="fade" mode="out-in">
