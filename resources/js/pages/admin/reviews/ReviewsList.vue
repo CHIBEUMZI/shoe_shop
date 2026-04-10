@@ -1,7 +1,7 @@
 <template>
   <main class="space-y-6">
     <!-- Header Section -->
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section>
       <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <h1 class="text-2xl font-black tracking-tight text-slate-900">Quản lý đánh giá</h1>
@@ -35,7 +35,7 @@
     </section>
 
     <!-- Reviews Table Section -->
-    <section class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+    <section >
       <BaseTable
         :columns="columns"
         :items="reviews"
@@ -71,7 +71,7 @@
 
             <button
               type="button"
-              class="h-10 shrink-0 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+              class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
               @click="resetFilters"
             >
               Làm mới

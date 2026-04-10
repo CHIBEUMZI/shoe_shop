@@ -11,7 +11,7 @@
               :value="internalSearch"
               @input="onSearchInput"
               type="text"
-              class="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm outline-none ring-0 focus:border-slate-300 focus:ring-2 focus:ring-slate-100"
+              class="w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 pr-10 text-sm outline-none ring-0 focus:border-slate-300 focus:ring-2 focus:ring-slate-100"
               :placeholder="searchPlaceholder"
             />
             <button
@@ -41,7 +41,7 @@
           <slot name="bulk-actions" :selected-ids="selectedIds" :selected-items="selectedItems" />
           <button
             type="button"
-            class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
+            class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm hover:bg-slate-50"
             @click="clearSelection"
           >
             Clear
@@ -64,7 +64,7 @@
     </div>
 
     <!-- Table -->
-    <div class="mt-4 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+    <div class="mt-4 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
       <div class="overflow-x-auto">
         <table class="min-w-full text-left text-sm">
           <thead class="sticky top-0 z-10 bg-slate-50">

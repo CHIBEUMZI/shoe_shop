@@ -283,9 +283,16 @@ class DashboardController extends Controller
         return $chart;
     }
 
+    /**
+     * Lấy danh sách top sản phẩm bán chạy kèm theo size và màu phổ biến nhất.
+     *
+     * @param Carbon $startDate Ngày bắt đầu thống kê
+     * @param Carbon $endDate Ngày kết thúc thống kê
+     * @return array Danh sách sản phẩm với thông tin size và màu bán chạy
+     */
     protected function getTopProducts($startDate, $endDate): array
     {
-        $rows = DB::table('order_items')
+        $productRows = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->join('products', 'products.id', '=', 'order_items.product_id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
@@ -300,14 +307,56 @@ class DashboardController extends Controller
                 DB::raw('SUM(order_items.quantity) as sold'),
             ]);
 
-        return $rows->map(function ($item) {
-            return [
-                'id' => (int) $item->id,
-                'name' => $item->name,
-                'sold' => (int) $item->sold,
-                'thumbnail' => $item->thumbnail,
+        $result = [];
+
+        foreach ($productRows as $product) {
+            $topSizes = DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->where('order_items.product_id', $product->id)
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->whereIn('orders.status', $this->successOrderStatuses)
+                ->whereNotNull('order_items.size')
+                ->groupBy('order_items.size')
+                ->select('order_items.size', DB::raw('SUM(order_items.quantity) as total_sold'))
+                ->orderByDesc('total_sold')
+                ->limit(3)
+                ->get()
+                ->map(fn($item) => [
+                    'size' => $item->size,
+                    'sold' => (int) $item->total_sold,
+                ])
+                ->values()
+                ->all();
+
+            $topColors = DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->where('order_items.product_id', $product->id)
+                ->whereBetween('orders.created_at', [$startDate, $endDate])
+                ->whereIn('orders.status', $this->successOrderStatuses)
+                ->whereNotNull('order_items.color')
+                ->groupBy('order_items.color')
+                ->select('order_items.color', DB::raw('SUM(order_items.quantity) as total_sold'))
+                ->orderByDesc('total_sold')
+                ->limit(3)
+                ->get()
+                ->map(fn($item) => [
+                    'color' => $item->color,
+                    'sold' => (int) $item->total_sold,
+                ])
+                ->values()
+                ->all();
+
+            $result[] = [
+                'id' => (int) $product->id,
+                'name' => $product->name,
+                'sold' => (int) $product->sold,
+                'thumbnail' => $product->thumbnail,
+                'top_sizes' => $topSizes,
+                'top_colors' => $topColors,
             ];
-        })->values()->all();
+        }
+
+        return $result;
     }
 
     protected function getRecentOrders(): array

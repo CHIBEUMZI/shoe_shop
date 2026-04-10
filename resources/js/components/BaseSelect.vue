@@ -14,7 +14,7 @@
         type="button"
         :disabled="disabled"
         :class="[
-          'flex w-full items-center justify-between rounded-xl border bg-white px-4 text-left text-sm font-medium shadow-sm outline-none transition-all duration-200',
+          'flex w-full items-center justify-between rounded-lg border bg-white px-4 text-left text-sm font-medium shadow-sm outline-none transition-all duration-200',
           'focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400',
           error
             ? 'border-rose-300 text-rose-600 focus:border-rose-400 focus:ring-rose-100'
@@ -63,7 +63,7 @@
       >
         <div
           v-if="isOpen && !disabled"
-          class="absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-slate-200 bg-white p-1 shadow-lg"
+          class="absolute z-50 mt-1 w-full overflow-hidden rounded-lg border border-slate-200 bg-white p-1 shadow-lg"
         >
           <button
             v-if="clearable && modelValue !== '' && modelValue !== null && modelValue !== undefined"

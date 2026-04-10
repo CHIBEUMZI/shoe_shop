@@ -862,7 +862,6 @@ function sectionGridClass(sectionKey) {
   display: flex;
   align-items: center;
   gap: 12px;
-  /* giữ bo góc trên khi section không còn overflow: hidden */
   border-radius: 16px 16px 0 0;
   background: #fff;
 }

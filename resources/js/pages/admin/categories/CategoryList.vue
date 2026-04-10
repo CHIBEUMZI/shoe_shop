@@ -256,7 +256,7 @@ function statusLabel(s: any) {
 
       <div class="flex flex-wrap gap-2">
         <button
-          class="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           @click="goCreate"
         >
           + Tạo danh mục
@@ -306,7 +306,7 @@ function statusLabel(s: any) {
           />
 
           <button
-            class="h-10 shrink-0 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
+            class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
             :disabled="loading"
             @click="resetFilters"
           >

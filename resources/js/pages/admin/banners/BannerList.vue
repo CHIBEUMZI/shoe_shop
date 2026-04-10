@@ -13,7 +13,7 @@
 
       <router-link
         to="/admin/banners/create"
-        class="rounded-xl bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
       >
         + Tạo banner
       </router-link>
@@ -50,7 +50,7 @@
 
         <button
           type="button"
-          class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
+          class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
           @click="resetFilters"
         >
           Làm mới

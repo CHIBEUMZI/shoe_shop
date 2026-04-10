@@ -22,7 +22,7 @@
 
         <button
           type="button"
-          class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+          class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
           :disabled="loading"
           @click="fetchDashboard"
         >
@@ -41,20 +41,18 @@
         <div
           v-for="n in 4"
           :key="'card-skeleton-' + n"
-          class="h-32 animate-pulse rounded-3xl border border-slate-200 bg-white"
+          class="h-32 animate-pulse rounded-lg border border-slate-200 bg-white"
         ></div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 2xl:grid-cols-12">
-        <div class="h-96 animate-pulse rounded-3xl border border-slate-200 bg-white 2xl:col-span-7"></div>
-        <div class="h-96 animate-pulse rounded-3xl border border-slate-200 bg-white 2xl:col-span-5"></div>
+      <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div class="h-96 animate-pulse rounded-lg border border-slate-200 bg-white lg:col-span-7"></div>
+        <div class="h-96 animate-pulse rounded-lg border border-slate-200 bg-white lg:col-span-5"></div>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 xl:grid-cols-12">
-        <div class="h-96 animate-pulse rounded-3xl border border-slate-200 bg-white xl:col-span-4"></div>
-        <div class="h-96 animate-pulse rounded-3xl border border-slate-200 bg-white xl:col-span-5"></div>
-        <div class="h-96 animate-pulse rounded-3xl border border-slate-200 bg-white xl:col-span-3"></div>
-      </div>
+      <div class="h-48 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
+      <div class="h-80 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
+      <div class="h-48 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
     </section>
 
     <!-- Error -->
@@ -137,10 +135,9 @@
         </article>
       </section>
 
-      <!-- Row 1 -->
-      <section class="mt-6 grid grid-cols-1 gap-6 2xl:grid-cols-12">
+      <section class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <!-- Revenue chart -->
-        <article class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm 2xl:col-span-7">
+        <article class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-7">
           <!-- Background decoration -->
           <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-50 to-transparent opacity-60"></div>
 
@@ -251,7 +248,7 @@
         </article>
 
         <!-- Order status -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm 2xl:col-span-5">
+        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
           <div class="mb-5">
             <h2 class="text-lg font-extrabold text-slate-900">Trạng thái đơn hàng</h2>
             <p class="text-sm text-slate-500">Phân bố đơn hàng hiện tại</p>
@@ -291,53 +288,65 @@
           </div>
         </article>
       </section>
-      <!-- Row 2 -->
-      <section class="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-12">
+      <!-- Row 2: Top products (1 hàng) -->
+      <section class="mt-6 grid grid-cols-1 gap-6">
         <!-- Top products -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-4">
+        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="mb-5">
             <h2 class="text-lg font-extrabold text-slate-900">Top sản phẩm bán chạy</h2>
             <p class="text-sm text-slate-500">Sản phẩm có doanh số tốt nhất</p>
           </div>
 
           <template v-if="dashboard.top_products.length">
-            <div class="space-y-4">
+            <div class="space-y-3">
               <div
                 v-for="(product, index) in dashboard.top_products"
                 :key="product.id"
-                class="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 transition hover:bg-slate-50"
+                class="flex items-start gap-4 border border-slate-100 p-4 transition hover:bg-slate-50"
               >
-                <div class="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-slate-100">
+                <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-slate-100">
                   <img
                     v-if="product.thumbnail"
                     :src="buildImageUrl(product.thumbnail)"
                     :alt="product.name"
                     class="h-full w-full object-cover"
                   />
-                  <span v-else class="text-xs font-bold text-slate-400">IMG</span>
+                  <span v-else class="text-sm font-bold text-slate-400">IMG</span>
                 </div>
 
                 <div class="min-w-0 flex-1">
                   <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0">
-                      <p class="truncate text-sm font-bold text-slate-900">
+                    <div class="min-w-0 flex-1">
+                      <p class="text-sm font-bold text-slate-900">
                         {{ index + 1 }}. {{ product.name }}
                       </p>
                       <p class="mt-1 text-xs text-slate-500">
                         Đã bán {{ product.sold }} sản phẩm
                       </p>
                     </div>
-
-                    <span class="rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600">
+                    <span class="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600">
                       #{{ index + 1 }}
                     </span>
                   </div>
 
-                  <div class="mt-3 h-2 overflow-hidden rounded-full bg-slate-200">
-                    <div
-                      class="h-full rounded-full bg-gradient-to-r from-amber-400 to-orange-500"
-                      :style="{ width: `${getTopProductPercent(product.sold)}%` }"
-                    ></div>
+                  <!-- Top sizes và màu -->
+                  <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <span
+                      v-for="(sizeItem, sIdx) in product.top_sizes"
+                      :key="'size-' + product.id + '-' + sIdx"
+                      class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600"
+                    >
+                      {{ sizeItem.size }}
+                    </span>
+                    <span
+                      v-for="(colorItem, cIdx) in product.top_colors"
+                      :key="'color-' + product.id + '-' + cIdx"
+                      class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
+                      :class="getColorClass(colorItem.color)"
+                    >
+                      <span class="h-2.5 w-2.5 rounded-full border border-black/10" :style="{ backgroundColor: getColorHex(colorItem.color) }"></span>
+                      {{ colorItem.color }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -346,14 +355,16 @@
 
           <div
             v-else
-            class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có dữ liệu sản phẩm bán chạy
           </div>
         </article>
+      </section>
 
-        <!-- Recent orders -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-8">
+      <!-- Row 3: Đơn hàng mới -->
+      <section class="mt-6">
+        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="mb-5">
             <h2 class="text-lg font-extrabold text-slate-900">Đơn hàng mới</h2>
             <p class="text-sm text-slate-500">Danh sách đơn hàng gần đây</p>
@@ -361,7 +372,7 @@
 
           <template v-if="dashboard.recent_orders.length">
             <div class="overflow-x-auto">
-              <table class="min-w-full border-separate border-spacing-y-2">
+              <table class="min-w-full">
                 <thead>
                   <tr>
                     <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-slate-400">
@@ -383,9 +394,9 @@
                   <tr
                     v-for="order in dashboard.recent_orders"
                     :key="order.id"
-                    class="rounded-2xl bg-slate-50"
+                    class="bg-slate-50"
                   >
-                    <td class="whitespace-nowrap rounded-l-2xl px-3 py-3 text-sm font-bold text-slate-900">
+                    <td class="whitespace-nowrap px-3 py-3 text-sm font-bold text-slate-900">
                       #{{ order.code }}
                     </td>
                     <td class="px-3 py-3 text-sm text-slate-700">
@@ -395,7 +406,7 @@
                     <td class="whitespace-nowrap px-3 py-3 text-sm font-semibold text-slate-800">
                       {{ formatCurrency(order.total_amount) }}
                     </td>
-                    <td class="rounded-r-2xl px-3 py-3">
+                    <td class="px-3 py-3">
                       <span
                         class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
                         :class="getOrderStatusClass(order.status)"
@@ -411,14 +422,16 @@
 
           <div
             v-else
-            class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có đơn hàng gần đây
           </div>
         </article>
+      </section>
 
-        <!-- New customers -->
-        <article class="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm xl:col-span-12">
+      <!-- Row 4: Khách hàng mới -->
+      <section class="mt-6">
+        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
           <div class="mb-5">
             <h2 class="text-lg font-extrabold text-slate-900">Khách hàng mới</h2>
             <p class="text-sm text-slate-500">Người dùng đăng ký gần đây</p>
@@ -429,7 +442,7 @@
               <div
                 v-for="customer in dashboard.new_customers"
                 :key="customer.id"
-                class="flex items-center gap-3 rounded-2xl border border-slate-100 p-3 transition hover:bg-slate-50"
+                class="flex items-center gap-3 border border-slate-100 p-3 transition hover:bg-slate-50"
               >
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100">
                   <img
@@ -455,7 +468,7 @@
 
           <div
             v-else
-            class="flex h-48 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có khách hàng mới
           </div>
@@ -617,6 +630,65 @@ function getStatusPercent(count) {
 
 function getTopProductPercent(sold) {
   return ((Number(sold || 0) / maxTopSold.value) * 100).toFixed(1);
+}
+
+// Bảng ánh xạ tên màu -> mã hex
+const colorMap = {
+  'đen': '#1f2937', 'đỏ': '#ef4444', 'xanh lá': '#22c55e', 'xanh dương': '#3b82f6',
+  'vàng': '#eab308', 'trắng': '#f9fafb', 'nâu': '#92400e', 'xám': '#6b7280',
+  'tím': '#a855f7', 'cam': '#f97316', 'hồng': '#ec4899', 'be': '#d6c5b3',
+  'bạc': '#9ca3af', 'vàng gold': '#d4af37', 'xanh navy': '#1e3a5f',
+  'black': '#1f2937', 'red': '#ef4444', 'green': '#22c55e', 'blue': '#3b82f6',
+  'yellow': '#eab308', 'white': '#f9fafb', 'brown': '#92400e', 'gray': '#6b7280',
+  'grey': '#6b7280', 'purple': '#a855f7', 'orange': '#f97316', 'pink': '#ec4899',
+  'navy': '#1e3a5f', 'khaki': '#c3b091', 'olive': '#808000', 'teal': '#14b8a6',
+  'maroon': '#800000', 'wine': '#722f37', 'cream': '#fffdd0', 'tan': '#d2b48c',
+  'camel': '#c19a6b', 'burgundy': '#800020', 'mustard': '#ffdb58', 'coral': '#ff7f50',
+  'lavender': '#e6e6fa', 'mint': '#98ff98', 'peach': '#ffcba4', 'sky': '#87ceeb',
+  'lime': '#32cd32', 'gold': '#ffd700', 'silver': '#c0c0c0', 'bronze': '#cd7f32',
+  'champagne': '#f7e7ce', 'emerald': '#50c878', 'ruby': '#e0115f', 'sapphire': '#0f52ba',
+};
+
+/**
+ * Lấy mã hex từ tên màu
+ * @param {string} colorName Tên màu
+ * @returns {string} Mã hex hoặc màu xám mặc định
+ */
+function getColorHex(colorName) {
+  if (!colorName) return '#9ca3af';
+  const normalized = colorName.toLowerCase().trim();
+  return colorMap[normalized] || '#9ca3af';
+}
+
+/**
+ * Lấy class CSS cho badge màu dựa trên tên màu
+ * @param {string} colorName Tên màu
+ * @returns {object} Object chứa các class CSS Tailwind
+ */
+function getColorClass(colorName) {
+  if (!colorName) return 'bg-slate-100 text-slate-600';
+  const normalized = colorName.toLowerCase().trim();
+
+  // Map tên màu -> cặp bg/text color tương ứng
+  const colorClasses = {
+    'đen': 'bg-slate-800 text-white', 'black': 'bg-slate-800 text-white',
+    'đỏ': 'bg-red-100 text-red-700', 'red': 'bg-red-100 text-red-700',
+    'xanh lá': 'bg-green-100 text-green-700', 'green': 'bg-green-100 text-green-700',
+    'xanh dương': 'bg-blue-100 text-blue-700', 'blue': 'bg-blue-100 text-blue-700',
+    'vàng': 'bg-yellow-100 text-yellow-700', 'yellow': 'bg-yellow-100 text-yellow-700',
+    'trắng': 'bg-white text-slate-700 border border-slate-200', 'white': 'bg-white text-slate-700 border border-slate-200',
+    'nâu': 'bg-amber-100 text-amber-800', 'brown': 'bg-amber-100 text-amber-800',
+    'xám': 'bg-gray-100 text-gray-700', 'gray': 'bg-gray-100 text-gray-700', 'grey': 'bg-gray-100 text-gray-700',
+    'tím': 'bg-purple-100 text-purple-700', 'purple': 'bg-purple-100 text-purple-700',
+    'cam': 'bg-orange-100 text-orange-700', 'orange': 'bg-orange-100 text-orange-700',
+    'hồng': 'bg-pink-100 text-pink-700', 'pink': 'bg-pink-100 text-pink-700',
+    'xanh navy': 'bg-slate-700 text-white', 'navy': 'bg-slate-700 text-white',
+    'be': 'bg-orange-50 text-orange-800',
+    'bạc': 'bg-slate-100 text-slate-600', 'silver': 'bg-slate-100 text-slate-600',
+    'vàng gold': 'bg-yellow-100 text-yellow-800', 'gold': 'bg-yellow-100 text-yellow-800',
+  };
+
+  return colorClasses[normalized] || 'bg-slate-100 text-slate-700';
 }
 
 function getInitials(name) {
