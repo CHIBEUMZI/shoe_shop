@@ -38,6 +38,10 @@ class OrderResource extends JsonResource
 
             'paid_at' => optional($this->paid_at)?->toDateTimeString(),
             'stock_deducted_at' => optional($this->stock_deducted_at)?->toDateTimeString(),
+            'cancellation_requested_at' => optional($this->cancellation_requested_at)?->toDateTimeString(),
+            'cancellation_reason' => $this->cancellation_reason,
+            'cancelled_at' => optional($this->cancelled_at)?->toDateTimeString(),
+            'admin_cancellation_reason' => $this->admin_cancellation_reason,
 
             'items' => OrderItemResource::collection($this->whenLoaded('items')),
             'payments' => PaymentResource::collection($this->whenLoaded('payments')),

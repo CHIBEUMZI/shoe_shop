@@ -182,6 +182,23 @@
                 </button>
 
                 <button
+                  v-if="canCancel(order)"
+                  type="button"
+                  class="rounded-xl border border-red-200 dark:border-red-800 px-4 py-2.5 text-sm font-semibold text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition"
+                  @click="openCancelModal(order)"
+                >
+                  Yêu cầu hủy
+                </button>
+
+                <span
+                  v-else-if="order.cancellation_requested_at"
+                  class="inline-flex items-center gap-1.5 rounded-xl border border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-900/20 px-4 py-2.5 text-sm font-semibold text-amber-700 dark:text-amber-400"
+                >
+                  <span class="material-symbols-outlined text-base">hourglass_empty</span>
+                  Chờ xử lý hủy
+                </span>
+
+                <button
                   v-if="canRepay(order)"
                   type="button"
                   class="rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-white hover:bg-primary/90 transition disabled:opacity-50"
@@ -350,6 +367,68 @@
       </template>
     </div>
   </main>
+
+  <!-- Cancel Order Modal -->
+  <Teleport to="body">
+    <div
+      v-if="showCancelModal"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      @click.self="closeCancelModal"
+    >
+      <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Yêu cầu hủy đơn hàng
+          </h2>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
+            Vui lòng cho chúng tôi biết lý do bạn muốn hủy đơn hàng {{ cancelOrder?.code || '' }}
+          </p>
+        </div>
+
+        <div class="px-6 py-5 space-y-4">
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Lý do hủy đơn hàng <span class="text-red-500">*</span>
+            </label>
+            <textarea
+              v-model="cancelReason"
+              rows="4"
+              placeholder="Nhập lý do bạn muốn hủy đơn hàng..."
+              class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 resize-none"
+            ></textarea>
+            <p v-if="cancelReasonError" class="mt-1.5 text-sm text-red-600">
+              {{ cancelReasonError }}
+            </p>
+          </div>
+
+          <div
+            v-if="cancelError"
+            class="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+          >
+            {{ cancelError }}
+          </div>
+        </div>
+
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
+          <button
+            type="button"
+            class="rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
+            @click="closeCancelModal"
+          >
+            Đóng
+          </button>
+          <button
+            type="button"
+            class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
+            :disabled="cancelLoading"
+            @click="submitCancelRequest"
+          >
+            {{ cancelLoading ? 'Đang gửi...' : 'Gửi yêu cầu hủy' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </Teleport>
 </template>
 
 <script setup>
@@ -374,6 +453,14 @@ const expandedIds = ref({});
 const repayLoadingId = ref(null);
 const actionErrorId = ref(null);
 const actionError = ref("");
+
+// Cancel order modal
+const showCancelModal = ref(false);
+const cancelOrder = ref(null);
+const cancelReason = ref("");
+const cancelReasonError = ref("");
+const cancelLoading = ref(false);
+const cancelError = ref("");
 
 const meta = ref({
   current_page: 1,
@@ -599,6 +686,84 @@ function canRepay(order) {
     ["vnpay", "momo"].includes(String(order.payment_method || "")) &&
     ["pending", "unpaid", "failed"].includes(String(order.payment_status || ""))
   );
+}
+
+// Kiểm tra đơn hàng có thể yêu cầu hủy hay không
+function canCancel(order) {
+  const status = String(order.status || "");
+  const cancellableStatuses = ["pending", "confirmed", "processing"];
+  return (
+    cancellableStatuses.includes(status) &&
+    !order.cancellation_requested_at &&
+    status !== "cancelled" &&
+    status !== "shipping" &&
+    status !== "completed"
+  );
+}
+
+// Mở modal hủy đơn
+function openCancelModal(order) {
+  cancelOrder.value = order;
+  cancelReason.value = "";
+  cancelReasonError.value = "";
+  cancelError.value = "";
+  showCancelModal.value = true;
+}
+
+// Đóng modal hủy đơn
+function closeCancelModal() {
+  showCancelModal.value = false;
+  cancelOrder.value = null;
+  cancelReason.value = "";
+  cancelReasonError.value = "";
+  cancelError.value = "";
+}
+
+// Gửi yêu cầu hủy đơn
+async function submitCancelRequest() {
+  cancelReasonError.value = "";
+  cancelError.value = "";
+
+  if (!cancelReason.value.trim()) {
+    cancelReasonError.value = "Vui lòng nhập lý do hủy đơn hàng.";
+    return;
+  }
+
+  if (cancelReason.value.trim().length > 500) {
+    cancelReasonError.value = "Lý do hủy không được vượt quá 500 ký tự.";
+    return;
+  }
+
+  cancelLoading.value = true;
+
+  try {
+    await orderService.requestCancellation(cancelOrder.value.id, cancelReason.value.trim());
+
+    // Cập nhật lại thông tin đơn hàng trong danh sách
+    const idx = orders.value.findIndex((o) => o.id === cancelOrder.value.id);
+    if (idx !== -1) {
+      orders.value[idx] = {
+        ...orders.value[idx],
+        cancellation_requested_at: new Date().toISOString(),
+        cancellation_reason: cancelReason.value.trim(),
+      };
+    }
+
+    closeCancelModal();
+
+    actionErrorId.value = cancelOrder.value.id;
+    actionError.value = "Yêu cầu hủy đơn hàng đã được gửi thành công.";
+    setTimeout(() => {
+      if (actionErrorId.value === cancelOrder.value.id) {
+        actionError.value = "";
+      }
+    }, 5000);
+  } catch (e) {
+    cancelError.value =
+      e?.response?.data?.message || "Không thể gửi yêu cầu hủy đơn hàng.";
+  } finally {
+    cancelLoading.value = false;
+  }
 }
 
 // Các bước tiến trình đơn hàng

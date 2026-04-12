@@ -114,12 +114,21 @@
         </template>
 
         <template #cell-status="{ item }">
-          <span
-            class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-            :class="orderStatusClass(item.status)"
-          >
-            {{ orderStatusText(item.status) }}
-          </span>
+          <div class="flex flex-col gap-1.5">
+            <span
+              class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+              :class="orderStatusClass(item.status)"
+            >
+              {{ orderStatusText(item.status) }}
+            </span>
+            <span
+              v-if="item.cancellation_requested_at"
+              class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-600"
+            >
+              <span class="text-[10px]">⚠️</span>
+              Chờ hủy
+            </span>
+          </div>
         </template>
 
         <template #cell-grand_total="{ value }">

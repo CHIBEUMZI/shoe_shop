@@ -163,7 +163,7 @@
         <div class="flex items-center gap-1.5 lg:gap-2">
           <button
             v-if="!isLoggedIn"
-            class="hidden lg:flex items-center justify-center px-5 py-2.5 text-sm font-bold text-white bg-gradient-to-r from-primary to-primary/90 hover:from-primary/90 hover:to-primary shadow-lg shadow-primary/25 hover:shadow-primary/40 rounded-xl transition-all duration-200 hover:-translate-y-0.5"
+            class="hidden lg:flex items-center justify-center px-5 py-2.5 text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
             type="button"
             @click="$emit('login')"
           >

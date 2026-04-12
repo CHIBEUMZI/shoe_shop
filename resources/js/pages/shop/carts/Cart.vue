@@ -193,35 +193,6 @@
                 </span>
               </div>
 
-              <div class="pt-4 border-t border-slate-100 dark:border-slate-700">
-                <label
-                  class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2"
-                  for="promo"
-                >
-                  Mã khuyến mãi
-                </label>
-
-                <div class="flex gap-2">
-                  <input
-                    id="promo"
-                    v-model="promoCode"
-                    class="rounded-xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
-                    placeholder="Nhập mã"
-                    type="text"
-                  />
-
-                  <button
-                    type="button"
-                    class="px-4 py-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-sm font-semibold rounded-lg transition-colors"
-                    @click="applyPromo"
-                  >
-                    Áp dụng
-                  </button>
-                </div>
-
-                <p v-if="promoMsg" class="mt-2 text-xs text-slate-500">{{ promoMsg }}</p>
-              </div>
-
               <div
                 class="pt-6 border-t border-slate-100 dark:border-slate-700 flex items-center justify-between"
               >
@@ -404,10 +375,6 @@ async function clearAll() {
   } finally {
     clearBusy.value = false;
   }
-}
-
-function applyPromo() {
-  promoMsg.value = "Chưa có API mã khuyến mãi. Bước tiếp theo có thể thêm coupon hoặc giảm giá.";
 }
 
 function checkout() {

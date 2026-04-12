@@ -96,6 +96,7 @@ Route::prefix('v1')
         Route::get('orders', [App\Http\Controllers\Api\Public\OrderController::class, 'index']);
         Route::get('orders/{order}', [App\Http\Controllers\Api\Public\OrderController::class, 'show']);
         Route::post('orders/{order}/payment', [App\Http\Controllers\Api\Public\OrderController::class, 'createPayment']);
+        Route::post('orders/{order}/cancellation', [App\Http\Controllers\Api\Public\OrderController::class, 'requestCancellation']);
 
         // REVIEWS - Authenticated endpoints
         Route::post('reviews', [App\Http\Controllers\Api\Public\ReviewController::class, 'store']);
@@ -145,6 +146,8 @@ Route::prefix('v1/admin')
         Route::get('orders', [App\Http\Controllers\Api\Admin\OrderController::class, 'index']);
         Route::get('orders/{order}', [App\Http\Controllers\Api\Admin\OrderController::class, 'show']);
         Route::patch('orders/{order}/status', [App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
+        Route::patch('orders/{order}/confirm-cancellation', [App\Http\Controllers\Api\Admin\OrderController::class, 'confirmCancellation']);
+        Route::patch('orders/{order}/reject-cancellation', [App\Http\Controllers\Api\Admin\OrderController::class, 'rejectCancellation']);
         
         // REVIEWS
         Route::get('reviews/stats', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'stats']);

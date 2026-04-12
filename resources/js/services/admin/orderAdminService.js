@@ -10,4 +10,10 @@ export default {
   updateStatus(id, payload) {
     return api.patch(`/api/v1/admin/orders/${id}/status`, payload);
   },
+  confirmCancellation(id, payload) {
+    return api.patch(`/api/v1/admin/orders/${id}/confirm-cancellation`, payload);
+  },
+  rejectCancellation(id) {
+    return api.patch(`/api/v1/admin/orders/${id}/reject-cancellation`);
+  },
 };

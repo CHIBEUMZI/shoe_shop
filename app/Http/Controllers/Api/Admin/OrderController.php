@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\AdminUpdateOrderStatusRequest;
+use App\Http\Requests\ConfirmOrderCancellationRequest;
 use App\Http\Resources\Public\OrderResource;
 use App\Mail\OrderStatusMail;
 use App\Models\Order;
@@ -158,6 +159,76 @@ class OrderController extends Controller
         ];
 
         return in_array($next, $map[$current] ?? [], true);
+    }
+    public function confirmCancellation(ConfirmOrderCancellationRequest $request, Order $order)
+    {
+        if ((string) $order->status === 'cancelled') {
+            return response()->json([
+                'message' => 'Đơn hàng đã được hủy trước đó.',
+            ], 422);
+        }
+
+        if ((string) $order->status === 'shipping') {
+            return response()->json([
+                'message' => 'Không thể hủy đơn hàng đang giao.',
+            ], 422);
+        }
+
+        $reason = $request->string('reason')->toString();
+
+        try {
+            $order->update([
+                'status' => 'cancelled',
+                'cancelled_at' => now(),
+                'cancelled_by' => $request->user()->id,
+                'admin_cancellation_reason' => $reason ?: null,
+                'cancellation_requested_at' => null,
+                'cancellation_reason' => null,
+            ]);
+
+            $this->inventoryService->restoreStockForCancelledOrder($order->fresh(['items.variant']));
+
+            $this->sendStatusMail(
+                $order->fresh(['items', 'payments', 'user']),
+                'cancelled'
+            );
+
+            return response()->json([
+                'message' => 'Đơn hàng đã được hủy thành công.',
+                'data' => new OrderResource($order->fresh(['items', 'payments', 'user'])),
+            ]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return response()->json([
+                'message' => 'Không thể hủy đơn hàng.',
+            ], 500);
+        }
+    }
+
+    public function rejectCancellation(Request $request, Order $order)
+    {
+        if ((string) $order->status === 'cancelled') {
+            return response()->json([
+                'message' => 'Đơn hàng đã được hủy trước đó.',
+            ], 422);
+        }
+
+        if (!$order->cancellation_requested_at) {
+            return response()->json([
+                'message' => 'Đơn hàng không có yêu cầu hủy nào.',
+            ], 422);
+        }
+
+        $order->update([
+            'cancellation_requested_at' => null,
+            'cancellation_reason' => null,
+        ]);
+
+        return response()->json([
+            'message' => 'Đã từ chối yêu cầu hủy đơn hàng.',
+            'data' => new OrderResource($order->fresh(['items', 'payments', 'user'])),
+        ]);
     }
 
     protected function sendStatusMail(Order $order, string $status): void

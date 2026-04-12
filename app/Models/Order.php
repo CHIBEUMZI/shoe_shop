@@ -34,6 +34,11 @@ class Order extends Model
         'stock_deducted_at',
         'coupon_id',
         'coupon_code',
+        'cancellation_requested_at',
+        'cancellation_reason',
+        'cancelled_at',
+        'cancelled_by',
+        'admin_cancellation_reason',
     ];
 
     protected $casts = [
@@ -43,7 +48,14 @@ class Order extends Model
         'grand_total' => 'decimal:2',
         'paid_at' => 'datetime',
         'stock_deducted_at' => 'datetime',
+        'cancellation_requested_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
+
+    public function cancelledByUser(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
+    }
 
     public function user(): BelongsTo
     {

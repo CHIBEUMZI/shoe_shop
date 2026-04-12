@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Public;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\OrderStoreRequest;
+use App\Http\Requests\RequestOrderCancellationRequest;
 use App\Http\Resources\Public\OrderResource;
 use App\Mail\OrderStatusMail;
 use App\Models\Order;
@@ -109,6 +110,57 @@ class OrderController extends Controller
         return response()->json([
             'message' => 'Phương thức thanh toán chưa được hỗ trợ.',
         ], 422);
+    }
+
+    public function requestCancellation(RequestOrderCancellationRequest $request, Order $order)
+    {
+        if ((int) $order->user_id !== (int) $request->user()->id) {
+            abort(403, 'Bạn không có quyền thực hiện thao tác này.');
+        }
+
+        $currentStatus = (string) $order->status;
+
+        if (!in_array($currentStatus, ['pending', 'confirmed', 'processing'], true)) {
+            return response()->json([
+                'message' => 'Không thể hủy đơn hàng ở trạng thái "' . $this->getStatusText($currentStatus) . '". Chỉ có thể hủy khi đơn hàng chưa được giao.',
+            ], 422);
+        }
+
+        if ($currentStatus === 'cancelled') {
+            return response()->json([
+                'message' => 'Đơn hàng đã được hủy trước đó.',
+            ], 422);
+        }
+
+        if ($order->cancellation_requested_at) {
+            return response()->json([
+                'message' => 'Bạn đã gửi yêu cầu hủy đơn hàng này rồi. Vui lòng chờ admin xử lý.',
+            ], 422);
+        }
+
+        $order->update([
+            'cancellation_requested_at' => now(),
+            'cancellation_reason' => $request->validated()['reason'],
+        ]);
+
+        return response()->json([
+            'message' => 'Yêu cầu hủy đơn hàng đã được gửi. Chúng tôi sẽ xử lý trong thời gian sớm nhất.',
+            'data' => new OrderResource($order->fresh(['items', 'payments'])),
+        ]);
+    }
+
+    protected function getStatusText(string $status): string
+    {
+        $map = [
+            'pending' => 'Chờ xử lý',
+            'confirmed' => 'Đã xác nhận',
+            'processing' => 'Đang chuẩn bị hàng',
+            'shipping' => 'Đang giao',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+        ];
+
+        return $map[$status] ?? $status;
     }
 
     protected function createVnpayPayment(Request $request, Order $order)

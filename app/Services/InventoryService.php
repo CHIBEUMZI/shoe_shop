@@ -44,4 +44,38 @@ class InventoryService
             ]);
         });
     }
+
+    /**
+     * Khôi phục tồn kho khi đơn hàng bị hủy.
+     * Chỉ khôi phục nếu đơn hàng đã từng bị khấu trừ stock (stock_deducted_at không null).
+     */
+    public function restoreStockForCancelledOrder(Order $order): void
+    {
+        DB::transaction(function () use ($order) {
+            $order->refresh();
+
+            if (!$order->stock_deducted_at) {
+                return;
+            }
+
+            $order->loadMissing(['items.variant']);
+
+            foreach ($order->items as $item) {
+                $variant = ProductVariant::query()
+                    ->lockForUpdate()
+                    ->find($item->product_variant_id);
+
+                if (!$variant) {
+                    logger()->warning("RestoreStock: Biến thể ID {$item->product_variant_id} không tồn tại.");
+                    continue;
+                }
+
+                $variant->increment('stock', (int) $item->quantity);
+            }
+
+            $order->update([
+                'stock_deducted_at' => null,
+            ]);
+        });
+    }
 }

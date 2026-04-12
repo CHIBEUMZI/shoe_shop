@@ -16,4 +16,8 @@ export default {
   createPayment(orderId) {
     return api.post(`/api/v1/orders/${orderId}/payment`);
   },
+
+  requestCancellation(orderId, reason) {
+    return api.post(`/api/v1/orders/${orderId}/cancellation`, { reason });
+  },
 };
