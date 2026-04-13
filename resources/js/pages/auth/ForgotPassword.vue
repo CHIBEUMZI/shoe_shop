@@ -102,15 +102,18 @@ async function onSubmit() {
 
   loading.value = true;
   try {
-    await api.post("/api/auth/forgot-password", {
+    const response = await api.post("/api/auth/forgot-password", {
       email: email.value.trim(),
     });
-    router.push({
-      path: "/reset-password",
-      query: { email: email.value.trim() },
-    });
+    if (response.data.message) {
+      error.value = "";
+      router.push({
+        path: "/reset-password",
+        query: { email: email.value.trim() },
+      });
+    }
   } catch (e) {
-    error.value = e?.response?.data?.message || "Đã xảy ra lỗi. Vui lòng thử lại.";
+    error.value = e?.response?.data?.message || e?.response?.data?.errors?.email?.[0] || "Đã xảy ra lỗi. Vui lòng thử lại.";
   } finally {
     loading.value = false;
   }

@@ -338,9 +338,10 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCartStore } from "../../../stores/cart";
+import { useAuthStore } from "../../../stores/auth";
 import { buildImageUrl } from "../../../utils/image";
 import orderService from "../../../services/public/orderService";
 import couponService from "../../../services/public/couponService";
@@ -350,6 +351,7 @@ import { useAddress } from "../../../composables/useAddress";
 const router = useRouter();
 const route = useRoute();
 const cartStore = useCartStore();
+const authStore = useAuthStore();
 const notify = useAlert();
 
 const pageLoading = ref(true);
@@ -404,6 +406,12 @@ onMounted(async () => {
   pageError.value = "";
   submitError.value = "";
   try {
+    if (!authStore.loaded) {
+      await authStore.fetchMe();
+    }
+    if (authStore.isLoggedIn) {
+      prefillFromUser();
+    }
     await cartStore.fetchCart();
     if (!items.value.length) {
       pageError.value = "Giỏ hàng đang trống. Vui lòng thêm sản phẩm trước khi thanh toán.";
@@ -417,6 +425,17 @@ onMounted(async () => {
     pageLoading.value = false;
   }
 });
+
+function prefillFromUser() {
+  const u = authStore.user;
+  if (!u) return;
+  if (u.name && !form.customer_name) form.customer_name = u.name;
+  if (u.phone && !form.customer_phone) form.customer_phone = u.phone;
+  if (u.email && !form.customer_email) form.customer_email = u.email;
+  if (u.address && !form.address_line) {
+    form.address_line = u.address;
+  }
+}
 
 function moneyVND(v) {
   return new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(Number(v || 0));

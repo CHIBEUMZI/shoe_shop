@@ -24,6 +24,8 @@ const user = ref({
   is_active: false,
   avatar: "",
   birth_date: null,
+  phone: "",
+  address: "",
   created_at: "",
   updated_at: "",
 });
@@ -123,6 +125,8 @@ async function loadUser(userId) {
       is_active: !!data?.is_active,
       avatar: data?.avatar ?? "",
       birth_date: data?.birth_date ?? null,
+      phone: data?.phone ?? "",
+      address: data?.address ?? "",
       created_at: data?.created_at ?? "",
       updated_at: data?.updated_at ?? "",
     };
@@ -278,6 +282,16 @@ onMounted(async () => {
             <div class="info-item">
               <div class="info-label">Ngày sinh</div>
               <div class="info-value">{{ formatDate(user.birth_date) }}</div>
+            </div>
+
+            <div class="info-item">
+              <div class="info-label">Số điện thoại</div>
+              <div class="info-value">{{ user.phone || "—" }}</div>
+            </div>
+
+            <div class="info-item full">
+              <div class="info-label">Địa chỉ</div>
+              <div class="info-value">{{ user.address || "—" }}</div>
             </div>
 
             <div class="info-item">

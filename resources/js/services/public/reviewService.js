@@ -11,6 +11,11 @@ export default {
     return api.get(`/api/v1/products/${productId}/reviews/stats`);
   },
 
+  // Check if user has purchased a product
+  checkPurchase(productId) {
+    return api.get(`/api/v1/products/${productId}/reviews/check-purchase`);
+  },
+
   // Create a new review
   create(data) {
     return api.post("/api/v1/reviews", data);

@@ -17,7 +17,6 @@ class ReviewController extends Controller
     public function index(Product $product)
     {
         $reviews = $product->reviews()
-            ->where('status', 'approved')
             ->with('user')
             ->latest()
             ->paginate(10);
@@ -30,17 +29,6 @@ class ReviewController extends Controller
      */
     public function store(ReviewRequest $request)
     {
-        // Check if user already reviewed this product
-        $existingReview = Review::where('user_id', auth()->id())
-            ->where('product_id', $request->product_id)
-            ->first();
-
-        if ($existingReview) {
-            return response()->json([
-                'message' => 'You have already reviewed this product',
-            ], 422);
-        }
-
         // Check if user has purchased this product
         $hasPurchased = auth()->user()->orders()
             ->whereHas('items', function ($query) use ($request) {
@@ -48,12 +36,29 @@ class ReviewController extends Controller
             })
             ->exists();
 
+        if (!$hasPurchased) {
+            return response()->json([
+                'message' => 'Bạn cần mua sản phẩm này trước khi viết đánh giá',
+            ], 403);
+        }
+
+        // Check if user already reviewed this product
+        $existingReview = Review::where('user_id', auth()->id())
+            ->where('product_id', $request->product_id)
+            ->first();
+
+        if ($existingReview) {
+            return response()->json([
+                'message' => 'Bạn đã viết đánh giá cho sản phẩm này',
+            ], 422);
+        }
+
         $review = Review::create([
             'user_id' => auth()->id(),
             'product_id' => $request->product_id,
             'rating' => $request->rating,
             'comment' => $request->comment,
-            'verified_purchase' => $hasPurchased,
+            'verified_purchase' => true,
         ]);
 
         return response()->json(new ReviewResource($review->load('user')), 201);
@@ -114,6 +119,22 @@ class ReviewController extends Controller
             ->paginate(10);
 
         return ReviewResource::collection($reviews);
+    }
+
+    /**
+     * Check if user has purchased a product
+     */
+    public function checkPurchase(Product $product)
+    {
+        $hasPurchased = auth()->user()->orders()
+            ->whereHas('items', function ($query) use ($product) {
+                $query->where('product_id', $product->id);
+            })
+            ->exists();
+
+        return response()->json([
+            'has_purchased' => $hasPurchased,
+        ]);
     }
 
     /**

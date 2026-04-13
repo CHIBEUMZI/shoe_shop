@@ -94,6 +94,23 @@
             </div>
           </div>
 
+          <!-- Admin Reply Section -->
+          <div v-if="review.admin_reply" class="section">
+            <div class="section-head">
+              <div class="section-icon">🏪</div>
+              <div class="section-title">Phản hồi từ cửa hàng</div>
+            </div>
+
+            <div class="section-body">
+              <div class="admin-reply-box">
+                {{ review.admin_reply }}
+              </div>
+              <div v-if="review.replied_at" class="reply-time">
+                {{ formatDate(review.replied_at) }}
+              </div>
+            </div>
+          </div>
+
           <!-- Product Info Section -->
           <div class="section">
             <div class="section-head">
@@ -148,41 +165,57 @@
 
         <!-- RIGHT -->
         <div class="right">
-          <!-- Status Card -->
+          <!-- Reply Form Section -->
           <div class="section">
             <div class="section-head">
-              <div class="section-icon">🔔</div>
-              <div class="section-title">Trạng thái</div>
+              <div class="section-icon">💬</div>
+              <div class="section-title">Phản hồi đánh giá</div>
             </div>
 
             <div class="section-body">
-              <div class="status-box">
-                <span class="pill" :class="statusClass(review.status)">
-                  {{ statusLabel(review.status) }}
-                </span>
+              <div v-if="review.admin_reply" class="reply-status replied">
+                <span class="material-symbols-outlined">check_circle</span>
+                Đã phản hồi
+              </div>
+              <div v-else class="reply-status unreplied">
+                <span class="material-symbols-outlined">pending</span>
+                Chưa phản hồi
               </div>
 
-              <div class="button-group">
-                <button
-                  v-if="review.status !== 'approved'"
-                  @click="approveReview"
-                  :disabled="actionLoading"
-                  class="btn btn-approve"
-                >
-                  <span class="material-symbols-outlined">check_circle</span>
-                  Duyệt
-                </button>
+              <form @submit.prevent="submitReply" class="reply-form">
+                <div class="form-group">
+                  <label for="admin_reply" class="form-label">
+                    Nội dung phản hồi <span class="required">*</span>
+                  </label>
+                  <textarea
+                    id="admin_reply"
+                    v-model="replyForm.admin_reply"
+                    class="form-textarea"
+                    :class="{ 'has-error': replyFormErrors.admin_reply }"
+                    placeholder="Nhập nội dung phản hồi của bạn..."
+                    rows="5"
+                    maxlength="1000"
+                  ></textarea>
+                  <div class="form-helper">
+                    <span v-if="replyFormErrors.admin_reply" class="error-text">
+                      {{ replyFormErrors.admin_reply }}
+                    </span>
+                    <span class="char-count">
+                      {{ replyForm.admin_reply?.length || 0 }} / 1000
+                    </span>
+                  </div>
+                </div>
 
                 <button
-                  v-if="review.status !== 'rejected'"
-                  @click="rejectReview"
-                  :disabled="actionLoading"
-                  class="btn btn-reject"
+                  type="submit"
+                  :disabled="actionLoading || !replyForm.admin_reply?.trim()"
+                  class="btn btn-reply"
                 >
-                  <span class="material-symbols-outlined">cancel</span>
-                  Từ chối
+                  <span v-if="actionLoading" class="btn-spinner"></span>
+                  <span v-else class="material-symbols-outlined">send</span>
+                  {{ review.admin_reply ? 'Cập nhật phản hồi' : 'Gửi phản hồi' }}
                 </button>
-              </div>
+              </form>
             </div>
           </div>
         </div>
@@ -201,7 +234,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import AlertContainer from '../../../components/AlertContainer.vue'
 import { useAlert } from '../../../composables/useAlert'
@@ -218,23 +251,13 @@ const loading = ref(false)
 const actionLoading = ref(false)
 const error = ref(null)
 
-const statusLabel = (status) => {
-  const labels = {
-    approved: 'Đã duyệt',
-    rejected: 'Bị từ chối',
-    pending: 'Chờ duyệt',
-  }
-  return labels[status] || status
-}
+const replyForm = reactive({
+  admin_reply: '',
+})
 
-const statusClass = (status) => {
-  const classes = {
-    approved: 'ok',
-    rejected: 'off',
-    pending: 'pending',
-  }
-  return classes[status] || 'pending'
-}
+const replyFormErrors = reactive({
+  admin_reply: '',
+})
 
 const formatDate = (date) => {
   return new Date(date).toLocaleDateString('vi-VN', {
@@ -271,6 +294,7 @@ const fetchReview = async () => {
   try {
     const response = await reviewService.show(reviewId)
     review.value = response.data.data || response.data
+    replyForm.admin_reply = review.value?.admin_reply || ''
   } catch (err) {
     console.error('Fetch review error:', err.response?.status, err.response?.data)
     error.value = err.response?.data?.message || 'Không thể tải chi tiết đánh giá'
@@ -279,39 +303,38 @@ const fetchReview = async () => {
   }
 }
 
-const approveReview = async () => {
-  if (actionLoading.value) return
-  
-  actionLoading.value = true
-  try {
-    console.log('Approving review:', reviewId)
-    await reviewService.approve(reviewId)
-    alert.success('Đánh giá đã được duyệt')
-    setTimeout(() => {
-      router.push('/admin/reviews')
-    }, 1500)
-  } catch (err) {
-    console.error('Approve error:', err.response?.status, err.response?.data)
-    alert.error(err.response?.data?.message || 'Lỗi phê duyệt')
-  } finally {
-    actionLoading.value = false
+const validateReplyForm = () => {
+  let isValid = true
+  replyFormErrors.admin_reply = ''
+
+  if (!replyForm.admin_reply?.trim()) {
+    replyFormErrors.admin_reply = 'Vui lòng nhập nội dung phản hồi'
+    isValid = false
+  } else if (replyForm.admin_reply.length > 1000) {
+    replyFormErrors.admin_reply = 'Nội dung phản hồi không được vượt quá 1000 ký tự'
+    isValid = false
   }
+
+  return isValid
 }
 
-const rejectReview = async () => {
+const submitReply = async () => {
   if (actionLoading.value) return
+
+  if (!validateReplyForm()) {
+    return
+  }
   
   actionLoading.value = true
   try {
-    console.log('Rejecting review:', reviewId)
-    await reviewService.reject(reviewId)
-    alert.success('Đánh giá đã bị từ chối')
-    setTimeout(() => {
-      router.push('/admin/reviews')
-    }, 1500)
+    const response = await reviewService.reply(reviewId, {
+      admin_reply: replyForm.admin_reply.trim()
+    })
+    review.value = response.data.data || review.value
+    alert.success('Phản hồi đã được gửi thành công')
   } catch (err) {
-    console.error('Reject error:', err.response?.status, err.response?.data)
-    alert.error(err.response?.data?.message || 'Lỗi từ chối')
+    console.error('Reply error:', err.response?.status, err.response?.data)
+    alert.error(err.response?.data?.message || 'Lỗi gửi phản hồi')
   } finally {
     actionLoading.value = false
   }
@@ -699,6 +722,25 @@ onMounted(fetchReview)
   word-break: break-word;
 }
 
+/* ── Admin Reply Box ── */
+.admin-reply-box {
+  border: 1.5px solid #10b981;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #ecfdf5;
+  color: #047857;
+  font-size: 14px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.reply-time {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
 /* ── Product Card ── */
 .product-card {
   display: flex;
@@ -751,43 +793,95 @@ onMounted(fetchReview)
   font-size: 14px;
 }
 
-/* ── Status Box ── */
-.status-box {
-  margin-bottom: 14px;
-}
-
-.button-group {
+/* ── Reply Status ── */
+.reply-status {
   display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
-/* ── Pill ── */
-.pill {
-  display: inline-flex;
-  padding: 6px 14px;
-  border-radius: 999px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 10px;
   font-weight: 700;
   font-size: 13px;
-  border: 1px solid transparent;
+  margin-bottom: 16px;
 }
 
-.pill.ok {
+.reply-status.replied {
   background: #ecfdf5;
   color: #047857;
-  border-color: #a7f3d0;
+  border: 1px solid #a7f3d0;
 }
 
-.pill.off {
-  background: #f1f5f9;
-  color: #475569;
-  border-color: #e2e8f0;
-}
-
-.pill.pending {
+.reply-status.unreplied {
   background: #fef3c7;
   color: #b45309;
-  border-color: #fcd34d;
+  border: 1px solid #fcd34d;
+}
+
+.reply-status .material-symbols-outlined {
+  font-size: 18px;
+}
+
+/* ── Reply Form ── */
+.reply-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-label {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: #374151;
+  letter-spacing: 0.01em;
+}
+
+.required {
+  color: #ef4444;
+}
+
+.form-textarea {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 12px 14px;
+  background: #fafbfd;
+  color: #0f172a;
+  font-family: "DM Sans", sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: vertical;
+  min-height: 120px;
+  transition: border-color 0.15s;
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+.form-textarea.has-error {
+  border-color: #ef4444;
+}
+
+.form-helper {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 12px;
+}
+
+.error-text {
+  color: #ef4444;
+}
+
+.char-count {
+  color: #94a3b8;
+  margin-left: auto;
 }
 
 /* ── Buttons ── */
@@ -818,36 +912,29 @@ onMounted(fetchReview)
   color: #334155;
 }
 
-.btn-approve {
+.btn-reply {
   width: 100%;
   background: #10b981;
   color: white;
   border: none;
 }
 
-.btn-approve:hover:not(:disabled) {
+.btn-reply:hover:not(:disabled) {
   background: #059669;
 }
 
-.btn-approve:disabled {
+.btn-reply:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.btn-reject {
-  width: 100%;
-  background: #ef4444;
-  color: white;
-  border: none;
-}
-
-.btn-reject:hover:not(:disabled) {
-  background: #dc2626;
-}
-
-.btn-reject:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
 }
 
 /* ── Empty State ── */

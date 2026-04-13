@@ -52,6 +52,7 @@ class AuthController extends Controller
                 'avatar' => null,
                 'birth_date' => $data['birth_date'] ?? null,
                 'address' => $data['address'] ?? null,
+                'phone' => $data['phone'] ?? null,
             ]),
         ]);
 
@@ -223,6 +224,7 @@ class AuthController extends Controller
             'birth_date' => ['nullable', 'date', 'before:today'],
             'address' => ['nullable', 'string', 'max:500'],
             'avatar' => ['nullable', 'string', 'max:500'],
+            'phone' => ['nullable', 'string', 'max:20'],
         ]);
 
         $user->update($data);
@@ -266,8 +268,8 @@ class AuthController extends Controller
         $user = User::where('email', $data['email'])->first();
 
         if (!$user) {
-            return response()->json([
-                'message' => 'Nếu email tồn tại trong hệ thống, mã xác nhận sẽ được gửi.',
+            throw ValidationException::withMessages([
+                'email' => ['Email này không tồn tại trong hệ thống.'],
             ]);
         }
 
@@ -291,7 +293,7 @@ class AuthController extends Controller
         );
 
         return response()->json([
-            'message' => 'Nếu email tồn tại trong hệ thống, mã xác nhận sẽ được gửi.',
+            'message' => 'Mã xác nhận đã được gửi đến email của bạn.',
         ]);
     }
 
@@ -384,6 +386,7 @@ class AuthController extends Controller
             'avatar' => $user->avatar,
             'birth_date' => optional($user->birth_date)->format('Y-m-d'),
             'address' => $user->address,
+            'phone' => $user->phone,
         ];
     }
 }

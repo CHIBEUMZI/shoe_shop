@@ -9,6 +9,13 @@
       </p>
     </div>
 
+    <!-- Not purchased message -->
+    <div v-else-if="!hasPurchased" class="bg-amber-50 border border-amber-200 rounded-lg p-4 text-center">
+      <p class="text-sm text-amber-700">
+        Chỉ khách hàng đã mua sản phẩm mới có thể viết đánh giá
+      </p>
+    </div>
+
     <!-- Already reviewed message -->
     <div v-else-if="hasReviewed" class="bg-gray-50 border border-gray-200 rounded-lg p-4 text-center">
       <p class="text-sm text-gray-600">Bạn đã viết đánh giá cho sản phẩm này</p>
@@ -110,6 +117,7 @@ const errors = ref({})
 const successMessage = ref('')
 const errorMessage = ref('')
 const hasReviewed = ref(false)
+const hasPurchased = ref(false)
 const isLoggedIn = computed(() => authStore.isLoggedIn)
 
 const submitReview = async () => {
@@ -158,15 +166,22 @@ const checkExistingReview = async () => {
   if (!isLoggedIn.value) return
 
   try {
-    const response = await reviewService.myReviews()
-    if (response.data.data && response.data.data.length > 0) {
-      const hasReviewForProduct = response.data.data.some(
+    // Check if user has purchased this product
+    const purchaseResponse = await reviewService.checkPurchase(props.productId)
+    hasPurchased.value = purchaseResponse.data.has_purchased || false
+
+    // Check if user has already reviewed this product
+    const reviewResponse = await reviewService.myReviews()
+    if (reviewResponse.data.data && reviewResponse.data.data.length > 0) {
+      const hasReviewForProduct = reviewResponse.data.data.some(
         (review) => review.product_id === props.productId
       )
       hasReviewed.value = hasReviewForProduct
     }
   } catch (err) {
-    console.error('Error checking existing review:', err)
+    console.error('Error checking review status:', err)
+    // If error (maybe not logged in), assume not purchased
+    hasPurchased.value = false
   }
 }
 

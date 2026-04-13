@@ -18,6 +18,7 @@ class UserResource extends JsonResource
             'is_active'  => (bool) $this->is_active,
             'avatar'     => $this->avatar,
             'birth_date' => optional($this->birth_date)->format('Y-m-d'),
+            'phone'      => $this->phone,
             'address'    => $this->address,
             'created_at' => optional($this->created_at)->toISOString(),
             'updated_at' => optional($this->updated_at)->toISOString(),

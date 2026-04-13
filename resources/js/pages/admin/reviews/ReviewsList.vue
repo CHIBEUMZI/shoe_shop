@@ -17,18 +17,13 @@
           </div>
 
           <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Chờ duyệt</div>
-            <div class="mt-2 text-2xl font-black text-amber-600">{{ stats.pending || 0 }}</div>
+            <div class="text-sm text-slate-500">Đã phản hồi</div>
+            <div class="mt-2 text-2xl font-black text-green-600">{{ stats.replied || 0 }}</div>
           </div>
 
           <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Đã duyệt</div>
-            <div class="mt-2 text-2xl font-black text-green-600">{{ stats.approved || 0 }}</div>
-          </div>
-
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Bị từ chối</div>
-            <div class="mt-2 text-2xl font-black text-red-600">{{ stats.rejected || 0 }}</div>
+            <div class="text-sm text-slate-500">Chưa phản hồi</div>
+            <div class="mt-2 text-2xl font-black text-amber-600">{{ stats.unreplied || 0 }}</div>
           </div>
         </div>
       </div>
@@ -61,12 +56,12 @@
         <template #filters>
           <div class="flex flex-wrap items-center gap-2">
             <BaseSelect
-              v-model="filters.status"
-              :options="statusOptions"
+              v-model="filters.replied"
+              :options="repliedOptions"
               size="sm"
-              placeholder="Tất cả trạng thái"
+              placeholder="Tất cả"
               wrapperClass="!w-[200px] shrink-0"
-              @change="onStatusChange"
+              @change="onRepliedChange"
             />
 
             <button
@@ -109,12 +104,20 @@
         </template>
 
         <!-- Status Column -->
-        <template #cell-status="{ item }">
+        <template #cell-admin_reply="{ value }">
           <span
-            class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-            :class="reviewStatusClass(item.status)"
+            v-if="value"
+            class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700"
           >
-            {{ statusLabel(item.status) }}
+            <span class="material-symbols-outlined text-sm">check_circle</span>
+            Đã phản hồi
+          </span>
+          <span
+            v-else
+            class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700"
+          >
+            <span class="material-symbols-outlined text-sm">pending</span>
+            Chưa phản hồi
           </span>
         </template>
 
@@ -150,7 +153,7 @@ const error = ref('')
 
 const filters = reactive({
   search: String(route.query.search || ''),
-  status: String(route.query.status || ''),
+  replied: String(route.query.replied || ''),
   page: Number(route.query.page || 1),
   per_page: Number(route.query.per_page || 10),
   sortBy: String(route.query.sortBy || 'created_at'),
@@ -164,11 +167,10 @@ const pagination = ref({
   total: 0,
 })
 
-const statusOptions = [
-  { label: 'Tất cả trạng thái', value: '' },
-  { label: 'Chờ duyệt', value: 'pending' },
-  { label: 'Đã duyệt', value: 'approved' },
-  { label: 'Bị từ chối', value: 'rejected' },
+const repliedOptions = [
+  { label: 'Tất cả', value: '' },
+  { label: 'Đã phản hồi', value: '1' },
+  { label: 'Chưa phản hồi', value: '0' },
 ]
 
 // Table columns configuration
@@ -176,8 +178,8 @@ const columns = [
   { key: 'user', label: 'Người dùng', width: '200px' },
   { key: 'product_name', label: 'Sản phẩm', width: '200px' },
   { key: 'rating', label: 'Đánh giá', width: '120px' },
-  { key: 'comment', label: 'Nội dung', width: '300px' },
-  { key: 'status', label: 'Trạng thái', width: '140px', sortable: true },
+  { key: 'comment', label: 'Nội dung', width: '250px' },
+  { key: 'admin_reply', label: 'Phản hồi', width: '140px' },
   { key: 'created_at', label: 'Ngày tạo', sortable: true, width: '160px' },
 ]
 
@@ -197,28 +199,6 @@ const rowActions = [
   },
 ]
 
-const statusLabel = (status) => {
-  const labels = {
-    approved: 'Đã duyệt',
-    rejected: 'Bị từ chối',
-    pending: 'Chờ duyệt',
-  }
-  return labels[status] || status
-}
-
-const reviewStatusClass = (status) => {
-  switch (status) {
-    case 'approved':
-      return 'bg-green-100 text-green-700'
-    case 'rejected':
-      return 'bg-red-100 text-red-700'
-    case 'pending':
-      return 'bg-amber-100 text-amber-700'
-    default:
-      return 'bg-slate-100 text-slate-700'
-  }
-}
-
 const formatDateTime = (value) => {
   if (!value) return '-'
   const d = new Date(value)
@@ -234,12 +214,17 @@ const fetchReviews = async () => {
   error.value = ''
   try {
     const params = {
-      status: filters.status || undefined,
       search: filters.search || undefined,
       page: filters.page,
       per_page: filters.per_page,
       sort_by: filters.sortBy || undefined,
       sort_dir: filters.sortDir || undefined,
+    }
+
+    if (filters.replied === '1') {
+      params.has_reply = true
+    } else if (filters.replied === '0') {
+      params.has_reply = false
     }
     
     const response = await reviewService.list(params)
@@ -269,8 +254,8 @@ const fetchReviews = async () => {
   }
 }
 
-const onStatusChange = (value) => {
-  filters.status = value == null ? '' : String(value)
+const onRepliedChange = (value) => {
+  filters.replied = value == null ? '' : String(value)
   filters.page = 1
   fetchReviews()
 }
@@ -301,7 +286,7 @@ const onPageChange = (page) => {
 
 const resetFilters = () => {
   filters.search = ''
-  filters.status = ''
+  filters.replied = ''
   filters.page = 1
   filters.per_page = 10
   filters.sortBy = 'created_at'

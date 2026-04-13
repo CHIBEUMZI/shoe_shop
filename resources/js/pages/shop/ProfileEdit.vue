@@ -17,6 +17,7 @@ const values = ref({
   avatar: "",
   birth_date: "",
   address: "",
+  phone: "",
 });
 
 const passwordValues = ref({
@@ -55,6 +56,7 @@ function loadUserData(user) {
     avatar: user?.avatar || "",
     birth_date: user?.birth_date || "",
     address: user?.address || "",
+    phone: user?.phone || "",
   };
   previewAvatar.value = user?.avatar || "";
 }
@@ -179,6 +181,7 @@ async function submitInfo() {
       birth_date: values.value.birth_date || null,
       avatar: values.value.avatar || null,
       address: values.value.address || null,
+      phone: values.value.phone || null,
     });
 
     notify.success("Cập nhật thông tin thành công!", {
@@ -450,6 +453,19 @@ function goBack() {
               placeholder="Nhập địa chỉ của bạn"
               class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/50 focus:border-transparent focus:ring-2 outline-none transition-all resize-none"
             ></textarea>
+          </div>
+
+          <!-- Phone -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+              Số điện thoại
+            </label>
+            <input
+              v-model="values.phone"
+              type="tel"
+              placeholder="Nhập số điện thoại của bạn"
+              class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-primary/50 focus:border-transparent focus:ring-2 outline-none transition-all"
+            />
           </div>
 
           <!-- Submit -->

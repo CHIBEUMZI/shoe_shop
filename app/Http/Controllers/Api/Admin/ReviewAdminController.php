@@ -16,9 +16,14 @@ class ReviewAdminController extends Controller
     {
         $query = Review::with(['user', 'product']);
 
-        // Filter by status
-        if ($request->has('status') && $request->status !== 'all') {
-            $query->where('status', $request->status);
+        // Filter by has_reply
+        if ($request->has('has_reply')) {
+            $hasReply = filter_var($request->has_reply, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE);
+            if ($hasReply === true) {
+                $query->whereNotNull('admin_reply');
+            } elseif ($hasReply === false) {
+                $query->whereNull('admin_reply');
+            }
         }
 
         // Filter by product
@@ -53,27 +58,21 @@ class ReviewAdminController extends Controller
     }
 
     /**
-     * Approve a review
+     * Reply to a review
      */
-    public function approve(Review $review)
+    public function reply(Request $request, Review $review)
     {
-        $review->update(['status' => 'approved']);
+        $request->validate([
+            'admin_reply' => 'required|string|max:1000',
+        ]);
+
+        $review->update([
+            'admin_reply' => $request->admin_reply,
+            'replied_at' => now(),
+        ]);
 
         return response()->json([
-            'message' => 'Review approved successfully',
-            'data' => new ReviewResource($review->fresh(['user', 'product'])),
-        ], 200);
-    }
-
-    /**
-     * Reject a review
-     */
-    public function reject(Review $review)
-    {
-        $review->update(['status' => 'rejected']);
-
-        return response()->json([
-            'message' => 'Review rejected successfully',
+            'message' => 'Đã trả lời đánh giá thành công',
             'data' => new ReviewResource($review->fresh(['user', 'product'])),
         ], 200);
     }
@@ -90,43 +89,6 @@ class ReviewAdminController extends Controller
         ], 200);
     }
 
-    // /**
-    //  * Bulk action on reviews
-    //  */
-    // public function bulkAction(Request $request)
-    // {
-    //     $request->validate([
-    //         'ids' => 'required|array',
-    //         'ids.*' => 'integer|exists:reviews,id',
-    //         'action' => 'required|in:approve,reject,delete',
-    //     ]);
-
-    //     $count = 0;
-
-    //     foreach ($request->ids as $id) {
-    //         $review = Review::find($id);
-    //         if (!$review) continue;
-
-    //         switch ($request->action) {
-    //             case 'approve':
-    //                 $review->update(['status' => 'approved']);
-    //                 break;
-    //             case 'reject':
-    //                 $review->update(['status' => 'rejected']);
-    //                 break;
-    //             case 'delete':
-    //                 $review->delete();
-    //                 break;
-    //         }
-    //         $count++;
-    //     }
-
-    //     return response()->json([
-    //         'message' => "Successfully performed {$request->action} on {$count} review(s)",
-    //         'count' => $count,
-    //     ]);
-    // }
-
     /**
      * Get review statistics
      */
@@ -134,15 +96,14 @@ class ReviewAdminController extends Controller
     {
         return response()->json([
             'total' => Review::count(),
-            'pending' => Review::where('status', 'pending')->count(),
-            'approved' => Review::where('status', 'approved')->count(),
-            'rejected' => Review::where('status', 'rejected')->count(),
+            'replied' => Review::whereNotNull('admin_reply')->count(),
+            'unreplied' => Review::whereNull('admin_reply')->count(),
             'by_rating' => [
-                '5' => Review::where('rating', 5)->where('status', 'approved')->count(),
-                '4' => Review::where('rating', 4)->where('status', 'approved')->count(),
-                '3' => Review::where('rating', 3)->where('status', 'approved')->count(),
-                '2' => Review::where('rating', 2)->where('status', 'approved')->count(),
-                '1' => Review::where('rating', 1)->where('status', 'approved')->count(),
+                '5' => Review::where('rating', 5)->count(),
+                '4' => Review::where('rating', 4)->count(),
+                '3' => Review::where('rating', 3)->count(),
+                '2' => Review::where('rating', 2)->count(),
+                '1' => Review::where('rating', 1)->count(),
             ],
         ]);
     }

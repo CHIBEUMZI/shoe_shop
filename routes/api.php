@@ -104,6 +104,7 @@ Route::prefix('v1')
         Route::get('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'show']);
         Route::patch('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'update']);
         Route::delete('reviews/{review}', [App\Http\Controllers\Api\Public\ReviewController::class, 'destroy']);
+        Route::get('products/{product}/reviews/check-purchase', [App\Http\Controllers\Api\Public\ReviewController::class, 'checkPurchase']);
 
         // COUPONS - User validation
         Route::post('coupons/validate', [App\Http\Controllers\Api\Public\CouponController::class, 'validate']);
@@ -154,8 +155,7 @@ Route::prefix('v1/admin')
         Route::get('reviews', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'index']);
         // Route::post('reviews/bulk-action', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'bulkAction']);
         Route::get('reviews/{review}', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'show']);
-        Route::patch('reviews/{review}/approve', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'approve']);
-        Route::patch('reviews/{review}/reject', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'reject']);
+        Route::post('reviews/{review}/reply', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'reply']);
         Route::delete('reviews/{review}', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'delete']);
         
         // BANNER 

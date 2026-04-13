@@ -41,8 +41,18 @@
                 <h4 class="font-semibold text-gray-900">{{ review.user.name }}</h4>
                 <p class="text-xs text-gray-500">{{ formatDate(review.created_at) }}</p>
               </div>
-              <div v-if="review.verified_purchase" class="flex items-center gap-1 bg-green-50 border border-green-200 rounded px-2 py-1 text-xs text-green-700">
-                ✓ Xác thực
+              <div class="flex items-center gap-2">
+                <div v-if="review.verified_purchase" class="flex items-center gap-1 bg-green-50 border border-green-200 rounded px-2 py-1 text-xs text-green-700">
+                  ✓ Xác thực
+                </div>
+                <!-- Edit button if own review -->
+                <button
+                  v-if="isOwnReview(review)"
+                  @click="openEditModal(review)"
+                  class="text-xs text-blue-600 hover:text-blue-700 hover:underline"
+                >
+                  Sửa
+                </button>
               </div>
             </div>
           </div>
@@ -50,18 +60,69 @@
 
         <!-- Stars -->
         <div class="flex gap-1 mt-2">
-          <div v-for="i in 5" :key="i" class="text-lg" :class="i <= review.rating ? 'text-amber-400' : 'text-gray-300'">
+          <div
+            v-for="i in 5"
+            :key="i"
+            class="text-lg cursor-pointer"
+            :class="editingReview?.id === review.id && editingReview.newRating >= i ? 'text-amber-400' : (i <= review.rating ? 'text-amber-400' : 'text-gray-300')"
+            @click="isOwnReview(review) && editingReview?.id === review.id ? editingReview.newRating = i : null"
+          >
             ★
           </div>
         </div>
 
         <!-- Comment -->
-        <div v-if="review.comment" class="mt-3">
+        <div v-if="review.comment && editingReview?.id !== review.id" class="mt-3">
           <p class="text-gray-700 text-sm leading-relaxed">{{ review.comment }}</p>
         </div>
 
+        <!-- Edit Form -->
+        <div v-if="editingReview?.id === review.id" class="mt-3 space-y-3">
+          <div class="flex gap-1">
+            <div
+              v-for="i in 5"
+              :key="i"
+              class="text-xl cursor-pointer text-amber-400"
+              @click="editingReview.newRating = i"
+            >
+              ★
+            </div>
+            <span class="ml-2 text-sm text-gray-600 self-center">{{ editingReview.newRating }}/5</span>
+          </div>
+          <textarea
+            v-model="editingReview.newComment"
+            class="w-full border border-gray-300 rounded-lg p-3 text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            rows="3"
+            placeholder="Chia sẻ trải nghiệm của bạn..."
+          ></textarea>
+          <div class="flex gap-2 justify-end">
+            <button
+              @click="cancelEdit"
+              class="px-4 py-2 border border-gray-300 rounded-lg text-sm text-gray-700 hover:bg-gray-50"
+            >
+              Hủy
+            </button>
+            <button
+              @click="submitEdit"
+              :disabled="savingId === review.id"
+              class="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 disabled:opacity-50"
+            >
+              {{ savingId === review.id ? 'Đang lưu...' : 'Lưu' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Admin Reply -->
+        <div v-if="review.admin_reply" class="mt-3 pl-4 border-l-4 border-green-500 bg-green-50 rounded-r-lg p-3">
+          <div class="flex items-center gap-2 mb-1">
+            <span class="text-green-600 font-semibold text-sm">🏪 Phản hồi từ cửa hàng</span>
+            <span v-if="review.replied_at" class="text-xs text-gray-500">{{ formatDate(review.replied_at) }}</span>
+          </div>
+          <p class="text-gray-700 text-sm leading-relaxed">{{ review.admin_reply }}</p>
+        </div>
+
         <!-- Delete button if own review -->
-        <div v-if="isOwnReview(review)" class="flex gap-2 mt-3 pt-3 border-t border-gray-200">
+        <div v-if="isOwnReview(review) && editingReview?.id !== review.id" class="flex gap-2 mt-3 pt-3 border-t border-gray-200">
           <button
             @click="deleteReview(review.id)"
             :disabled="deletingId === review.id"
@@ -113,6 +174,8 @@ const reviews = ref([])
 const loading = ref(false)
 const error = ref(null)
 const deletingId = ref(null)
+const savingId = ref(null)
+const editingReview = ref(null)
 const currentPage = ref(1)
 const totalPages = ref(1)
 const currentUserId = computed(() => authStore.user?.id)
@@ -179,6 +242,46 @@ const deleteReview = async (reviewId) => {
     error.value = err.response?.data?.message || 'Failed to delete review'
   } finally {
     deletingId.value = null
+  }
+}
+
+const openEditModal = (review) => {
+  editingReview.value = {
+    id: review.id,
+    newRating: review.rating,
+    newComment: review.comment || '',
+  }
+}
+
+const cancelEdit = () => {
+  editingReview.value = null
+}
+
+const submitEdit = async () => {
+  if (!editingReview.value) return
+
+  savingId.value = editingReview.value.id
+  try {
+    const response = await reviewService.update(editingReview.value.id, {
+      rating: editingReview.value.newRating,
+      comment: editingReview.value.newComment,
+    })
+
+    // Update the review in the list
+    const index = reviews.value.findIndex(r => r.id === editingReview.value.id)
+    if (index !== -1) {
+      reviews.value[index] = {
+        ...reviews.value[index],
+        rating: response.data.data?.rating || editingReview.value.newRating,
+        comment: response.data.data?.comment || editingReview.value.newComment,
+      }
+    }
+
+    editingReview.value = null
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to update review'
+  } finally {
+    savingId.value = null
   }
 }
 

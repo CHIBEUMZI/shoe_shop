@@ -46,6 +46,7 @@ class UserController extends Controller
             'name' => $data['name'],
             'birth_date' => $data['birth_date'] ?? null,
             'avatar' => $data['avatar'] ?? null,
+            'phone' => $data['phone'] ?? null,
             'role' => $data['role'],
             'is_active' => (bool) $data['is_active'],
         ]);

@@ -18,6 +18,7 @@ const values = ref({
   email: "",
   avatar: "",
   birth_date: null,
+  phone: "",
   role: "customer",
   is_active: true,
 });
@@ -74,6 +75,13 @@ const schema = [
     placeholder: "YYYY-MM-DD",
   },
   {
+    name: "phone",
+    label: "Số điện thoại",
+    type: "text",
+    group: "general",
+    placeholder: "Nhập số điện thoại...",
+  },
+  {
     name: "role",
     label: "Quyền",
     type: "select",
@@ -119,6 +127,7 @@ async function loadUser(userId) {
       email: data?.email ?? "",
       avatar: data?.avatar ?? "",
       birth_date: data?.birth_date ?? null,
+      phone: data?.phone ?? "",
       role: data?.role ?? "customer",
       is_active: !!data?.is_active,
     };
@@ -143,6 +152,7 @@ async function submitUser(payload, ctx) {
       name: String(payload.name || "").trim(),
       birth_date: payload.birth_date || null,
       avatar: String(payload.avatar || "").trim() || null,
+      phone: String(payload.phone || "").trim() || null,
       role: payload.role,
       is_active: !!payload.is_active,
     });

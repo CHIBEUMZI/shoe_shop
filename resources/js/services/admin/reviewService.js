@@ -11,25 +11,15 @@ export default {
     return api.get(`/api/v1/admin/reviews/${reviewId}`);
   },
 
-  // Approve a review
-  approve(reviewId) {
-    return api.patch(`/api/v1/admin/reviews/${reviewId}/approve`);
-  },
-
-  // Reject a review
-  reject(reviewId) {
-    return api.patch(`/api/v1/admin/reviews/${reviewId}/reject`);
+  // Reply to a review
+  reply(reviewId, data) {
+    return api.post(`/api/v1/admin/reviews/${reviewId}/reply`, data);
   },
 
   // Delete a review
   delete(reviewId) {
     return api.delete(`/api/v1/admin/reviews/${reviewId}`);
   },
-
-  // Bulk action on reviews
-//   bulkAction(data) {
-//     return api.post("/api/v1/admin/reviews/bulk-action", data);
-//   },
 
   // Get review statistics
   getStats() {

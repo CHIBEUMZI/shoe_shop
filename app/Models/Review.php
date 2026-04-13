@@ -12,12 +12,14 @@ class Review extends Model
         'rating',
         'comment',
         'verified_purchase',
-        'status',
+        'admin_reply',
+        'replied_at',
     ];
 
     protected $casts = [
         'rating' => 'integer',
         'verified_purchase' => 'boolean',
+        'replied_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

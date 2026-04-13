@@ -18,6 +18,7 @@ class UserUpdateRequest extends FormRequest
             'name' => ['required', 'string', 'max:255'],
             'birth_date' => ['nullable', 'date'],
             'avatar' => ['nullable', 'string', 'max:2048'],
+            'phone' => ['nullable', 'string', 'max:20'],
 
             'role' => [
                 'required',
