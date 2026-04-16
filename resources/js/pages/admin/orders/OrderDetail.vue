@@ -218,46 +218,51 @@
   <Teleport to="body">
     <div
       v-if="showConfirmCancelModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="closeConfirmCancelModal"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white shadow-xl overflow-hidden">
-        <div class="px-6 py-5 border-b border-slate-200">
-          <h2 class="text-xl font-bold text-slate-900">Xác nhận hủy đơn hàng</h2>
-          <p class="mt-1 text-sm text-slate-500">
+      <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
+          <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">
+            Xác nhận hủy đơn hàng
+          </h2>
+          <p class="mt-1 text-sm text-slate-500 dark:text-slate-400">
             Hành động này sẽ hủy đơn hàng và khôi phục số lượng tồn kho. Bạn có chắc chắn?
           </p>
         </div>
 
         <div class="px-6 py-5 space-y-4">
           <div>
-            <label class="block text-sm font-medium text-slate-700 mb-2">
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
               Lý do hủy (tùy chọn)
             </label>
             <textarea
               v-model="adminCancelReason"
               rows="3"
               placeholder="Nhập lý do hủy đơn hàng (nếu có)..."
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 resize-none"
+              class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 px-4 py-3 text-sm text-slate-900 dark:text-slate-100 outline-none focus:border-red-500 focus:ring-2 focus:ring-red-500/20 resize-none"
             ></textarea>
           </div>
 
-          <div v-if="cancelActionError" class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+          <div
+            v-if="cancelActionError"
+            class="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400"
+          >
             {{ cancelActionError }}
           </div>
         </div>
 
-        <div class="px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
+        <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
           <button
             type="button"
-            class="btn btn-ghost"
+            class="rounded-xl border border-slate-200 dark:border-slate-700 px-5 py-2.5 text-sm font-semibold text-slate-900 dark:text-slate-100 hover:bg-slate-50 dark:hover:bg-slate-700 transition"
             @click="closeConfirmCancelModal"
           >
             Đóng
           </button>
           <button
             type="button"
-            class="btn btn-danger"
+            class="rounded-xl bg-red-600 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-700 transition disabled:opacity-50"
             :disabled="submitting"
             @click="submitConfirmCancel"
           >

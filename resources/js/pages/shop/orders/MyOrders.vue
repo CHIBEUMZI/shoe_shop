@@ -372,7 +372,7 @@
   <Teleport to="body">
     <div
       v-if="showCancelModal"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+      class="fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="closeCancelModal"
     >
       <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-xl overflow-hidden">

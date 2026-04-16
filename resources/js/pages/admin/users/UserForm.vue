@@ -39,7 +39,7 @@ async function uploadAvatarWithAlert(file) {
   }
 }
 
-const schema = [
+const schema = computed(() => [
   {
     name: "avatar",
     label: "Avatar",
@@ -51,6 +51,7 @@ const schema = [
     accept: "image/*",
     placeholder: "path/url avatar...",
     upload: uploadAvatarWithAlert,
+    disabledWhen: () => true,
   },
   {
     name: "name",
@@ -59,6 +60,7 @@ const schema = [
     group: "general",
     required: true,
     placeholder: "Nhập họ tên...",
+    disabledWhen: () => true,
   },
   {
     name: "email",
@@ -73,6 +75,7 @@ const schema = [
     type: "text",
     group: "general",
     placeholder: "YYYY-MM-DD",
+    disabledWhen: () => true,
   },
   {
     name: "phone",
@@ -80,6 +83,7 @@ const schema = [
     type: "text",
     group: "general",
     placeholder: "Nhập số điện thoại...",
+    disabledWhen: () => true,
   },
   {
     name: "role",
@@ -97,17 +101,15 @@ const schema = [
     label: "Trạng thái tài khoản",
     type: "switch",
     group: "settings",
+    disabledWhen: (vals) => vals.role === "admin",
+    help: values.value.role === "admin" ? "Tài khoản admin không thể bị khóa" : "",
     onText: "Đang hoạt động",
     offText: "Đang khóa",
   },
-];
+]);
 
 function validate(v) {
   const errors = {};
-
-  if (!String(v.name || "").trim()) {
-    errors.name = "Vui lòng nhập họ tên";
-  }
 
   if (!["admin", "customer"].includes(String(v.role || ""))) {
     errors.role = "Role không hợp lệ";
@@ -149,10 +151,10 @@ async function loadUser(userId) {
 async function submitUser(payload, ctx) {
   try {
     await userAdminService.update(ctx.entityId, {
-      name: String(payload.name || "").trim(),
-      birth_date: payload.birth_date || null,
-      avatar: String(payload.avatar || "").trim() || null,
-      phone: String(payload.phone || "").trim() || null,
+      name: payload.name,
+      birth_date: payload.birth_date,
+      phone: payload.phone,
+      avatar: payload.avatar,
       role: payload.role,
       is_active: !!payload.is_active,
     });

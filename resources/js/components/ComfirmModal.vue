@@ -3,7 +3,10 @@
     <Transition name="backdrop">
       <div
         v-if="visible"
-        class="fixed inset-0 z-[9999] flex items-center justify-center"
+        :class="[
+          'fixed inset-0 z-[9999] flex items-center justify-center',
+          hideBackdrop ? '!bg-transparent' : 'bg-black/50 backdrop-blur-sm'
+        ]"
         @click.self="onCancel"
       >
         <Transition name="dialog">
@@ -84,7 +87,8 @@ const props = defineProps({
   visible: Boolean,
   title: { type: String, default: 'Xác nhận thao tác' },
   message: { type: String, default: 'Bạn có chắc chắn muốn thực hiện hành động này không?' },
-  variant: { type: String, default: 'danger' }
+  variant: { type: String, default: 'danger' },
+  hideBackdrop: { type: Boolean, default: false }
 })
 
 const emit = defineEmits(['confirm', 'cancel'])
