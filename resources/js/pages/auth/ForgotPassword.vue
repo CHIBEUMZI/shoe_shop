@@ -15,12 +15,12 @@
           <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
         </svg>
       </div>
-      <span class="text-xl font-bold text-white tracking-tight">ShoeShop</span>
+      <span class="text-xl font-bold text-white tracking-tight">BMC Shoes</span>
     </div>
 
     <!-- Centered Form Card -->
     <div class="relative z-10 w-full max-w-md mx-4">
-      <div class="bg-white rounded-2xl shadow-2xl shadow-gray-900/20 ring-1 ring-white/50 p-6 sm:p-8 animate-fadeIn">
+      <div class="bg-white rounded-lg shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-6 sm:p-8 animate-fadeIn">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-1.5">
             <div class="w-10 h-1.5 bg-violet-500 rounded-full"></div>

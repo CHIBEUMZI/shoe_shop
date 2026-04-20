@@ -602,8 +602,8 @@ onMounted(async () => {
 <template>
   <AdminEntityForm
     mode="create"
-    title="Product Details"
-    subtitle="Create or update your footwear inventory items."
+    title="Tạo sản phẩm"
+    subtitle="Quản lý tên, slug, SKU và trạng thái."
     v-model:values="values"
     :schema="schema"
     :validate="validate"

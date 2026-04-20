@@ -314,27 +314,6 @@ function sectionGridClass(sectionKey) {
           <div class="page-subtitle" v-if="subtitle">{{ subtitle }}</div>
         </div>
       </div>
-
-      <div class="topbar-actions">
-        <button
-          class="btn btn-ghost"
-          type="button"
-          :disabled="loading || submitting"
-          @click="cancel"
-        >
-          {{ cancelText }}
-        </button>
-
-        <button
-          class="btn btn-primary"
-          type="button"
-          :disabled="loading || submitting"
-          @click="submit"
-        >
-          <span v-if="submitting" class="spinner" />
-          {{ submitting ? "Đang lưu..." : submitText }}
-        </button>
-      </div>
     </div>
 
     <!-- server error -->
@@ -692,6 +671,28 @@ function sectionGridClass(sectionKey) {
             :previewSrc="previewSrc"
           />
         </div>
+      </div>
+
+      <!-- Form Actions -->
+      <div class="form-actions">
+        <button
+          class="btn btn-ghost"
+          type="button"
+          :disabled="loading || submitting"
+          @click="cancel"
+        >
+          {{ cancelText }}
+        </button>
+
+        <button
+          class="btn btn-primary"
+          type="button"
+          :disabled="loading || submitting"
+          @click="submit"
+        >
+          <span v-if="submitting" class="spinner" />
+          {{ submitting ? "Đang lưu..." : submitText }}
+        </button>
       </div>
     </div>
   </div>
@@ -1254,6 +1255,15 @@ select.control {
   to {
     transform: rotate(360deg);
   }
+}
+
+/* ── Form Actions ── */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  padding-top: 16px;
+  margin-top: 8px;
 }
 
 /* ── Checkbox Grid ── */
