@@ -1,74 +1,85 @@
 <template>
-  <div class="min-h-[70vh] flex items-start justify-center px-4">
-    <div
-      class="w-full max-w-md mt-14 bg-white rounded-2xl shadow-sm ring-1 ring-gray-200 p-6 sm:p-7 animate-fadeIn"
-    >
-      <!-- Header -->
-      <div class="text-center mb-6">
-        <div class="mx-auto mb-3 h-12 w-12 rounded-xl bg-blue-50 flex items-center justify-center">
-          <svg viewBox="0 0 24 24" class="h-7 w-7 text-blue-600" fill="currentColor" aria-hidden="true">
-            <path d="M17 9h-1V7a4 4 0 10-8 0v2H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2zM10 7a2 2 0 114 0v2h-4V7z"/>
-          </svg>
-        </div>
-        <h1 class="text-xl font-semibold text-gray-900">Quên mật khẩu?</h1>
-        <p class="text-sm text-gray-500 mt-1">Nhập email đã đăng ký để nhận mã xác nhận.</p>
-      </div>
+  <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden">
+    <!-- Full Screen Background -->
+    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-700 to-fuchsia-800">
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-400/30 rounded-full blur-[120px] animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-fuchsia-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
+      <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;"></div>
+    </div>
 
-      <!-- Error Alert -->
-      <div
-        v-if="error"
-        class="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 flex items-start gap-2"
-        role="alert"
-      >
-        <span class="mt-0.5">
-          <svg viewBox="0 0 24 24" class="h-5 w-5 text-red-600" fill="currentColor" aria-hidden="true">
-            <path fill-rule="evenodd" d="M12 2a10 10 0 100 20 10 10 0 000-20zm.75 5a.75.75 0 00-1.5 0v6a.75.75 0 001.5 0V7zm-.75 11a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/>
-          </svg>
-        </span>
-        <span class="leading-5">{{ error }}</span>
+    <!-- Logo Top Left -->
+    <div class="absolute top-6 left-6 flex items-center gap-3 z-20">
+      <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
+        <svg viewBox="0 0 24 24" class="h-7 w-7 text-white" fill="currentColor">
+          <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
+        </svg>
       </div>
+      <span class="text-xl font-bold text-white tracking-tight">ShoeShop</span>
+    </div>
 
-      <form class="space-y-4" @submit.prevent="onSubmit">
-        <div>
-          <label class="block text-sm font-medium text-gray-700 mb-1" for="email">Email</label>
-          <div class="relative">
-            <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-              <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor" aria-hidden="true">
-                <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/>
-              </svg>
-            </span>
-            <input
-              id="email"
-              class="w-full rounded-lg border bg-gray-50 pl-10 pr-3 py-2 text-sm outline-none transition
-                     focus:border-blue-500 focus:ring-2 focus:ring-blue-200 disabled:opacity-60"
-              :class="emailError ? 'border-red-300 focus:border-red-500 focus:ring-red-200' : 'border-gray-200'"
-              v-model="email"
-              type="email"
-              placeholder="abc123@gmail.com"
-              autocomplete="email"
-              :disabled="loading"
-              autofocus
-            />
+    <!-- Centered Form Card -->
+    <div class="relative z-10 w-full max-w-md mx-4">
+      <div class="bg-white rounded-2xl shadow-2xl shadow-gray-900/20 ring-1 ring-white/50 p-6 sm:p-8 animate-fadeIn">
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div class="flex gap-1.5">
+            <div class="w-10 h-1.5 bg-violet-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-purple-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-fuchsia-500 rounded-full"></div>
           </div>
-          <p v-if="emailError" class="mt-1 text-xs text-red-600">{{ emailError }}</p>
         </div>
 
-        <button
-          class="w-full inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white
-                 transition hover:bg-blue-700 active:translate-y-[1px] disabled:opacity-60 disabled:cursor-not-allowed"
-          :disabled="loading"
-        >
-          <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
-          {{ loading ? 'Đang gửi mã...' : 'Gửi mã xác nhận' }}
-        </button>
-      </form>
+        <div class="text-center mb-6">
+          <h1 class="text-2xl font-bold text-gray-900 mb-1">Quên mật khẩu?</h1>
+          <p class="text-sm text-gray-500">Nhập email đã đăng ký để nhận mã xác nhận.</p>
+        </div>
 
-      <!-- Back to login -->
-      <p class="text-center text-sm text-gray-600 pt-2">
-        <RouterLink to="/login" class="font-semibold text-blue-600 hover:text-blue-700 hover:underline">
-          Quay lại đăng nhập
-        </RouterLink>
-      </p>
+        <div v-if="error" class="mb-5 rounded-xl border border-red-200/50 bg-gradient-to-r from-red-50 to-orange-50 px-4 py-3 text-sm text-red-700 flex items-start gap-3 animate-shake" role="alert">
+          <span class="mt-0.5 flex-shrink-0">
+            <svg viewBox="0 0 24 24" class="h-5 w-5 text-red-500" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+            </svg>
+          </span>
+          <span class="leading-5">{{ error }}</span>
+        </div>
+
+        <form class="space-y-4" @submit.prevent="onSubmit">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5" for="email">Email</label>
+            <div class="relative group">
+              <input id="email" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="emailError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'" v-model="email" type="email" placeholder="abc123@gmail.com" autocomplete="email" :disabled="loading" autofocus/>
+              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400 group-focus-within:text-violet-500 transition-colors">
+                <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
+              </span>
+            </div>
+            <p v-if="emailError" class="mt-1.5 text-xs text-red-600 flex items-center gap-1">
+              <svg viewBox="0 0 24 24" class="h-3.5 w-3.5" fill="currentColor"><path fill-rule="evenodd" d="M12 2a10 10 0 100 20 10 10 0 000-20zm.75 5a.75.75 0 00-1.5 0v6a.75.75 0 001.5 0V7zm-.75 11a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"/></svg>
+              {{ emailError }}
+            </p>
+          </div>
+
+          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/40 hover:from-violet-700 hover:to-purple-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed" :disabled="loading">
+            <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
+            <span class="relative z-10">{{ loading ? 'Đang gửi mã...' : 'Gửi mã xác nhận' }}</span>
+          </button>
+        </form>
+
+        <div class="mt-6 pt-5 border-t border-gray-100 text-center">
+          <p class="text-sm text-gray-500">
+            Nhớ mật khẩu rồi?
+            <RouterLink to="/login" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-80 transition-opacity">
+              Đăng nhập ngay
+            </RouterLink>
+          </p>
+        </div>
+
+        <div class="mt-4 text-center">
+          <RouterLink to="/" class="inline-flex items-center gap-1.5 text-sm text-gray-400 hover:text-white transition-colors">
+            <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+            Quay về trang chủ
+          </RouterLink>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -79,7 +90,6 @@ import { useRouter } from "vue-router";
 import api from "../../api";
 
 const router = useRouter();
-
 const email = ref("");
 const loading = ref(false);
 const error = ref("");
@@ -88,29 +98,20 @@ const emailError = ref("");
 function validate() {
   emailError.value = "";
   const emailTrim = (email.value || "").trim();
-  if (!emailTrim) {
-    emailError.value = "Email là bắt buộc";
-  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) {
-    emailError.value = "Vui lòng nhập địa chỉ email hợp lệ";
-  }
+  if (!emailTrim) { emailError.value = "Email là bắt buộc"; }
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrim)) { emailError.value = "Vui lòng nhập địa chỉ email hợp lệ"; }
   return !emailError.value;
 }
 
 async function onSubmit() {
   error.value = "";
   if (!validate()) return;
-
   loading.value = true;
   try {
-    const response = await api.post("/api/auth/forgot-password", {
-      email: email.value.trim(),
-    });
+    const response = await api.post("/api/auth/forgot-password", { email: email.value.trim() });
     if (response.data.message) {
       error.value = "";
-      router.push({
-        path: "/reset-password",
-        query: { email: email.value.trim() },
-      });
+      router.push({ path: "/reset-password", query: { email: email.value.trim() } });
     }
   } catch (e) {
     error.value = e?.response?.data?.message || e?.response?.data?.errors?.email?.[0] || "Đã xảy ra lỗi. Vui lòng thử lại.";
@@ -121,11 +122,8 @@ async function onSubmit() {
 </script>
 
 <style scoped>
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.animate-fadeIn {
-  animation: fadeIn 0.6s ease-out both;
-}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(20px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-4px); } 20%, 40%, 60%, 80% { transform: translateX(4px); } }
+.animate-fadeIn { animation: fadeIn 0.5s ease-out both; }
+.animate-shake { animation: shake 0.5s ease-in-out; }
 </style>
