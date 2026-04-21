@@ -164,4 +164,8 @@ Route::prefix('v1/admin')
         // COUPONS
         Route::apiResource('coupons', App\Http\Controllers\Api\Admin\CouponController::class);
         Route::patch('coupons/{id}/toggle-status', [App\Http\Controllers\Api\Admin\CouponController::class, 'toggleStatus']);
+
+        // EXPORT PRODUCTS
+        Route::get('products/export/excel', [App\Http\Controllers\Api\Admin\ProductExportController::class, 'excel']);
+        Route::get('products/export/pdf', [App\Http\Controllers\Api\Admin\ProductExportController::class, 'pdf']);
     });

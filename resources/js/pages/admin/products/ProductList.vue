@@ -2,6 +2,7 @@
 import { computed, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 import productAdminService from "../../../services/admin/productAdminService";
+import productExportService from "../../../services/admin/productExportService";
 import BaseTable, { type TableColumn } from "../../../components/BaseTable.vue";
 import BaseSelect from "../../../components/BaseSelect.vue";
 import { buildImageUrl } from "../../../utils/image";
@@ -188,6 +189,55 @@ async function handleConfirmDelete() {
     selectedItem.value = null;
   }
 }
+
+async function exportExcel() {
+  loading.value = true;
+  try {
+    const response = await productExportService.exportExcel({
+      search: q.value || undefined,
+      status: status.value === "" ? undefined : status.value,
+    });
+    const blob = new Blob([response.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `danh-sach-san-pham-${new Date().toISOString().split("T")[0]}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    notify.success("Xuất Excel thành công!", { title: "Xuất file", duration: 2500 });
+  } catch (e: any) {
+    notify.error("Xuất Excel thất bại.", { title: "Lỗi", duration: 2500 });
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function exportPdf() {
+  loading.value = true;
+  try {
+    const response = await productExportService.exportPdf({
+      search: q.value || undefined,
+      status: status.value === "" ? undefined : status.value,
+    });
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `danh-sach-san-pham-${new Date().toISOString().split("T")[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    notify.success("Xuất PDF thành công!", { title: "Xuất file", duration: 2500 });
+  } catch (e: any) {
+    notify.error("Xuất PDF thất bại.", { title: "Lỗi", duration: 2500 });
+  } finally {
+    loading.value = false;
+  }
+}
+
 const columns = computed<TableColumn[]>(() => [
   { key: "thumbnail", label: "Ảnh", width: "84px" },
   { key: "name", label: "Sản phẩm", sortable: true },
@@ -251,6 +301,26 @@ function onAction(e: { key: string; item: any }) {
       </div>
 
       <div class="flex flex-wrap gap-2">
+        <button
+          class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 flex items-center gap-1"
+          :disabled="loading"
+          @click="exportExcel"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Excel
+        </button>
+        <button
+          class="rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700 flex items-center gap-1"
+          :disabled="loading"
+          @click="exportPdf"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          PDF
+        </button>
         <button
           class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
           @click="goCreate"
