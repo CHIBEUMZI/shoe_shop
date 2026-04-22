@@ -225,7 +225,11 @@ function formatDate(value) {
   if (!value) return "--";
 
   try {
-    return new Date(value).toLocaleString("vi-VN");
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    }).format(new Date(value));
   } catch {
     return "--";
   }

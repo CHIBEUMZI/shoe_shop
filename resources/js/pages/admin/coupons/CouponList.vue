@@ -87,7 +87,10 @@ function formatMoney(value: number) {
 function formatDate(value: string) {
   if (!value) return "--";
   try {
-    return new Date(value).toLocaleDateString("vi-VN");
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    }).format(new Date(value));
   } catch {
     return "--";
   }

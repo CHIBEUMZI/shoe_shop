@@ -49,14 +49,21 @@ function formatDate(value) {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  return d.toLocaleDateString("vi-VN");
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(d);
 }
 
 function formatDateTime(value) {
   if (!value) return "—";
   const d = new Date(value);
   if (Number.isNaN(d.getTime())) return String(value);
-  return d.toLocaleString("vi-VN");
+  return new Intl.DateTimeFormat("vi-VN", {
+    dateStyle: "short",
+    timeStyle: "short",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(d);
 }
 
 function formatCurrency(value) {

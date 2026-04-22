@@ -141,6 +141,7 @@ import BaseTable from '../../../components/BaseTable.vue'
 import BaseSelect from '../../../components/BaseSelect.vue'
 import { useAlert } from '../../../composables/useAlert'
 import reviewService from '../../../services/admin/reviewService'
+import { formatDateTime } from '../../../utils/date'
 
 const router = useRouter()
 const route = useRoute()
@@ -198,16 +199,6 @@ const rowActions = [
     danger: true,
   },
 ]
-
-const formatDateTime = (value) => {
-  if (!value) return '-'
-  const d = new Date(value)
-  if (Number.isNaN(d.getTime())) return value
-  return new Intl.DateTimeFormat('vi-VN', {
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(d)
-}
 
 const fetchReviews = async () => {
   loading.value = true

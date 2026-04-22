@@ -1,7 +1,7 @@
 <template>
   <main class="space-y-6">
     <section>
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h1 class="text-2xl font-black tracking-tight text-slate-900">Quản lý đơn hàng</h1>
           <p class="mt-1 text-sm text-slate-500">
@@ -9,26 +9,61 @@
           </p>
         </div>
 
-        <div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 lg:w-auto">
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Tổng đơn</div>
-            <div class="mt-2 text-2xl font-black text-slate-900">{{ meta.total }}</div>
-          </div>
+        <div class="flex items-center gap-3">
+          <button
+            class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-60"
+            :disabled="loading"
+            @click="exportExcel"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Xuất Excel
+          </button>
+          <button
+            class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:opacity-60"
+            :disabled="loading"
+            @click="exportPdf"
+          >
+            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+            </svg>
+            Xuất PDF
+          </button>
+        </div>
+      </div>
+    </section>
 
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Chờ xử lý</div>
-            <div class="mt-2 text-2xl font-black text-amber-600">{{ countByStatus("pending") }}</div>
-          </div>
+    <section>
+      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Tổng đơn</div>
+          <div class="mt-2 text-2xl font-black text-slate-900">{{ meta.total }}</div>
+        </div>
 
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Đang giao</div>
-            <div class="mt-2 text-2xl font-black text-sky-600">{{ countByStatus("shipping") }}</div>
-          </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Chờ xử lý</div>
+          <div class="mt-2 text-2xl font-black text-amber-600">{{ countByStatus("pending") }}</div>
+        </div>
 
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Hoàn thành</div>
-            <div class="mt-2 text-2xl font-black text-green-600">{{ countByStatus("completed") }}</div>
-          </div>
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Đã xác nhận</div>
+          <div class="mt-2 text-2xl font-black text-blue-600">{{ countByStatus("confirmed") }}</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Đang giao</div>
+          <div class="mt-2 text-2xl font-black text-sky-600">{{ countByStatus("shipping") }}</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Hoàn thành</div>
+          <div class="mt-2 text-2xl font-black text-green-600">{{ countByStatus("completed") }}</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+          <div class="text-sm text-slate-500">Đã hủy</div>
+          <div class="mt-2 text-2xl font-black text-red-600">{{ countByStatus("cancelled") }}</div>
         </div>
       </div>
     </section>
@@ -153,9 +188,13 @@ import { useRouter, useRoute } from "vue-router";
 import BaseTable from "../../../components/BaseTable.vue";
 import BaseSelect from "../../../components/BaseSelect.vue";
 import orderAdminService from "../../../services/admin/orderAdminService";
+import orderExportService from "../../../services/admin/orderExportService";
+import { useAlert } from "../../../composables/useAlert";
+import { formatDateTime } from "../../../utils/date";
 
 const router = useRouter();
 const route = useRoute();
+const notify = useAlert();
 
 const loading = ref(false);
 const error = ref("");
@@ -315,6 +354,56 @@ function goDetail(id) {
   router.push(`/admin/orders/${id}`);
 }
 
+async function exportExcel() {
+  loading.value = true;
+  try {
+    const response = await orderExportService.exportExcel({
+      search: filters.search || undefined,
+      status: filters.status || undefined,
+      payment_status: filters.payment_status || undefined,
+    });
+    const blob = new Blob([response.data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `danh-sach-don-hang-${new Date().toISOString().split("T")[0]}.xlsx`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    notify.success("Xuất Excel thành công!", { title: "Xuất file", duration: 2500 });
+  } catch (e) {
+    notify.error("Xuất Excel thất bại.", { title: "Lỗi", duration: 2500 });
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function exportPdf() {
+  loading.value = true;
+  try {
+    const response = await orderExportService.exportPdf({
+      search: filters.search || undefined,
+      status: filters.status || undefined,
+      payment_status: filters.payment_status || undefined,
+    });
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `danh-sach-don-hang-${new Date().toISOString().split("T")[0]}.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(url);
+    notify.success("Xuất PDF thành công!", { title: "Xuất file", duration: 2500 });
+  } catch (e) {
+    notify.error("Xuất PDF thất bại.", { title: "Lỗi", duration: 2500 });
+  } finally {
+    loading.value = false;
+  }
+}
+
 function countByStatus(status) {
   return items.value.filter((x) => x.status === status).length;
 }
@@ -324,17 +413,6 @@ function moneyVND(v) {
     style: "currency",
     currency: "VND",
   }).format(Number(v || 0));
-}
-
-function formatDateTime(v) {
-  if (!v) return "-";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(d);
 }
 
 function paymentMethodText(v) {

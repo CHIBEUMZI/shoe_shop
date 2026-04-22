@@ -157,6 +157,7 @@
 import { ref, onMounted, computed, watch } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import reviewService from '../../services/public/reviewService'
+import { formatDate, formatRelativeTime } from '../../utils/date'
 
 const props = defineProps({
   productId: {
@@ -182,25 +183,6 @@ const currentUserId = computed(() => authStore.user?.id)
 
 const isOwnReview = (review) => {
   return currentUserId.value && review.user.id === parseInt(currentUserId.value)
-}
-
-const formatDate = (dateString) => {
-  const date = new Date(dateString)
-  const now = new Date()
-  const diffTime = now - date
-  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24))
-
-  if (diffDays === 0) {
-    const diffHours = Math.floor(diffTime / (1000 * 60 * 60))
-    if (diffHours === 0) return 'Vừa mới'
-    return `${diffHours} giờ trước`
-  } else if (diffDays === 1) {
-    return 'Hôm qua'
-  } else if (diffDays < 7) {
-    return `${diffDays} ngày trước`
-  } else {
-    return date.toLocaleDateString('vi-VN')
-  }
 }
 
 const fetchReviews = async (page = 1) => {

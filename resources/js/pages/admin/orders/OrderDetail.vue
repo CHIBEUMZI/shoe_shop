@@ -291,6 +291,7 @@ import AdminActionPanel from "../../../components/AdminActionPanel.vue";
 import orderAdminService from "../../../services/admin/orderAdminService";
 import { useAlert } from "../../../composables/useAlert";
 import ConfirmModal from "../../../components/ComfirmModal.vue";
+import { formatDateTime } from "../../../utils/date";
 
 const route = useRoute();
 const router = useRouter();
@@ -533,17 +534,6 @@ function moneyVND(v) {
     style: "currency",
     currency: "VND",
   }).format(Number(v || 0));
-}
-
-function formatDateTime(v) {
-  if (!v) return "-";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(d);
 }
 
 function paymentMethodText(v) {

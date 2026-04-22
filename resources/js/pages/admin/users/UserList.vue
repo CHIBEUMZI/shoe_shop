@@ -187,7 +187,11 @@ function formatDateTime(iso) {
   if (!iso) return "";
   try {
     const d = new Date(iso);
-    return d.toLocaleString();
+    return new Intl.DateTimeFormat('vi-VN', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+      timeZone: 'Asia/Ho_Chi_Minh',
+    }).format(d);
   } catch {
     return String(iso);
   }

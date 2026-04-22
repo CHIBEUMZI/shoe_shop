@@ -149,6 +149,8 @@ Route::prefix('v1/admin')
         Route::patch('orders/{order}/status', [App\Http\Controllers\Api\Admin\OrderController::class, 'updateStatus']);
         Route::patch('orders/{order}/confirm-cancellation', [App\Http\Controllers\Api\Admin\OrderController::class, 'confirmCancellation']);
         Route::patch('orders/{order}/reject-cancellation', [App\Http\Controllers\Api\Admin\OrderController::class, 'rejectCancellation']);
+        Route::get('orders/export/excel', [App\Http\Controllers\Api\Admin\OrderExportController::class, 'excel']);
+        Route::get('orders/export/pdf', [App\Http\Controllers\Api\Admin\OrderExportController::class, 'pdf']);
         
         // REVIEWS
         Route::get('reviews/stats', [App\Http\Controllers\Api\Admin\ReviewAdminController::class, 'stats']);

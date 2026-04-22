@@ -437,6 +437,7 @@ import { useRouter } from "vue-router";
 import BaseSelect from "../../../components/BaseSelect.vue";
 import orderService from "../../../services/public/orderService";
 import { buildImageUrl } from "../../../utils/image";
+import { formatDateTime } from "../../../utils/date";
 
 const router = useRouter();
 
@@ -572,17 +573,6 @@ function moneyVND(v) {
     style: "currency",
     currency: "VND",
   }).format(n);
-}
-
-function formatDateTime(v) {
-  if (!v) return "-";
-  const d = new Date(v);
-  if (Number.isNaN(d.getTime())) return v;
-
-  return new Intl.DateTimeFormat("vi-VN", {
-    dateStyle: "short",
-    timeStyle: "short",
-  }).format(d);
 }
 
 function fullAddress(order) {
