@@ -1,60 +1,66 @@
 <template>
-  <main class="min-h-screen bg-slate-50 p-4 md:p-6">
-    <!-- Header -->
-    <section class="mb-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  <div class="mx-auto max-w-[1200px] p-6">
+    <div class="mb-4 flex items-end justify-between gap-4">
       <div>
-        <h1 class="text-2xl md:text-3xl font-black tracking-tight text-slate-900">
-          Quản lý banner
-        </h1>
-        <p class="mt-1 text-sm text-slate-500">
-          Quản lý banner hiển thị trên website
-        </p>
+        <h2 class="m-0 text-2xl font-extrabold">Quản lý banner</h2>
+        <div class="mt-1 text-sm text-slate-500">Quản lý banner hiển thị trên website</div>
       </div>
 
-      <router-link
-        to="/admin/banners/create"
-        class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-      >
-        + Tạo banner
-      </router-link>
-    </section>
+      <div class="flex flex-wrap gap-2">
+        <router-link
+          to="/admin/banners/create"
+          class="rounded-lg bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+        >
+          + Tạo banner
+        </router-link>
+      </div>
+    </div>
 
-    <!-- Table -->
+    <div
+      v-if="error"
+      class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"
+    >
+      <div class="font-extrabold">Có lỗi</div>
+      <div class="mt-1 text-sm">{{ error }}</div>
+    </div>
+
     <BaseTable
       :columns="columns"
       :items="items"
       :loading="loading"
-      :empty-text="error || 'Chưa có banner nào'"
-      :searchable="true"
+      emptyText="Chưa có banner nào"
       :search="filters.search"
-      search-placeholder="Tìm theo tiêu đề hoặc mô tả..."
       :pagination="pagination"
-      :show-per-page="true"
-      :per-page="filters.per_page"
+      :showPerPage="true"
+      :perPage="filters.per_page"
+      :perPageOptions="[10, 20, 50]"
       :actions="true"
-      :row-actions="rowActions"
+      :rowActions="rowActions"
       @update:search="onSearchChange"
       @update:perPage="onPerPageChange"
       @page-change="onPageChange"
       @action="onTableAction"
     >
       <template #filters>
-        <BaseSelect
-          :model-value="filters.position"
-          :options="positionOptions"
-          placeholder="Chọn vị trí"
-          size="sm"
-          wrapperClass="!w-[220px]"
-          @update:modelValue="onPositionChange"
-        />
+        <div class="flex flex-wrap items-center gap-2">
+          <BaseSelect
+            :modelValue="filters.position"
+            :options="positionOptions"
+            size="sm"
+            placeholder="Chọn vị trí"
+            wrapperClass="!w-[220px] shrink-0"
+            @update:modelValue="onPositionChange"
+          />
 
-        <button
-          type="button"
-          class="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium hover:bg-slate-50"
-          @click="resetFilters"
-        >
-          Làm mới
-        </button>
+          <button
+            type="button"
+            class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
+            :disabled="loading"
+            @click="resetFilters"
+          >
+            Làm mới
+          </button>
+        </div>
       </template>
 
       <template #cell-image="{ item }">
@@ -127,7 +133,7 @@
         </div>
       </template>
     </BaseTable>
-  </main>
+  </div>
   <ConfirmModal
     :visible="showConfirm"
     title="Xác nhận xoá"

@@ -248,10 +248,8 @@ function statusLabel(s: any) {
   <div class="mx-auto max-w-[1200px] p-6">
     <div class="mb-4 flex items-end justify-between gap-4">
       <div>
-        <div class="text-2xl font-extrabold">Danh mục</div>
-        <div class="mt-1 text-sm text-slate-500">
-          Quản lý danh mục (cha/con, thứ tự, trạng thái)
-        </div>
+        <h2 class="m-0 text-2xl font-extrabold">Danh mục</h2>
+        <div class="mt-1 text-sm text-slate-500">Quản lý danh mục (cha/con, thứ tự, trạng thái)</div>
       </div>
 
       <div class="flex flex-wrap gap-2">
@@ -288,11 +286,11 @@ function statusLabel(s: any) {
       :perPageOptions="[10, 20, 50]"
       :actions="true"
       :rowActions="rowActions"
-      @action="onAction"
       @update:search="onSearch"
       @update:perPage="onPerPage"
       @sort="onSort"
       @page-change="onPageChange"
+      @action="onAction"
     >
       <template #filters>
         <div class="flex flex-wrap items-center gap-2">

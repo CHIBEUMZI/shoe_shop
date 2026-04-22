@@ -1,10 +1,10 @@
 <template>
   <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden">
     <!-- Full Screen Background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-700 to-fuchsia-800">
-      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-400/30 rounded-full blur-[120px] animate-pulse"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
-      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-fuchsia-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500">
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[120px] animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-cyan-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
       <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;"></div>
     </div>
 
@@ -23,9 +23,9 @@
       <div class="bg-white rounded-lg shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-6 sm:p-8 animate-fadeIn">
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-1.5">
-            <div class="w-10 h-1.5 bg-violet-500 rounded-full"></div>
-            <div class="w-10 h-1.5 bg-purple-500 rounded-full"></div>
-            <div class="w-10 h-1.5 bg-fuchsia-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-blue-600 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-blue-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-cyan-500 rounded-full"></div>
           </div>
         </div>
 
@@ -47,8 +47,8 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1.5" for="email">Email</label>
             <div class="relative group">
-              <input id="email" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="emailError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'" v-model="email" type="email" placeholder="abc123@gmail.com" autocomplete="email" :disabled="loading" autofocus/>
-              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400 group-focus-within:text-violet-500 transition-colors">
+              <input id="email" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="emailError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'" v-model="email" type="email" placeholder="abc123@gmail.com" autocomplete="email" :disabled="loading" autofocus/>
+              <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400 group-focus-within:text-blue-500 transition-colors">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16zm0 12H4V8l8 5 8-5v10z"/></svg>
               </span>
             </div>
@@ -58,7 +58,7 @@
             </p>
           </div>
 
-          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/40 hover:from-violet-700 hover:to-purple-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed" :disabled="loading">
+          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-cyan-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed" :disabled="loading">
             <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
             <span class="relative z-10">{{ loading ? 'Đang gửi mã...' : 'Gửi mã xác nhận' }}</span>
           </button>
@@ -67,7 +67,7 @@
         <div class="mt-6 pt-5 border-t border-gray-100 text-center">
           <p class="text-sm text-gray-500">
             Nhớ mật khẩu rồi?
-            <RouterLink to="/login" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-80 transition-opacity">
+            <RouterLink to="/login" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-80 transition-opacity">
               Đăng nhập ngay
             </RouterLink>
           </p>

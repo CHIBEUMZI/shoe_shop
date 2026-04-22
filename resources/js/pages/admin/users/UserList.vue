@@ -1,12 +1,18 @@
 <template>
-  <div class="p-6">
-    <div class="mb-5 flex items-end justify-between gap-3">
+  <div class="mx-auto max-w-[1200px] p-6">
+    <div class="mb-4 flex items-end justify-between gap-4">
       <div>
-        <div class="text-2xl font-extrabold text-slate-900">Quản lý người dùng</div>
-        <div class="mt-1 text-sm text-slate-600">
-          Xem danh sách người dùng, tìm kiếm và xem chi tiết thông tin
-        </div>
+        <h2 class="m-0 text-2xl font-extrabold">Quản lý người dùng</h2>
+        <div class="mt-1 text-sm text-slate-500">Xem danh sách người dùng, tìm kiếm và xem chi tiết thông tin</div>
       </div>
+    </div>
+
+    <div
+      v-if="error"
+      class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"
+    >
+      <div class="font-extrabold">Có lỗi</div>
+      <div class="mt-1 text-sm">{{ error }}</div>
     </div>
 
     <BaseTable
@@ -14,11 +20,12 @@
       :items="items"
       :loading="loading"
       :pagination="meta"
-      searchable
       :search="q"
+      :perPage="perPage"
       searchPlaceholder="Tìm theo tên hoặc email..."
       :showPerPage="true"
-      :perPage="perPage"
+      :perPageOptions="[10, 20, 50]"
+      :actions="true"
       :rowActions="rowActions"
       @update:search="onSearch"
       @update:perPage="onPerPage"
@@ -44,6 +51,14 @@
             wrapperClass="!w-[190px] shrink-0"
             @change="onActiveChange"
           />
+
+          <button
+            class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold hover:bg-slate-50 disabled:opacity-60"
+            :disabled="loading"
+            @click="resetFilters"
+          >
+            Làm mới
+          </button>
         </div>
       </template>
 
@@ -97,15 +112,6 @@
 
       <template #cell-created_at="{ value }">
         <span class="text-slate-700">{{ formatDateTime(value) }}</span>
-      </template>
-
-      <template #footer>
-        <div
-          v-if="error"
-          class="mt-3 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700"
-        >
-          {{ error }}
-        </div>
       </template>
     </BaseTable>
   </div>
@@ -277,6 +283,15 @@ function onPerPage(val) {
 
 function onPage(p) {
   syncQuery({ page: p });
+}
+
+function resetFilters() {
+  q.value = "";
+  role.value = "";
+  isActive.value = "";
+  perPage.value = 10;
+  page.value = 1;
+  syncQuery({ search: "", role: "", is_active: "", per_page: 10, page: 1 });
 }
 
 function onRowAction({ key, item }) {

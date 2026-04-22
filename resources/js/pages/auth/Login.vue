@@ -1,11 +1,11 @@
 <template>
   <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden">
     <!-- Full Screen Background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-700 to-fuchsia-800">
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500">
       <!-- Animated Orbs -->
-      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-400/30 rounded-full blur-[120px] animate-pulse"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
-      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-fuchsia-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[120px] animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-cyan-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
       
       <!-- Decorative Grid Pattern -->
       <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;"></div>
@@ -27,9 +27,9 @@
         <!-- Decorative top border -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-1.5">
-            <div class="w-10 h-1.5 bg-violet-500 rounded-full"></div>
-            <div class="w-10 h-1.5 bg-purple-500 rounded-full"></div>
-            <div class="w-10 h-1.5 bg-fuchsia-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-blue-600 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-blue-500 rounded-full"></div>
+            <div class="w-10 h-1.5 bg-cyan-500 rounded-full"></div>
           </div>
         </div>
 
@@ -62,7 +62,7 @@
                 id="email"
                 class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200
                        placeholder:text-gray-400
-                       focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500
+                       focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                        disabled:opacity-60"
                 :class="emailError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'"
                 v-model="email"
@@ -90,7 +90,7 @@
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="block text-sm font-medium text-gray-700" for="password">Mật khẩu</label>
-              <RouterLink to="/forgot-password" class="text-xs font-medium text-violet-600 hover:text-violet-700 transition-colors">
+              <RouterLink to="/forgot-password" class="text-xs font-medium text-blue-600 hover:text-blue-700 transition-colors">
                 Quên mật khẩu?
               </RouterLink>
             </div>
@@ -99,7 +99,7 @@
                 id="password"
                 class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-12 text-sm outline-none transition-all duration-200
                        placeholder:text-gray-400
-                       focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500
+                       focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500
                        disabled:opacity-60"
                 :class="passwordError ? 'border-red-300 bg-red-50/50' : 'border-gray-200 hover:border-gray-300'"
                 v-model="password"
@@ -141,21 +141,21 @@
           <div class="flex items-center gap-2.5 py-1">
             <label class="relative inline-flex items-center cursor-pointer group">
               <input type="checkbox" v-model="rememberMe" class="sr-only peer" :disabled="loading" />
-              <div class="w-10 h-5.5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-violet-500/30 rounded-full peer 
-                          peer-checked:after:translate-x-5.5 peer-checked:bg-violet-600 
+              <div class="w-10 h-5.5 bg-gray-200 peer-focus:ring-2 peer-focus:ring-blue-500/30 rounded-full peer 
+                          peer-checked:after:translate-x-5.5 peer-checked:bg-blue-600 
                           transition-all duration-200 after:content-[''] after:absolute after:top-0.5 after:left-0.5 
                           after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all
-                          group-hover:bg-gray-300 group-hover:peer-checked:bg-violet-700"></div>
+                          group-hover:bg-gray-300 group-hover:peer-checked:bg-blue-700"></div>
               <span class="ml-2.5 text-sm text-gray-600 select-none">Ghi nhớ đăng nhập</span>
             </label>
           </div>
 
           <!-- Submit -->
           <button
-            class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 
-                   px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-violet-500/30
-                   transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/40 
-                   hover:from-violet-700 hover:to-purple-700 active:translate-y-0.5 active:shadow-md
+            class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 
+                   px-4 py-3.5 text-sm font-semibold text-white shadow-lg shadow-blue-500/30
+                   transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 
+                   hover:from-blue-700 hover:to-cyan-700 active:translate-y-0.5 active:shadow-md
                    disabled:opacity-60 disabled:cursor-not-allowed"
             :disabled="loading"
           >
@@ -194,7 +194,7 @@
         <div class="mt-6 pt-5 border-t border-gray-100 text-center">
           <p class="text-sm text-gray-500">
             Chưa có tài khoản?
-            <RouterLink to="/register" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-80 transition-opacity">
+            <RouterLink to="/register" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-80 transition-opacity">
               Đăng ký ngay
             </RouterLink>
           </p>

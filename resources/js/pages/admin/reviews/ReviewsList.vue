@@ -1,137 +1,126 @@
 <template>
-  <main class="space-y-6">
-    <!-- Header Section -->
-    <section>
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+  <div class="mx-auto max-w-[1200px] p-6">
+    <div class="mb-4 flex items-end justify-between gap-4">
+      <div>
+        <h2 class="m-0 text-2xl font-extrabold">Quản lý đánh giá</h2>
+        <div class="mt-1 text-sm text-slate-500">Theo dõi, xác nhận và cập nhật trạng thái đánh giá từ khách hàng.</div>
+      </div>
+
+      <div class="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 lg:w-auto lg:grid-cols-3">
+        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+          <div class="text-sm text-slate-500">Tổng đánh giá</div>
+          <div class="mt-2 text-2xl font-black text-slate-900">{{ stats.total || 0 }}</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+          <div class="text-sm text-slate-500">Đã phản hồi</div>
+          <div class="mt-2 text-2xl font-black text-green-600">{{ stats.replied || 0 }}</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+          <div class="text-sm text-slate-500">Chưa phản hồi</div>
+          <div class="mt-2 text-2xl font-black text-amber-600">{{ stats.unreplied || 0 }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div
+      v-if="error"
+      class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"
+    >
+      <div class="font-extrabold">Có lỗi</div>
+      <div class="mt-1 text-sm">{{ error }}</div>
+    </div>
+
+    <BaseTable
+      :columns="columns"
+      :items="reviews"
+      :loading="loading"
+      emptyText="Không có đánh giá nào"
+      :search="filters.search"
+      :pagination="pagination"
+      :sortBy="filters.sortBy"
+      :sortDir="filters.sortDir"
+      :perPage="filters.per_page"
+      :showPerPage="true"
+      :perPageOptions="[10, 20, 50]"
+      :actions="true"
+      :rowActions="rowActions"
+      @update:search="onSearchChange"
+      @update:perPage="onPerPageChange"
+      @sort="onSort"
+      @page-change="onPageChange"
+      @action="onRowAction"
+    >
+      <template #filters>
+        <div class="flex flex-wrap items-center gap-2">
+          <BaseSelect
+            v-model="filters.replied"
+            :options="repliedOptions"
+            size="sm"
+            placeholder="Tất cả"
+            wrapperClass="!w-[200px] shrink-0"
+            @change="onRepliedChange"
+          />
+
+          <button
+            type="button"
+            class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            :disabled="loading"
+            @click="resetFilters"
+          >
+            Làm mới
+          </button>
+        </div>
+      </template>
+
+      <template #cell-user="{ item }">
         <div>
-          <h1 class="text-2xl font-black tracking-tight text-slate-900">Quản lý đánh giá</h1>
-          <p class="mt-1 text-sm text-slate-500">
-            Theo dõi, xác nhận và cập nhật trạng thái đánh giá từ khách hàng.
-          </p>
+          <div class="font-semibold text-slate-900">{{ item.user?.name || 'N/A' }}</div>
+          <div class="mt-1 text-xs text-slate-500">{{ item.user?.email || "-" }}</div>
         </div>
+      </template>
 
-        <div class="grid w-full grid-cols-2 gap-4 md:grid-cols-4 lg:w-auto">
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Tổng đánh giá</div>
-            <div class="mt-2 text-2xl font-black text-slate-900">{{ stats.total || 0 }}</div>
-          </div>
-
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Đã phản hồi</div>
-            <div class="mt-2 text-2xl font-black text-green-600">{{ stats.replied || 0 }}</div>
-          </div>
-
-          <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
-            <div class="text-sm text-slate-500">Chưa phản hồi</div>
-            <div class="mt-2 text-2xl font-black text-amber-600">{{ stats.unreplied || 0 }}</div>
-          </div>
+      <template #cell-product_name="{ value }">
+        <div>
+          <div class="font-semibold text-slate-900">{{ value }}</div>
         </div>
-      </div>
-    </section>
+      </template>
 
-    <!-- Reviews Table Section -->
-    <section >
-      <BaseTable
-        :columns="columns"
-        :items="reviews"
-        :loading="loading"
-        empty-text="Không có đánh giá nào"
-        :searchable="true"
-        :search="filters.search"
-        search-placeholder="Tìm tên người dùng, sản phẩm hoặc nội dung..."
-        :sort-by="filters.sortBy"
-        :sort-dir="filters.sortDir"
-        :pagination="pagination"
-        :per-page="filters.per_page"
-        :show-per-page="true"
-        :actions="true"
-        :row-actions="rowActions"
-        @update:search="onSearchChange"
-        @update:perPage="onPerPageChange"
-        @sort="onSort"
-        @page-change="onPageChange"
-        @action="onRowAction"
-      >
-        <!-- Filters -->
-        <template #filters>
-          <div class="flex flex-wrap items-center gap-2">
-            <BaseSelect
-              v-model="filters.replied"
-              :options="repliedOptions"
-              size="sm"
-              placeholder="Tất cả"
-              wrapperClass="!w-[200px] shrink-0"
-              @change="onRepliedChange"
-            />
+      <template #cell-rating="{ value }">
+        <div class="flex gap-0.5 text-amber-400">
+          <span v-for="i in 5" :key="i" :class="i <= value ? '' : 'text-slate-300'">★</span>
+        </div>
+      </template>
 
-            <button
-              type="button"
-              class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              @click="resetFilters"
-            >
-              Làm mới
-            </button>
-          </div>
-        </template>
+      <template #cell-comment="{ value }">
+        <span class="text-slate-600 text-sm line-clamp-2">
+          {{ value || '-' }}
+        </span>
+      </template>
 
-        <!-- User Column -->
-        <template #cell-user="{ item }">
-          <div>
-            <div class="font-semibold text-slate-900">{{ item.user?.name || 'N/A' }}</div>
-            <div class="mt-1 text-xs text-slate-500">{{ item.user?.email || "-" }}</div>
-          </div>
-        </template>
+      <template #cell-admin_reply="{ value }">
+        <span
+          v-if="value"
+          class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700"
+        >
+          <span class="material-symbols-outlined text-sm">check_circle</span>
+          Đã phản hồi
+        </span>
+        <span
+          v-else
+          class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700"
+        >
+          <span class="material-symbols-outlined text-sm">pending</span>
+          Chưa phản hồi
+        </span>
+      </template>
 
-        <!-- Product Column -->
-        <template #cell-product_name="{ value }">
-          <div>
-            <div class="font-semibold text-slate-900">{{ value }}</div>
-          </div>
-        </template>
-
-        <!-- Rating Column -->
-        <template #cell-rating="{ value }">
-          <div class="flex gap-0.5 text-amber-400">
-            <span v-for="i in 5" :key="i" :class="i <= value ? '' : 'text-slate-300'">★</span>
-          </div>
-        </template>
-
-        <!-- Comment Column -->
-        <template #cell-comment="{ value }">
-          <span class="text-slate-600 text-sm line-clamp-2">
-            {{ value || '-' }}
-          </span>
-        </template>
-
-        <!-- Status Column -->
-        <template #cell-admin_reply="{ value }">
-          <span
-            v-if="value"
-            class="inline-flex items-center gap-1 rounded-full bg-green-100 px-2.5 py-1 text-xs font-bold text-green-700"
-          >
-            <span class="material-symbols-outlined text-sm">check_circle</span>
-            Đã phản hồi
-          </span>
-          <span
-            v-else
-            class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2.5 py-1 text-xs font-bold text-amber-700"
-          >
-            <span class="material-symbols-outlined text-sm">pending</span>
-            Chưa phản hồi
-          </span>
-        </template>
-
-        <!-- Created At Column -->
-        <template #cell-created_at="{ value }">
-          <span class="text-slate-500">{{ formatDateTime(value) }}</span>
-        </template>
-      </BaseTable>
-
-      <div v-if="error" class="mt-4 text-sm text-red-600">
-        {{ error }}
-      </div>
-    </section>
-  </main>
+      <template #cell-created_at="{ value }">
+        <span class="text-slate-500">{{ formatDateTime(value) }}</span>
+      </template>
+    </BaseTable>
+  </div>
 </template>
 
 <script setup>
@@ -174,7 +163,6 @@ const repliedOptions = [
   { label: 'Chưa phản hồi', value: '0' },
 ]
 
-// Table columns configuration
 const columns = [
   { key: 'user', label: 'Người dùng', width: '200px' },
   { key: 'product_name', label: 'Sản phẩm', width: '200px' },
@@ -184,7 +172,6 @@ const columns = [
   { key: 'created_at', label: 'Ngày tạo', sortable: true, width: '160px' },
 ]
 
-// Row actions configuration
 const rowActions = [
   {
     key: 'view',
@@ -195,8 +182,8 @@ const rowActions = [
   {
     key: 'delete',
     icon: 'delete',
-    title: 'Xóa',
-    danger: true,
+    title: 'Xoá',
+    class: 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100',
   },
 ]
 
@@ -217,15 +204,14 @@ const fetchReviews = async () => {
     } else if (filters.replied === '0') {
       params.has_reply = false
     }
-    
+
     const response = await reviewService.list(params)
-    
-    // Transform reviews to include product_name field for display
+
     reviews.value = (response.data.data || []).map(review => ({
       ...review,
       product_name: review.product?.name || 'N/A'
     }))
-    
+
     pagination.value = {
       current_page: response.data.current_page || 1,
       last_page: response.data.last_page || 1,
@@ -233,7 +219,6 @@ const fetchReviews = async () => {
       total: response.data.total || 0,
     }
 
-    // Fetch stats
     const statsResponse = await reviewService.getStats()
     stats.value = statsResponse.data || {}
   } catch (err) {
@@ -287,7 +272,7 @@ const resetFilters = () => {
 
 const onRowAction = async (payload) => {
   const { key, item } = payload
-  
+
   if (!item || !item.id) {
     alert.error('Không thể xác định đánh giá')
     return

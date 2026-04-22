@@ -1,185 +1,181 @@
 <template>
-  <main class="space-y-6">
-    <section>
-      <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+  <div class="mx-auto max-w-[1200px] p-6">
+    <div class="mb-4 flex items-end justify-between gap-4">
+      <div>
+        <h2 class="m-0 text-2xl font-extrabold">Quản lý đơn hàng</h2>
+        <div class="mt-1 text-sm text-slate-500">Theo dõi, xác nhận và cập nhật trạng thái đơn hàng.</div>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <button
+          class="rounded-lg bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700 flex items-center gap-1"
+          :disabled="loading"
+          @click="exportExcel"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Excel
+        </button>
+        <button
+          class="rounded-lg bg-rose-600 px-3 py-2 text-sm font-semibold text-white hover:bg-rose-700 flex items-center gap-1"
+          :disabled="loading"
+          @click="exportPdf"
+        >
+          <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+          </svg>
+          PDF
+        </button>
+      </div>
+    </div>
+
+    <div
+      v-if="error"
+      class="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-rose-800"
+    >
+      <div class="font-extrabold">Có lỗi</div>
+      <div class="mt-1 text-sm">{{ error }}</div>
+    </div>
+
+    <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Tổng đơn</div>
+        <div class="mt-2 text-2xl font-black text-slate-900">{{ meta.total }}</div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Chờ xử lý</div>
+        <div class="mt-2 text-2xl font-black text-amber-600">{{ countByStatus("pending") }}</div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Đã xác nhận</div>
+        <div class="mt-2 text-2xl font-black text-blue-600">{{ countByStatus("confirmed") }}</div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Đang giao</div>
+        <div class="mt-2 text-2xl font-black text-sky-600">{{ countByStatus("shipping") }}</div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Hoàn thành</div>
+        <div class="mt-2 text-2xl font-black text-green-600">{{ countByStatus("completed") }}</div>
+      </div>
+
+      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <div class="text-sm text-slate-500">Đã hủy</div>
+        <div class="mt-2 text-2xl font-black text-red-600">{{ countByStatus("cancelled") }}</div>
+      </div>
+    </div>
+
+    <BaseTable
+      :columns="columns"
+      :items="items"
+      :loading="loading"
+      emptyText="Không có đơn hàng nào"
+      :search="filters.search"
+      :perPage="filters.per_page"
+      :pagination="meta"
+      :sortBy="filters.sortBy"
+      :sortDir="filters.sortDir"
+      :showPerPage="true"
+      :perPageOptions="[10, 20, 50]"
+      :actions="true"
+      :rowActions="rowActions"
+      @update:search="onSearchChange"
+      @update:perPage="onPerPageChange"
+      @sort="onSort"
+      @page-change="onPageChange"
+      @action="onRowAction"
+    >
+      <template #filters>
+        <div class="flex flex-wrap items-center gap-2">
+          <BaseSelect
+            v-model="filters.status"
+            :options="statusOptions"
+            size="sm"
+            placeholder="Tất cả trạng thái đơn"
+            wrapperClass="!w-[200px] shrink-0"
+            @change="onOrderStatusChange"
+          />
+
+          <BaseSelect
+            v-model="filters.payment_status"
+            :options="paymentStatusOptions"
+            size="sm"
+            placeholder="Tất cả thanh toán"
+            wrapperClass="!w-[200px] shrink-0"
+            @change="onPaymentStatusChange"
+          />
+
+          <button
+            type="button"
+            class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+            :disabled="loading"
+            @click="resetFilters"
+          >
+            Làm mới
+          </button>
+        </div>
+      </template>
+
+      <template #cell-code="{ item }">
         <div>
-          <h1 class="text-2xl font-black tracking-tight text-slate-900">Quản lý đơn hàng</h1>
-          <p class="mt-1 text-sm text-slate-500">
-            Theo dõi, xác nhận và cập nhật trạng thái đơn hàng.
-          </p>
+          <div class="font-bold text-slate-900">{{ item.code }}</div>
         </div>
+      </template>
 
-        <div class="flex items-center gap-3">
-          <button
-            class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-emerald-700 disabled:opacity-60"
-            :disabled="loading"
-            @click="exportExcel"
+      <template #cell-customer="{ item }">
+        <div>
+          <div class="font-semibold text-slate-900">{{ item.customer_name }}</div>
+          <div class="mt-1 text-xs text-slate-500">{{ item.customer_phone }}</div>
+          <div class="mt-1 text-xs text-slate-500">{{ item.customer_email || "-" }}</div>
+        </div>
+      </template>
+
+      <template #cell-payment="{ item }">
+        <div>
+          <div class="font-semibold text-slate-900">
+            {{ paymentMethodText(item.payment_method) }}
+          </div>
+          <span
+            class="mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+            :class="paymentStatusClass(item.payment_status)"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
-            Xuất Excel
-          </button>
-          <button
-            class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-rose-700 disabled:opacity-60"
-            :disabled="loading"
-            @click="exportPdf"
+            {{ paymentStatusText(item.payment_status) }}
+          </span>
+        </div>
+      </template>
+
+      <template #cell-status="{ item }">
+        <div class="flex flex-col gap-1.5">
+          <span
+            class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+            :class="orderStatusClass(item.status)"
           >
-            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
-            Xuất PDF
-          </button>
+            {{ orderStatusText(item.status) }}
+          </span>
+          <span
+            v-if="item.cancellation_requested_at"
+            class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-600"
+          >
+            <span class="text-[10px]">⚠️</span>
+            Chờ hủy
+          </span>
         </div>
-      </div>
-    </section>
+      </template>
 
-    <section>
-      <div class="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Tổng đơn</div>
-          <div class="mt-2 text-2xl font-black text-slate-900">{{ meta.total }}</div>
-        </div>
+      <template #cell-grand_total="{ value }">
+        <span class="font-bold text-slate-900">{{ moneyVND(value) }}</span>
+      </template>
 
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Chờ xử lý</div>
-          <div class="mt-2 text-2xl font-black text-amber-600">{{ countByStatus("pending") }}</div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Đã xác nhận</div>
-          <div class="mt-2 text-2xl font-black text-blue-600">{{ countByStatus("confirmed") }}</div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Đang giao</div>
-          <div class="mt-2 text-2xl font-black text-sky-600">{{ countByStatus("shipping") }}</div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Hoàn thành</div>
-          <div class="mt-2 text-2xl font-black text-green-600">{{ countByStatus("completed") }}</div>
-        </div>
-
-        <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-          <div class="text-sm text-slate-500">Đã hủy</div>
-          <div class="mt-2 text-2xl font-black text-red-600">{{ countByStatus("cancelled") }}</div>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <BaseTable
-        :columns="columns"
-        :items="items"
-        :loading="loading"
-        empty-text="Không có đơn hàng nào"
-        :searchable="true"
-        :search="filters.search"
-        search-placeholder="Tìm mã đơn, khách hàng, số điện thoại..."
-        :sort-by="filters.sortBy"
-        :sort-dir="filters.sortDir"
-        :pagination="meta"
-        :per-page="filters.per_page"
-        :show-per-page="true"
-        :actions="true"
-        :row-actions="rowActions"
-        @update:search="onSearchChange"
-        @update:perPage="onPerPageChange"
-        @sort="onSort"
-        @page-change="onPageChange"
-        @action="onRowAction"
-      >
-        <template #filters>
-          <div class="flex flex-wrap items-center gap-2">
-            <BaseSelect
-              v-model="filters.status"
-              :options="statusOptions"
-              size="sm"
-              placeholder="Tất cả trạng thái đơn"
-              wrapperClass="!w-[200px] shrink-0"
-              @change="onOrderStatusChange"
-            />
-
-            <BaseSelect
-              v-model="filters.payment_status"
-              :options="paymentStatusOptions"
-              size="sm"
-              placeholder="Tất cả thanh toán"
-              wrapperClass="!w-[200px] shrink-0"
-              @change="onPaymentStatusChange"
-            />
-
-            <button
-              type="button"
-              class="h-10 shrink-0 rounded-lg border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-              @click="resetFilters"
-            >
-              Làm mới
-            </button>
-          </div>
-        </template>
-
-        <template #cell-code="{ item }">
-          <div>
-            <div class="font-bold text-slate-900">{{ item.code }}</div>
-          </div>
-        </template>
-
-        <template #cell-customer="{ item }">
-          <div>
-            <div class="font-semibold text-slate-900">{{ item.customer_name }}</div>
-            <div class="mt-1 text-xs text-slate-500">{{ item.customer_phone }}</div>
-            <div class="mt-1 text-xs text-slate-500">{{ item.customer_email || "-" }}</div>
-          </div>
-        </template>
-
-        <template #cell-payment="{ item }">
-          <div>
-            <div class="font-semibold text-slate-900">
-              {{ paymentMethodText(item.payment_method) }}
-            </div>
-            <span
-              class="mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-              :class="paymentStatusClass(item.payment_status)"
-            >
-              {{ paymentStatusText(item.payment_status) }}
-            </span>
-          </div>
-        </template>
-
-        <template #cell-status="{ item }">
-          <div class="flex flex-col gap-1.5">
-            <span
-              class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
-              :class="orderStatusClass(item.status)"
-            >
-              {{ orderStatusText(item.status) }}
-            </span>
-            <span
-              v-if="item.cancellation_requested_at"
-              class="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2 py-1 text-xs font-semibold text-amber-600"
-            >
-              <span class="text-[10px]">⚠️</span>
-              Chờ hủy
-            </span>
-          </div>
-        </template>
-
-        <template #cell-grand_total="{ value }">
-          <span class="font-bold text-slate-900">{{ moneyVND(value) }}</span>
-        </template>
-
-        <template #cell-created_at="{ value }">
-          <span class="text-slate-500">{{ formatDateTime(value) }}</span>
-        </template>
-      </BaseTable>
-
-      <div v-if="error" class="mt-4 text-sm text-red-600">
-        {{ error }}
-      </div>
-    </section>
-  </main>
+      <template #cell-created_at="{ value }">
+        <span class="text-slate-500">{{ formatDateTime(value) }}</span>
+      </template>
+    </BaseTable>
+  </div>
 </template>
 
 <script setup>

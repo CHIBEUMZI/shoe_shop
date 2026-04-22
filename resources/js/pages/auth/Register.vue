@@ -1,10 +1,10 @@
 <template>
   <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden py-8">
     <!-- Full Screen Background -->
-    <div class="absolute inset-0 bg-gradient-to-br from-violet-600 via-purple-700 to-fuchsia-800">
-      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-violet-400/30 rounded-full blur-[120px] animate-pulse"></div>
-      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-purple-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
-      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-fuchsia-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
+    <div class="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500">
+      <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[120px] animate-pulse"></div>
+      <div class="absolute bottom-1/4 right-1/4 w-[400px] h-[400px] bg-blue-400/30 rounded-full blur-[100px] animate-pulse" style="animation-delay: 1s;"></div>
+      <div class="absolute top-1/2 right-1/3 w-[300px] h-[300px] bg-cyan-400/20 rounded-full blur-[80px] animate-pulse" style="animation-delay: 2s;"></div>
       <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 1px 1px, white 1px, transparent 0); background-size: 40px 40px;"></div>
     </div>
 
@@ -24,9 +24,9 @@
         <!-- Decorative top border -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-2">
-            <div class="w-12 h-2 bg-violet-500 rounded-full"></div>
-            <div class="w-12 h-2 bg-purple-500 rounded-full"></div>
-            <div class="w-12 h-2 bg-fuchsia-500 rounded-full"></div>
+            <div class="w-12 h-2 bg-blue-600 rounded-full"></div>
+            <div class="w-12 h-2 bg-blue-500 rounded-full"></div>
+            <div class="w-12 h-2 bg-cyan-500 rounded-full"></div>
           </div>
         </div>
 
@@ -41,20 +41,20 @@
         </div>
 
         <!-- Step Indicator -->
-        <div v-if="currentStep === 'verify'" class="mb-6 p-4 bg-violet-50 rounded-xl">
+        <div v-if="currentStep === 'verify'" class="mb-6 p-4 bg-blue-50 rounded-xl">
           <div class="flex items-center justify-center gap-3 text-sm">
-            <span class="flex items-center gap-1.5 text-violet-600 font-medium">
+            <span class="flex items-center gap-1.5 text-blue-600 font-medium">
               <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
               Đăng ký
             </span>
             <svg viewBox="0 0 24 24" class="h-4 w-4 text-gray-300" fill="currentColor"><path d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z"/></svg>
-            <span class="flex items-center gap-1.5 text-violet-600 font-medium">
+            <span class="flex items-center gap-1.5 text-blue-600 font-medium">
               <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16z"/></svg>
               Xác nhận
             </span>
           </div>
           <p class="text-center text-xs text-gray-500 mt-2">
-            Mã đã gửi đến: <strong class="text-violet-600">{{ pendingEmail }}</strong>
+            Mã đã gửi đến: <strong class="text-blue-600">{{ pendingEmail }}</strong>
           </p>
         </div>
 
@@ -73,7 +73,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2" for="name">Họ và tên</label>
               <div class="relative">
-                <input id="name" v-model="name" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('name')" placeholder="Nguyễn Văn A" :disabled="loading" autocomplete="name" @input="onFieldInput('name')"/>
+                <input id="name" v-model="name" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('name')" placeholder="Nguyễn Văn A" :disabled="loading" autocomplete="name" @input="onFieldInput('name')"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M12 12a5 5 0 10-5-5 5 5 0 005 5zm0 2c-4.4 0-8 2.2-8 5v1h16v-1c0-2.8-3.6-5-8-5z"/></svg>
                 </span>
@@ -84,7 +84,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2" for="email">Email</label>
               <div class="relative">
-                <input id="email" v-model="email" type="email" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('email')" placeholder="name@company.com" :disabled="loading" autocomplete="email" @input="onFieldInput('email')"/>
+                <input id="email" v-model="email" type="email" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('email')" placeholder="name@company.com" :disabled="loading" autocomplete="email" @input="onFieldInput('email')"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16z"/></svg>
                 </span>
@@ -97,7 +97,7 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2" for="phone">Số điện thoại</label>
             <div class="relative">
-              <input id="phone" v-model="phone" type="tel" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('phone')" placeholder="0123 456 789" :disabled="loading" autocomplete="tel" @input="onFieldInput('phone')"/>
+              <input id="phone" v-model="phone" type="tel" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('phone')" placeholder="0123 456 789" :disabled="loading" autocomplete="tel" @input="onFieldInput('phone')"/>
               <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                 <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 016.59-6.59l2.6 2.6a8 8 0 119.18 9.18l-2.6-2.6a15.05 15.05 0 01-6.59 6.59z"/></svg>
               </span>
@@ -112,7 +112,7 @@
                 Ngày sinh <span class="text-xs text-gray-400 font-normal">(Tùy chọn)</span>
               </label>
               <div class="relative">
-                <input id="birth_date" v-model="birth_date" type="date" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('birth_date')" :disabled="loading"/>
+                <input id="birth_date" v-model="birth_date" type="date" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('birth_date')" :disabled="loading"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M7 2h2v2h6V2h2v2h3a2 2 0 012 2v14a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h3V2z"/></svg>
                 </span>
@@ -124,7 +124,7 @@
                 Địa chỉ <span class="text-xs text-gray-400 font-normal">(Tùy chọn)</span>
               </label>
               <div class="relative">
-                <input id="address" v-model="address" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('address')" placeholder="Số nhà, đường..." :disabled="loading" autocomplete="street-address"/>
+                <input id="address" v-model="address" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-4 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('address')" placeholder="Số nhà, đường..." :disabled="loading" autocomplete="street-address"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M12 2a7 7 0 00-7 7c0 5.2 7 13 7 13s7-7.8 7-13a7 7 0 00-7-7z"/></svg>
                 </span>
@@ -137,7 +137,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2" for="password">Mật khẩu</label>
               <div class="relative">
-                <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-12 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('password')" placeholder="Ít nhất 8 ký tự" :disabled="loading" autocomplete="new-password" @input="onPasswordInput"/>
+                <input id="password" v-model="password" :type="showPassword ? 'text' : 'password'" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-12 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('password')" placeholder="Ít nhất 8 ký tự" :disabled="loading" autocomplete="new-password" @input="onPasswordInput"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M17 9h-1V7a4 4 0 10-8 0v2H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2z"/></svg>
                 </span>
@@ -152,7 +152,7 @@
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-2" for="password_confirmation">Xác nhận mật khẩu</label>
               <div class="relative">
-                <input id="password_confirmation" v-model="password_confirmation" :type="showConfirmPassword ? 'text' : 'password'" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-12 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('password_confirmation')" placeholder="Nhập lại mật khẩu" :disabled="loading" autocomplete="new-password" @input="onConfirmPasswordInput"/>
+                <input id="password_confirmation" v-model="password_confirmation" :type="showConfirmPassword ? 'text' : 'password'" class="w-full rounded-xl border bg-gray-50/80 px-4 py-3 pl-11 pr-12 text-sm outline-none transition-all duration-200 placeholder:text-gray-400 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('password_confirmation')" placeholder="Nhập lại mật khẩu" :disabled="loading" autocomplete="new-password" @input="onConfirmPasswordInput"/>
                 <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400">
                   <svg viewBox="0 0 24 24" class="h-5 w-5" fill="currentColor"><path d="M17 9h-1V7a4 4 0 10-8 0v2H7a2 2 0 00-2 2v9a2 2 0 002 2h10a2 2 0 002-2v-9a2 2 0 00-2-2z"/></svg>
                 </span>
@@ -166,22 +166,22 @@
           </div>
 
           <!-- Submit Button -->
-          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/40 hover:from-violet-700 hover:to-purple-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed mt-6" :disabled="loading">
+          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-cyan-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed mt-6" :disabled="loading">
             <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
             <span class="relative z-10">{{ loading ? "Đang gửi mã xác nhận..." : "Đăng ký tài khoản" }}</span>
           </button>
 
           <!-- Terms -->
           <p class="text-xs text-gray-400 text-center">
-            Bằng việc đăng ký, bạn đồng ý với <a href="#" class="text-violet-600 hover:underline">Điều khoản dịch vụ</a> và <a href="#" class="text-violet-600 hover:underline">Chính sách bảo mật</a>
+            Bằng việc đăng ký, bạn đồng ý với <a href="#" class="text-blue-600 hover:underline">Điều khoản dịch vụ</a> và <a href="#" class="text-blue-600 hover:underline">Chính sách bảo mật</a>
           </p>
         </form>
 
         <!-- Verification Form -->
         <form v-else-if="currentStep === 'verify'" class="space-y-5" @submit.prevent="onVerifySubmit">
           <div class="text-center">
-            <div class="w-16 h-16 mx-auto mb-4 bg-violet-100 rounded-full flex items-center justify-center">
-              <svg viewBox="0 0 24 24" class="h-8 w-8 text-violet-600" fill="currentColor">
+            <div class="w-16 h-16 mx-auto mb-4 bg-blue-100 rounded-full flex items-center justify-center">
+              <svg viewBox="0 0 24 24" class="h-8 w-8 text-blue-600" fill="currentColor">
                 <path d="M20 4H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V6a2 2 0 00-2-2zm0 2l-8 5-8-5h16z"/>
               </svg>
             </div>
@@ -191,12 +191,12 @@
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-2" for="code">Mã xác nhận</label>
             <div class="relative">
-              <input id="code" v-model="verificationCode" type="text" maxlength="6" class="w-full rounded-xl border bg-gray-50/80 px-4 py-4 text-sm outline-none transition-all duration-200 text-center text-2xl tracking-[0.4em] font-mono placeholder:text-gray-300 focus:bg-white focus:ring-2 focus:ring-violet-500/20 focus:border-violet-500 disabled:opacity-60" :class="fieldClass('code')" placeholder="- - - - - -" :disabled="loading" @input="onCodeInput"/>
+              <input id="code" v-model="verificationCode" type="text" maxlength="6" class="w-full rounded-xl border bg-gray-50/80 px-4 py-4 text-sm outline-none transition-all duration-200 text-center text-2xl tracking-[0.4em] font-mono placeholder:text-gray-300 focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 disabled:opacity-60" :class="fieldClass('code')" placeholder="- - - - - -" :disabled="loading" @input="onCodeInput"/>
             </div>
             <p v-if="shouldShowFieldError('code')" class="mt-2 text-xs text-red-600 text-center">{{ errors.code }}</p>
           </div>
 
-          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-violet-600 to-purple-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-violet-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-violet-500/40 hover:from-violet-700 hover:to-purple-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed" :disabled="loading">
+          <button class="relative w-full overflow-hidden rounded-xl bg-gradient-to-r from-blue-600 to-cyan-600 px-4 py-4 text-sm font-semibold text-white shadow-lg shadow-blue-500/30 transition-all duration-200 hover:shadow-xl hover:shadow-blue-500/40 hover:from-blue-700 hover:to-cyan-700 active:translate-y-0.5 active:shadow-md disabled:opacity-60 disabled:cursor-not-allowed" :disabled="loading">
             <span v-if="loading" class="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-white/40 border-t-white"></span>
             <span class="relative z-10">{{ loading ? "Đang xác nhận..." : "Xác nhận" }}</span>
           </button>
@@ -205,7 +205,7 @@
             <p class="text-sm text-gray-500">
               Không nhận được mã?
               <button v-if="!canResend" class="font-medium text-gray-400 ml-1" disabled>Gửi lại sau {{ resendCountdown }}s</button>
-              <button v-else class="font-semibold text-violet-600 hover:text-violet-700 hover:underline ml-1" @click="onResendCode" :disabled="resending">{{ resending ? 'Đang gửi...' : 'Gửi lại mã' }}</button>
+              <button v-else class="font-semibold text-blue-600 hover:text-violet-700 hover:underline ml-1" @click="onResendCode" :disabled="resending">{{ resending ? 'Đang gửi...' : 'Gửi lại mã' }}</button>
             </p>
           </div>
 
@@ -221,7 +221,7 @@
         <div class="mt-8 pt-6 border-t border-gray-100 text-center">
           <p class="text-sm text-gray-500">
             Đã có tài khoản?
-            <RouterLink to="/login" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-violet-600 to-purple-600 hover:opacity-80 transition-opacity ml-1">
+            <RouterLink to="/login" class="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-cyan-600 hover:opacity-80 transition-opacity ml-1">
               Đăng nhập ngay
             </RouterLink>
           </p>
