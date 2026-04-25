@@ -24,7 +24,9 @@ class ProductController extends Controller
                 $q->where(function ($qq) use ($s) {
                     $qq->where('name', 'like', "%{$s}%")
                         ->orWhere('slug', 'like', "%{$s}%")
-                        ->orWhere('sku', 'like', "%{$s}%");
+                        ->orWhere('sku', 'like', "%{$s}%")
+                        ->orWhere('short_description', 'like', "%{$s}%")
+                        ->orWhere('description', 'like', "%{$s}%");
                 });
             })
 
@@ -131,7 +133,7 @@ class ProductController extends Controller
                                     'sang trọng' => ['lịch sự', 'formal', 'premium'],
                                     'lịch sự' => ['lịch sự', 'formal', 'công sở'],
                                     'casual' => ['casual', 'thoải mái', 'đời thường'],
-                                    'thể thao' => ['running', 'sport', 'thể thao', 'gym'],
+                                    'thể thao' => ['thể thao', 'sport', 'năng động'],
                                     'lãng mạn' => ['romantic', 'valentine', 'đỏ', 'hồng'],
                                     'năng động' => ['sporty', 'năng động', 'trẻ trung'],
                                     'đi bộ' => ['walking', 'đi bộ', 'comfort'],
@@ -171,7 +173,10 @@ class ProductController extends Controller
                                     'casual' => ['casual', 'dạo phố', 'đi chơi', 'thoải mái', 'cuối tuần'],
                                     'travel' => ['du lịch', 'phượt', 'travel', 'đi bộ nhiều'],
                                     'party' => ['party', 'tiệc', 'club', 'sang trọng', 'nổi bật'],
-                                    'sports' => ['thể thao', 'chạy bộ', 'gym', 'running', 'sport'],
+                                    'football' => ['đá bóng', 'bóng đá', 'football', 'sân cỏ', 'fg', 'tf', 'sg', 'mercurial', 'predator', 'copa'],
+                                    'running' => ['chạy bộ', 'running', 'jogging', 'marathon', 'cardio'],
+                                    'gym' => ['gym', 'tập gym', 'crossfit', 'fitness', 'nâng tạ', 'workout', 'tập luyện'],
+                                    'sports' => ['thể thao', 'sport', 'năng động'],
                                 ];
                                 
                                 $terms = $occasionMap[$occasion] ?? [$occasion];

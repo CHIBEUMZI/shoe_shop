@@ -6,12 +6,16 @@ intents:
   - ask_product
   - ask_advice
   - provide_purpose
+  - provide_occasion
   - provide_price_range
   - provide_size
+  - provide_gift_occasion
+  - provide_gender
   - ask_promotion
   - ask_shipping
   - ask_payment
   - ask_return_policy
+  - ask_warranty
   - ask_store_info
   - search_products
   - ask_brands
@@ -20,6 +24,12 @@ intents:
   - affirm
   - deny
   - occasion_search
+  - ask_size_guide
+  - ask_care_guide
+  - ask_compare
+  - ask_gender
+  - ask_occasion_gift
+  - ask_gift_for_lover
 
 entities:
   - purpose
@@ -31,6 +41,8 @@ entities:
   - color
   - shoe_feature
   - material
+  - gift_occasion
+  - recipient_gender
 
 synonyms:
   valentine:
@@ -38,6 +50,11 @@ synonyms:
     - lễ tình nhân
     - tặng người yêu
     - lãng mạn
+    - romantic
+    - hẹn hò
+    - ngày 14/2
+    - tặng quà
+    - lễ tình nhân
   interview:
     - phỏng vấn
     - xin việc
@@ -49,16 +66,44 @@ synonyms:
     - đi chơi
     - cuối tuần
     - thường ngày
+    - đi cafe
+    - cafe
+    - mall
+    - lên phố
+    - walking
+    - dạo phố
   travel:
     - du lịch
     - phượt
     - đi xa
     - resort
+    - đi biển
   party:
     - tiệc
     - club
     - bar
     - party
+    - đi tiệc
+    - đi club
+  gift_birthday:
+    - sinh nhật
+    - tặng sinh nhật
+    - quà sinh nhật
+  gift_anniversary:
+    - kỷ niệm
+    - tặng kỷ niệm
+    - ngày kỷ niệm
+  gift_general:
+    - tặng quà
+    - quà tặng
+    - tặng người yêu
+    - tặng bạn
+    - tặng mẹ
+    - tặng cha
+    - tặng ông bà
+    - tặng anh trai
+    - tặng em gái
+    - tặng crush
 
 slots:
   brand:
@@ -102,6 +147,42 @@ slots:
       - type: from_text
         conditions:
           - active_loop: null
+  gift_occasion:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: gift_occasion
+      - type: from_text
+        conditions:
+          - active_loop: gift_recommendation_form
+            requested_slot: gift_occasion
+  recipient_gender:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_entity
+        entity: recipient_gender
+      - type: from_text
+        conditions:
+          - active_loop: gift_recommendation_form
+            requested_slot: recipient_gender
+  gift_shoe_size:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: gift_recommendation_form
+            requested_slot: gift_shoe_size
+  gift_price_range:
+    type: text
+    influence_conversation: true
+    mappings:
+      - type: from_text
+        conditions:
+          - active_loop: gift_recommendation_form
+            requested_slot: gift_price_range
 
 forms:
   shoe_recommendation_form:
@@ -109,40 +190,69 @@ forms:
       - purpose
       - shoe_size
       - price_range
+  gift_recommendation_form:
+    required_slots:
+      - gift_occasion
+      - recipient_gender
+      - gift_shoe_size
+      - gift_price_range
 
 responses:
   utter_greet:
-    - text: "Chào bạn 👋, mình là trợ lý tư vấn giày. Bạn đang cần tìm giày để làm gì vậy (đi làm, chạy bộ, đá bóng...)?"
+    - text: "Chào bạn! Mình là trợ lý giày của BMC Shoes 👟 Rất vui được tư vấn cho bạn! Bạn đang cần tìm giày để làm gì vậy? (đi làm, chạy bộ, đá bóng, đi chơi...)"
   utter_occasion_search:
-    - text: "Mình hiểu rồi! Để mình tìm giày phù hợp cho bạn nhé..."
+    - text: "Để mình tìm giày phù hợp cho bạn nhé! Trước tiên, bạn cần giày để làm gì?"
   utter_ask_purpose:
-    - text: "Bạn đang cần giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi..."
+    - text: "Bạn muốn tìm giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi, du lịch, tập gym, hay đi tiệc..."
   utter_ask_shoe_size:
-    - text: "Bạn thường mang size giày bao nhiêu?"
+    - text: "Bạn thường mang size giày bao nhiêu? Nếu không biết, bạn có thể đo chiều dài bàn chân (cm) và mình sẽ tư vấn size phù hợp nhé!"
   utter_ask_price_range:
-    - text: "Bạn mong muốn tầm giá khoảng bao nhiêu? Ví dụ: dưới 1 triệu, 1–2 triệu, 2–3 triệu, trên 3 triệu..."
+    - text: "Bạn mong muốn tầm giá khoảng bao nhiêu? Ví dụ: dưới 500k, 500k-1 triệu, 1-2 triệu, 2-3 triệu, hoặc trên 3 triệu?"
+  utter_ask_gift_occasion:
+    - text: "Bạn tặng giày cho người yêu nhân dịp gì vậy? Ví dụ: sinh nhật, kỷ niệm ngày yêu, Valentine, hay một dịp đặc biệt nào khác?"
+  utter_ask_recipient_gender:
+    - text: "Người nhận quà là nam hay nữ vậy bạn?"
+  utter_ask_gift_shoe_size:
+    - text: "Bạn biết size giày của người nhận quà không? Nếu không biết, bạn có thể ước lượng hoặc mình sẽ gợi ý size phổ biến nhé!"
+  utter_ask_gift_price_range:
+    - text: "Bạn dự định ngân sách cho đôi giày là bao nhiêu? Ví dụ: dưới 1 triệu, 1-2 triệu, 2-3 triệu, hoặc trên 3 triệu?"
   utter_promotion:
-    - text: "Hiện shop đang có một số chương trình giảm giá cho sneaker và giày chạy bộ. Bạn cho mình biết nhu cầu và tầm giá, mình tư vấn mẫu phù hợp nhé."
+    - text: "Hiện shop đang có nhiều ưu đãi hấp dẫn! Bạn cho mình biết bạn cần giày loại nào và tầm giá bao nhiêu, mình sẽ tìm sản phẩm đang giảm giá phù hợp cho bạn nhé!"
   utter_shipping:
-    - text: "Shop có giao hàng toàn quốc. Bạn cho mình biết khu vực (tỉnh/thành) để mình ước tính phí ship và thời gian giao hàng nhé."
+    - text: "Shop giao hàng toàn quốc, freeship cho đơn từ 500k! Bạn ở khu vực nào để mình ước tính phí ship và thời gian giao hàng nhé."
   utter_payment:
-    - text: "Shop hỗ trợ COD (thanh toán khi nhận hàng) và chuyển khoản. Bạn muốn thanh toán theo cách nào?"
+    - text: "Shop hỗ trợ nhiều hình thức thanh toán: COD (nhận hàng rồi trả tiền), chuyển khoản, và thanh toán online qua Momo, ZaloPay, VNPay. Bạn thích thanh toán cách nào?"
   utter_return_policy:
-    - text: "Shop hỗ trợ đổi size/đổi mẫu trong thời gian quy định nếu sản phẩm còn nguyên tem mác. Bạn cho mình biết bạn muốn đổi size hay trả hàng, và bạn đã nhận hàng chưa?"
+    - text: "Shop đổi size/đổi mẫu miễn phí trong 7 ngày nếu sản phẩm còn nguyên tem mác và chưa qua sử dụng. Bạn cần đổi size hay muốn trả hàng?"
   utter_store_info:
-    - text: "Bạn muốn xem thông tin gì: địa chỉ cửa hàng, giờ mở cửa, hay liên hệ hỗ trợ? Mình gửi chi tiết ngay."
+    - text: "Cửa hàng BMC Shoes mở cửa từ 8h-21h các ngày trong tuần. Bạn muốn biết địa chỉ cụ thể hay liên hệ hỗ trợ?"
   utter_goodbye:
-    - text: "Cảm ơn bạn đã ghé shop giày, nếu cần hỗ trợ thêm cứ nhắn mình nhé 👋"
+    - text: "Cảm ơn bạn đã trò chuyện cùng BMC Shoes! Nếu cần tư vấn thêm về giày, cứ nhắn mình nhé. Chúc bạn tìm được đôi giày ưng ý! 👟"
   utter_default:
-    - text: "Xin lỗi, mình chưa hiểu rõ câu hỏi của bạn. Bạn có thể nói rõ hơn về nhu cầu chọn giày không?"
+    - text: "Mình chưa hiểu rõ ý bạn 😅 Bạn có thể nói rõ hơn không? Ví dụ: bạn cần giày để làm gì, thương hiệu nào, hay tầm giá bao nhiêu?"
+  utter_continue:
+    - text: "Bạn muốn mình gợi ý thêm sản phẩm khác không? Hay bạn muốn lọc theo tiêu chí khác (size, giá, thương hiệu)?"
+  utter_stop:
+    - text: "Không sao cả! Nếu bạn cần hỗ trợ gì thêm về giày, cứ nhắn mình nhé. Mình luôn sẵn sàng giúp bạn! 👟"
 
 actions:
   - validate_shoe_recommendation_form
+  - validate_gift_recommendation_form
   - action_suggest_shoes
+  - action_suggest_gift_shoes
   - action_search_products
   - action_list_brands
   - action_list_categories
   - action_search_by_occasion
+  - action_search_by_brand
+  - action_search_by_price
+  - action_search_by_size
+  - action_search_promo
+  - action_search_men
+  - action_search_by_event
+  - action_compare_products
+  - action_guide_size
+  - action_care_guide
 
 session_config:
   session_expiration_time: 60

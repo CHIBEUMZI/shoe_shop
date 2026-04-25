@@ -9,44 +9,19 @@ nlu:
       - hi
       - chào shop
       - chào bạn
-
-  - intent: occasion_search
-    examples: |
-      - tôi muốn giày đi chơi valentine
-      - giày cho ngày lễ tình nhân
-      - giày đi hẹn hò lãng mạn
-      - giày màu đỏ cho valentine
-      - giày tặng người yêu ngày 14/2
-      - giày lãng mạn cho cặp đôi
-      - giày hồng đỏ đi chơi valentine
-      - tôi cần giày đi phỏng vấn
-      - giày mặc đồng phục công sở
-      - giày đi làm văn phòng
-      - giày nam đi phỏng vấn xin việc
-      - giày công sở thanh lịch
-      - giày đi họp quan trọng
-      - giày phỏng vấn nhà tuyển dụng
-      - giày đi dạo phố thôi
-      - giày casual đi chơi cuối tuần
-      - giày đi mall đi dạo
-      - giày năng động đi chơi
-      - giày mặc quần áo thường ngày
-      - giày đi cafe đi dạo
-      - giày cho chuyến du lịch
-      - giày đi du lịch thoải mái
-      - giày đi phượt đi bộ nhiều
-      - giày đi chơi xa cả ngày
-      - giày đi biển đi resort
-      - giày đi tiệc
-      - giày lên phố đi bar
-      - giày đi party cuối năm
-      - giày đi club đi bar
-      - giày nữ đi tiệc sang trọng
-      - giày chạy bộ mỗi sáng
-      - giày tập gym
-      - giày đá bóng cuối tuần
-      - giày chơi cầu lông
-      - giày tập yoga
+      - ơi
+      - ơi shop
+      - mình chào
+      - hi there
+      - hey
+      - chào buổi sáng
+      - chào buổi chiều
+      - chào buổi tối
+      - cho mình hỏi
+      - nhờ shop tư vấn
+      - mình cần hỏi
+      - mình muốn hỏi
+      - bạn ơi
 
   - intent: goodbye
     examples: |
@@ -55,6 +30,16 @@ nlu:
       - hẹn gặp lại
       - cảm ơn, mình out đây
       - ok cảm ơn nhé
+      - cảm ơn nhiều
+      - thanks
+      - cảm ơn shop
+      - thank you
+      - kết thúc nhé
+      - mình đi đây
+      - ok bye
+      - goodbye
+      - hẹn lại sau nhé
+      - tạm biệt shop
 
   - intent: ask_product
     examples: |
@@ -67,6 +52,19 @@ nlu:
       - shop có giày không
       - mình cần giày mới
       - mình muốn mua đôi giày
+      - tôi cần một đôi giày
+      - mình muốn tìm kiếm giày
+      - bạn có bán giày không
+      - shop bán giày gì
+      - mình muốn xem giày
+      - cho xem các loại giày
+      - có giày nào đẹp không
+      - giới thiệu giày cho mình
+      - mình muốn duyệt giày
+      - giày nam có không
+      - giày nữ có không
+      - shop có giày cho nam không
+      - bán giày không shop
 
   - intent: ask_advice
     examples: |
@@ -86,15 +84,56 @@ nlu:
       - chưa tìm được đôi nào ưng ý
       - chưa chọn được mẫu nào
       - tư vấn cho mình vài câu hỏi nhé
+      - mình là nam 25 tuổi nên mua giày gì
+      - nên mua giày gì cho người mới tập gym
+      - mình chưa có kinh nghiệm mua giày
+      - tư vấn giày cho người đi làm
+      - gợi ý giày cho sinh viên
+      - giày cho người đi bộ nhiều
+      - mình không rõ nên mua giày nào
+      - hướng dẫn mình chọn giày
+      - mình cần lời khuyên về giày
+      - shop khuyên mình nên mua giày nào
+      - bạn tư vấn giày cho mình đi
+      - nên chọn giày nào cho dân văn phòng
+      - mẹo chọn giày cho người mới
+      - mình cần được tư vấn thêm
 
   - intent: provide_purpose
     examples: |
       - mình cần giày chạy bộ
-      - giày đá bóng
       - giày để đi làm
       - giày đi học cho nam
       - mình muốn giày sneaker đi chơi
       - giày đi bộ hằng ngày
+      - mình cần giày để [chạy bộ](purpose)
+      - giày [đi làm](purpose) hàng ngày
+      - mình cần giày [đá bóng](purpose)
+      - giày [du lịch](purpose)
+      - giày [dạo phố](purpose)
+      - giày [công sở](purpose)
+      - giày [party](purpose)
+      - giày [valentine](purpose)
+      - giày [yoga](purpose)
+      - giày [đi bộ](purpose)
+      - giày [trekking](purpose)
+      - giày [đi biển](purpose)
+      - giày [học sinh](purpose)
+      - giày [sinh viên](purpose)
+      - giày [phỏng vấn](purpose)
+      - giày [casual](purpose)
+      - giày [formal](purpose)
+      - giày [đi cafe](purpose)
+      - giày [mua sắm](purpose)
+      - giày [thể thao](purpose)
+      - giày [cầu lông](purpose)
+      - giày [tennis](purpose)
+      - giày [bóng rổ](purpose)
+      - giày [leo núi](purpose)
+      - giày [cắm trại](purpose)
+      - giày [dã ngoại](purpose)
+      - giày [dancing](purpose)
+      - giày [khiêu vũ](purpose)
 
   - intent: provide_size
     examples: |
@@ -103,6 +142,77 @@ nlu:
       - mình chân nhỏ, khoảng size 38
       - size 39
       - khoảng 40 41
+      - size 42
+      - size 43
+      - mình đi size 44
+      - chân mình size 45
+      - size 46
+      - mình mang size 37 nữ
+      - size 36
+      - size 35
+      - size 38 nữ
+      - mình size 40 nam
+      - chân mình dài 25cm thì size bao nhiêu
+      - mình không biết size bao nhiêu
+      - mình đo chân được 24cm
+      - bàn chân mình 23.5cm
+      - chiều dài chân mình 26cm
+      - mình đi size 39 rưỡi
+      - size EU 42
+      - size US 9
+      - mình đi size trung bình
+      - size 40-41
+      - chân mình hơi rộng
+      - mình chân bè nên chọn size lớn hơn
+      - mình mang size nhỏ hơn bình thường
+
+  - intent: provide_occasion
+    examples: |
+      - sinh nhật
+      - là sinh nhật
+      - mình muốn mua giày sinh nhật
+      - giày sinh nhật cho bạn gái
+      - kỷ niệm
+      - là kỷ niệm
+      - kỷ niệm ngày yêu
+      - tặng kỷ niệm
+      - tốt nghiệp
+      - noel
+      - tết
+      - valentine
+      - ngày lễ
+      - đi chơi
+      - dạo phố
+      - phỏng vấn
+      - công sở
+      - đi làm
+      - du lịch
+      - đi biển
+      - tiệc
+      - party
+      - club
+      - hẹn hò
+      - lãng mạn
+      - cưới hỏi
+      - đám cưới
+      - đi xem phim
+      - đi concert
+      - đi festival
+      - đi sự kiện
+      - tặng quà
+      - tặng người yêu
+      - tặng bạn
+      - casual
+      - thể thao
+      - chạy bộ
+      - đá bóng
+      - gym
+      - yoga
+      - trekking
+      - sn
+      - mừng sn
+      - birthday
+      - mừng birthday
 
   - intent: provide_price_range
     examples: |
@@ -112,6 +222,31 @@ nlu:
       - tầm trên 3 triệu
       - khoảng 1 triệu rưỡi
       - tầm 800k tới 1 triệu
+      - dưới 500k
+      - dưới 300k
+      - dưới 200k
+      - tầm 500k
+      - 300k đến 500k
+      - 500k tới 1 triệu
+      - 1 triệu đến 1.5 triệu
+      - 1.5 đến 2 triệu
+      - 2 đến 2.5 triệu
+      - 2.5 triệu đến 3 triệu
+      - trên 5 triệu
+      - trên 10 triệu
+      - khoảng 4-5 triệu
+      - tầm 1tr đến 2tr
+      - giá rẻ thôi
+      - bình dân giá
+      - học sinh nên mua giày giá bao nhiêu
+      - giày sinh viên giá nào hợp lý
+      - mình có budget 1 triệu
+      - tài chính khoảng 2 triệu
+      - giày cao cấp thì giá bao nhiêu
+      - giày phổ thông thôi
+      - giày trung cấp
+      - giày xịn xò thì giá sao
+      - mình muốn giày giá vừa phải
 
   - intent: ask_promotion
     examples: |
@@ -121,6 +256,26 @@ nlu:
       - có voucher gì không
       - có sale không
       - hôm nay có chương trình giảm giá gì không
+      - có flash sale không
+      - có deal hot không
+      - khuyến mãi hôm nay là gì
+      - ưu đãi hôm nay có gì
+      - giảm bao nhiêu phần trăm
+      - có giảm giá sốc không
+      - có chương trình gì đặc biệt không
+      - black friday có gì
+      - 11.11 có khuyến mãi gì
+      - ngày sale nào sắp tới
+      - mã giảm giá là gì
+      - voucher giảm bao nhiêu
+      - free ship không
+      - miễn phí vận chuyển chứ
+      - có freeship không
+      - được giảm bao nhiêu
+      - mua 1 được giảm mấy phần trăm
+      - combo có giảm không
+      - bundle deal có không
+      - mua 2 tặng 1 không
 
   - intent: ask_shipping
     examples: |
@@ -129,6 +284,20 @@ nlu:
       - giao hàng mấy ngày tới
       - giao hàng toàn quốc không
       - có giao hỏa tốc không
+      - giao hàng trong bao lâu
+      - ship hàng mất bao lâu
+      - giao tận nhà không
+      - có nhận hàng rồi thanh toán không
+      - COD được không
+      - giao hàng có tính phí không
+      - phí vận chuyển là bao nhiêu
+      - giao nhanh trong bao lâu
+      - giao tiêu chuẩn mấy ngày
+      - có giao trong ngày không
+      - giao buổi tối được không
+      - thời gian giao hàng là bao lâu
+      - ship cod bao nhiêu
+      - freeship điều kiện gì
 
   - intent: ask_payment
     examples: |
@@ -137,6 +306,19 @@ nlu:
       - có COD không
       - có chuyển khoản không
       - thanh toán qua ví momo được không
+      - có thanh toán thẻ tín dụng không
+      - có trả góp 0% không
+      - trả góp được không
+      - có trả góp qua ngân hàng không
+      - các hình thức thanh toán
+      - thanh toán bằng cách nào
+      - có nhận chuyển khoản không
+      - thanh toán qua Zalopay được không
+      - có thanh toán VNPay không
+      - thanh toán qua QR code được không
+      - ATM được không
+      - internet banking được không
+      - ví điện tử nào được
 
   - intent: ask_return_policy
     examples: |
@@ -145,6 +327,30 @@ nlu:
       - mình muốn trả hàng thì sao
       - chính sách đổi trả của shop
       - bao lâu thì được đổi trả
+      - đổi trả có mất phí không
+      - trả lại tiền được không
+      - hoàn tiền như thế nào
+      - hàng lỗi thì đổi thế nào
+      - giày hỏng thì sao
+      - đổi size có phí không
+      - đổi màu được không
+      - đổi sang sản phẩm khác được không
+      - mua nhầm thì đổi sao
+      - giày không vừa thì sao
+      - giày giao nhầm thì sao
+
+  - intent: ask_warranty
+    examples: |
+      - bảo hành giày bao lâu
+      - chế độ bảo hành thế nào
+      - giày có bảo hành không
+      - bảo hành có mất phí không
+      - giày hỏng có bảo hành không
+      - điều kiện bảo hành là gì
+      - bảo hành không bao gồm gì
+      - giày trầy có được bảo hành không
+      - bảo hành keo dán không
+      - đế mòn có được bảo hành không
 
   - intent: ask_store_info
     examples: |
@@ -153,6 +359,84 @@ nlu:
       - giờ mở cửa thế nào
       - có showroom không
       - mình muốn tới xem trực tiếp
+      - cửa hàng ở đâu
+      - có chi nhánh nào
+      - showroom ở quận nào
+      - mở cửa mấy giờ
+      - đóng cửa lúc mấy giờ
+      - làm việc cuối tuần không
+      - thứ 7 có mở cửa không
+      - chủ nhật có mở cửa không
+      - có cửa hàng ở HCM không
+      - có shop ở Hà Nội không
+      - địa chỉ chi tiết là gì
+      - google map ở đâu
+      - liên hệ shop bằng cách nào
+      - số điện thoại shop là gì
+      - fanpage ở đâu
+      - inbox shop được không
+      - hotline là bao nhiêu
+
+  - intent: ask_brands
+    examples: |
+      - shop có những brand nào
+      - có những hãng giày nào
+      - danh sách thương hiệu
+      - brands hiện có
+      - các hãng đang bán
+      - có nike adidas không
+      - shop bán hãng nào
+      - thương hiệu giày có gì
+      - các brand nổi tiếng có không
+      - nike có không
+      - adidas có bán không
+      - puma có giày không
+      - có converse không
+      - vans bán không
+      - fila có không
+      - new balance có không
+      - asics có không
+      - jordan có không
+      - reebok có không
+      - mình muốn xem các thương hiệu
+      - liệt kê các hãng giày
+      - hãng giày local có không
+      - thương hiệu việt nam có không
+      - giày BMC có gì
+      - BMC Shoes là thương hiệu gì
+      - shop có hãng nào cho nữ
+
+  - intent: ask_categories
+    examples: |
+      - shop có những loại giày nào
+      - danh mục sản phẩm
+      - categories hiện có
+      - shop bán những dòng nào
+      - cho mình xem các danh mục
+      - giày nam có những loại nào
+      - giày nữ có những dòng nào
+      - có giày thể thao không
+      - có giày sneaker không
+      - giày casual có không
+      - giày công sở có không
+      - giày running có không
+      - giày đá bóng có không
+      - giày gym có không
+      - giày sandal có không
+      - giày boot có không
+      - giày loafer có không
+      - giày slip on có không
+      - giày cao gót có không
+      - giày búp bê có không
+      - giày sandal nữ có không
+      - giày sandal nam có không
+      - giày lười có không
+      - giày mules có không
+      - giày espadrilles có không
+      - giày moka có không
+      - giày oxford có không
+      - giày derby có không
+      - giày brogue có không
 
   - intent: search_products
     examples: |
@@ -170,43 +454,35 @@ nlu:
       - mua [nike](brand) dưới [3 triệu](price_range)
       - tìm giày [nike](brand) khoảng [2 3 triệu](price_range)
       - mình cần giày [adidas](brand) chạy bộ size [40](shoe_size) tầm [2-3 triệu](price_range)
-
-  - intent: provide_info
-    examples: |
-      - size [40](shoe_size)
-      - khoảng [2 triệu](price_range)
-      - mình đi size [41](shoe_size)
-      - giày [chạy bộ](purpose)
-      - hãng [adidas](brand)
-      - brand [nike](brand)
-
-  - lookup: brand
-    examples: |
-      - nike
-      - adidas
-      - puma
-      - converse
-
-  - regex: shoe_size
-    examples: |
-      - \\b(3[5-9]|4[0-5])\\b
-
-  - intent: ask_brands
-    examples: |
-      - shop có những brand nào
-      - có những hãng giày nào
-      - danh sách thương hiệu
-      - brands hiện có
-      - các hãng đang bán
-      - có nike adidas không
-
-  - intent: ask_categories
-    examples: |
-      - shop có những loại giày nào
-      - danh mục sản phẩm
-      - categories hiện có
-      - shop bán những dòng nào
-      - cho mình xem các danh mục
+      - giày [nike](brand) [running](purpose) size [42](shoe_size)
+      - giày [puma](brand) [gym](purpose)
+      - giày [converse](brand) [casual](purpose)
+      - giày [vans](brand) [skate](purpose)
+      - giày [fila](brand) [retro](purpose)
+      - giày [new balance](brand) [walking](purpose)
+      - giày [asics](brand) [chạy bộ](purpose)
+      - giày [jordan](brand) [basketball](purpose)
+      - giày [reebok](brand) [training](purpose)
+      - tìm giày [đá bóng](purpose) [nike](brand)
+      - giày [nike](brand) [air max](purpose) [trắng](purpose)
+      - giày [adidas](brand) [stan smith](purpose) [xanh](purpose)
+      - giày [puma](brand) [suede](purpose) [đen](purpose)
+      - giày [converse](brand) [chuck 70](purpose)
+      - giày [vans](brand) [old skool](purpose)
+      - giày [fila](brand) [disruptor](purpose)
+      - giày [new balance](brand) [550](purpose)
+      - giày [asics](brand) [gel](purpose)
+      - giày [jordan](brand) [1](purpose)
+      - giày [reebok](brand) [classic](purpose)
+      - giày [nike](brand) [dunk](purpose)
+      - giày [adidas](brand) [samba](purpose)
+      - giày [puma](brand) [rs-x](purpose)
+      - giày [converse](brand) [one star](purpose)
+      - tìm giày tầm giá [500 đến 2 triệu](price_range)
+      - giày [nike](brand) dưới [1 triệu](price_range)
+      - giày [adidas](brand) tầm [2 triệu](price_range)
+      - giày cho nam [chạy bộ](purpose) [1-2 triệu](price_range)
+      - giày nữ [đi làm](purpose) [2-3 triệu](price_range)
 
   - intent: affirm
     examples: |
@@ -215,6 +491,24 @@ nlu:
       - vâng
       - ok
       - được
+      - ừ
+      - ừa
+      - có
+      - đồng ý
+      - ok luôn
+      - okay
+      - yep
+      - yeah
+      - vâng ạ
+      - dạ vâng
+      - đúng ý mình
+      - đúng đấy
+      - chuẩn rồi
+      - perfect
+      - ok good
+      - hay đấy
+      - ý hay đấy
+      - ok mình đồng ý
 
   - intent: deny
     examples: |
@@ -222,3 +516,368 @@ nlu:
       - không phải
       - thôi khỏi
       - chưa cần
+      - không muốn
+      - không cần
+      - không đồng ý
+      - không tiếp
+      - out
+      - không thôi
+      - thôi
+      - dạ không
+      - không ạ
+      - chưa
+      - không cần thiết
+      - bỏ qua
+      - skip
+
+  - intent: ask_size_guide
+    examples: |
+      - cách chọn size giày
+      - hướng dẫn đo size giày
+      - làm sao biết size giày
+      - size giày đo như thế nào
+      - bảng size giày
+      - size giày việt nam
+      - size giày EU US khác nhau thế nào
+      - mình mang size bao nhiêu
+      - đo chân thế nào để biết size
+      - hướng dẫn đo chân
+      - cách đo bàn chân
+      - size 39 là bao nhiêu cm
+      - size 40 chân dài bao nhiêu
+      - đổi size như thế nào
+      - chọn size giày sao cho vừa
+      - giày rộng thì chọn size nào
+      - chân nhỏ thì chọn size gì
+      - mẹo chọn size giày online
+
+  - intent: ask_care_guide
+    examples: |
+      - cách bảo quản giày da
+      - hướng dẫn vệ sinh giày vải
+      - cách giặt giày canvas
+      - làm sạch giày thể thao
+      - giày da lộn bảo quản sao
+      - giày sneaker vệ sinh thế nào
+      - cách giữ giày trắng sạch
+      - giày bị ố vàng làm sao
+      - giày bị mùi hôi thì sao
+      - cách làm mới giày cũ
+      - giày bị ẩm mốc thì sao
+      - cách phơi giày đúng cách
+      - có nên ngâm giày trong nước không
+      - cách bảo quản giày thể thao
+      - giày running nên vệ sinh thế nào
+      - giày da thì lau thế nào
+      - kem dưỡng giày da loại nào tốt
+      - xịt chống ướt giày da có cần không
+      - giày suede bị ướt thì sao
+      - cách chải giày suede
+      - có nên đánh xi giày da không
+
+  - intent: ask_compare
+    examples: |
+      - so sánh giày nike và adidas
+      - nike hay adidas tốt hơn
+      - giày running nào tốt nhất
+      - nên mua nike hay adidas
+      - so sánh các thương hiệu giày
+      - giày đá bóng nào tốt nhất
+      - giày gym nào tốt
+      - so sánh giày puma và converse
+      - asics hay brooks chạy bộ tốt hơn
+      - giày hiking nào tốt
+      - new balance hay asics
+      - fila hay converse
+      - vans hay converse
+      - puma hay reebok
+      - giày crossfit nào tốt
+      - nên chọn đinh FG hay TF
+      - giày platform có tốt không
+      - giày slip on hay giày buộc dây
+      - giày da hay giày vải tốt hơn
+      - đệm EVA hay đệm gel tốt hơn
+      - đế cao su hay đế TPU tốt hơn
+
+  - intent: ask_gender
+    examples: |
+      - giày nam
+      - giày nữ
+      - giày cho nam
+      - giày cho nữ
+      - giày em bé trai
+      - giày em bé gái
+      - giày trẻ em
+      - giày unisex
+      - giày cho người lớn tuổi
+      - giày mùa hè
+      - giày mùa đông
+      - giày mùa thu
+      - giày mùa xuân
+      - giày học sinh nam
+      - giày sinh viên nữ
+      - giày cho người đi làm
+      - giày công sở nam
+      - giày công sở nữ
+      - giày thể thao nam
+      - giày thể thao nữ
+      - giày chạy bộ nam
+      - giày chạy bộ nữ
+
+  - intent: ask_occasion_gift
+    examples: |
+      - tặng giày cho người yêu
+      - giày tặng valentine
+      - quà sinh nhật giày
+      - giày tặng mẹ
+      - giày tặng bạn
+      - giày tặng sếp
+      - giày tặng thầy cô
+      - giày tặng anh trai
+      - giày tặng em gái
+      - giày tặng crush
+      - giày làm quà tặng
+      - giày tặng kỷ niệm ngày yêu
+      - giày tặng ngày sinh nhật
+      - giày tặng ngày 8/3
+      - giày tặng ngày 20/10
+      - giày tặng ông bà
+      - giày tặng cha
+      - giày làm quà tết
+      - giày làm quà trung thu
+      - giày làm quà noel
+      - giày tặng dịp lễ
+
+  - intent: ask_gift_for_lover
+    examples: |
+      - tặng giày cho người yêu
+      - mình muốn mua giày tặng người yêu
+      - giày làm quà tặng người yêu
+      - tư vấn giày tặng bạn trai
+      - tư vấn giày tặng bạn gái
+      - mua giày tặng người yêu
+      - giày quà tặng ngày valentine
+      - giày tặng nửa kia
+      - giày tặng crush
+      - mình cần giày làm quà cho người yêu
+      - giày tặng bạn trai sinh nhật
+      - giày tặng bạn gái kỷ niệm
+      - tặng giày cho người yêu nhân dịp sinh nhật
+      - mình muốn tìm giày tặng người yêu
+      - giày đẹp tặng người yêu
+      - gợi ý giày tặng người yêu
+      - giày nam tặng nữ
+      - giày nữ tặng nam
+      - giày cặp đôi tặng nhau
+      - quà giày cho người yêu
+      - giày làm quà cho bạn trai
+      - giày làm quà cho bạn gái
+
+  - intent: provide_gift_occasion
+    examples: |
+      - sinh nhật
+      - kỷ niệm
+      - kỷ niệm ngày yêu
+      - valentine
+      - ngày 14/2
+      - lễ tình nhân
+      - ngày 8/3
+      - ngày 20/10
+      - ngày sinh nhật
+      - mừng sn
+      - mừng sinh nhật
+      - birthday
+      - anniversary
+      - tặng nhân dịp sinh nhật
+      - tặng nhân dịp kỷ niệm
+      - tặng dịp lễ
+      - tặng dịp valentine
+      - quà sinh nhật
+      - quà kỷ niệm
+      - noel
+      - tết
+      - trung thu
+      - 20/10
+      - 8/3
+
+  - intent: provide_gender
+    examples: |
+      - nam
+      - nữ
+      - bạn trai
+      - bạn gái
+      - người yêu nam
+      - người yêu nữ
+      - boyfriend
+      - girlfriend
+      - anh ấy
+      - cô ấy
+      - boyfriend
+      - girlfriend
+      - bạn trai tôi
+      - bạn gái tôi
+      - nam giới
+      - nữ giới
+      - con trai
+      - con gái
+      - em trai
+      - em gái
+
+  - intent: occasion_search
+    examples: |
+      - giày cho [valentine](occasion)
+      - giày cho [ngày lễ tình nhân](occasion)
+      - giày [đi chơi Valentine](occasion)
+      - giày [hẹn hò lãng mạn](occasion)
+      - giày màu đỏ cho [valentine](occasion)
+      - giày tặng người yêu [ngày 14/2](occasion)
+      - giày lãng mạn cho cặp đôi
+      - giày đỏ hồng cho [lãng mạn](occasion)
+      - giày [đi phỏng vấn](occasion)
+      - giày [mặc đồng phục công sở](occasion)
+      - giày [đi làm văn phòng](occasion)
+      - giày nam [đi phỏng vấn](occasion)
+      - giày [công sở](occasion) thanh lịch
+      - giày [đi họp](occasion) quan trọng
+      - giày [phỏng vấn](occasion) nhà tuyển dụng
+      - giày [đi dạo phố](occasion) thôi
+      - giày [casual](occasion) đi chơi cuối tuần
+      - giày [đi mall](occasion) đi dạo
+      - giày [năng động](occasion) đi chơi
+      - giày [mặc thường ngày](occasion)
+      - giày [đi cafe](occasion) đi dạo
+      - giày cho [chuyến du lịch](occasion)
+      - giày [du lịch](occasion) thoải mái
+      - giày [đi phượt](occasion) đi bộ nhiều
+      - giày [đi chơi](occasion) xa cả ngày
+      - giày [đi biển](occasion) đi resort
+      - giày [đi tiệc](occasion)
+      - giày [lên phố](occasion) đi bar
+      - giày [party](occasion) cuối năm
+      - giày [đi club](occasion) đi bar
+      - giày nữ [đi tiệc](occasion) sang trọng
+      - giày [chạy bộ](occasion) mỗi sáng
+      - giày [đá bóng](occasion) cuối tuần
+      - giày [chơi cầu lông](occasion)
+      - giày [tập yoga](occasion)
+      - giày [sinh nhật](occasion)
+      - giày [tốt nghiệp](occasion)
+      - giày [noel](occasion)
+      - giày [tết](occasion)
+      - giày [đi chơi](occasion) thôi
+      - giày [dạo phố](occasion)
+      - giày [hẹn hò](occasion)
+      - giày [đi xem phim](occasion)
+      - giày [đi concert](occasion)
+      - giày [đi festival](occasion)
+      - giày [đi sự kiện](occasion)
+      - giày [cưới hỏi](occasion)
+      - giày [đi đám cưới](occasion)
+
+  - lookup: brand
+    examples: |
+      - nike
+      - adidas
+      - puma
+      - converse
+      - vans
+      - fila
+      - new balance
+      - asics
+      - jordan
+      - reebok
+      - mizuno
+      - under armour
+      - hoka
+      - salomon
+      - nb
+      - nmd
+      - ultra boost
+      - air force
+      - air max
+      - dunks
+      - ultraboost
+      - stan smith
+      - yeezy
+      - gazelle
+      - sambas
+      - timberland
+      - dr martens
+
+  - lookup: occasion
+    examples: |
+      - valentine
+      - phỏng vấn
+      - công sở
+      - dạo phố
+      - du lịch
+      - tiệc
+      - party
+      - casual
+      - thể thao
+      - chạy bộ
+      - đá bóng
+      - tập gym
+      - yoga
+      - đi bộ
+      - trekking
+      - đi biển
+      - đi làm
+      - đi học
+      - đi chơi
+      - hẹn hò
+      - lãng mạn
+      - formal
+      - festival
+      - concert
+      - club
+      - bar
+      - sự kiện
+      - đám cưới
+      - meeting
+
+  - lookup: gift_occasion
+    examples: |
+      - sinh nhật
+      - kỷ niệm
+      - kỷ niệm ngày yêu
+      - valentine
+      - ngày 14/2
+      - lễ tình nhân
+      - ngày 8/3
+      - ngày 20/10
+      - noel
+      - tết
+      - trung thu
+      - tốt nghiệp
+      - anniversary
+      - birthday
+
+  - lookup: recipient_gender
+    examples: |
+      - nam
+      - nữ
+      - bạn trai
+      - bạn gái
+      - boyfriend
+      - girlfriend
+
+  - regex: shoe_size
+    examples: |
+      - \b(3[5-9]|4[0-5])\b
+      - \bsize\s*(3[5-9]|4[0-5])\b
+
+  - regex: gift_shoe_size
+    examples: |
+      - size\s*(3[5-9]|4[0-5])
+      - mang\s*(3[5-9]|4[0-5])
+      - đi\s*(3[5-9]|4[0-5])
+      - khoảng\s*(3[5-9]|4[0-5])
+
+  - regex: price_range
+    examples: |
+      - dưới\s*[0-9]+\s*(k|tr|triệu|nghìn)
+      - trên\s*[0-9]+\s*(k|tr|triệu|nghìn)
+      - từ\s*[0-9]+\s*(k|tr|triệu)\s*(đến|toi|-)\s*[0-9]+\s*(k|tr|triệu)
+      - khoảng\s*[0-9]+\s*(k|tr|triệu)
+      - [0-9]+\s*-\s*[0-9]+\s*(k|tr|triệu)

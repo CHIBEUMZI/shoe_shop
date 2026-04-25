@@ -502,7 +502,7 @@ SHOP_WEB_BASE_URL=http://localhost:8080
 Khi thay đổi file trong thư mục `rasa/` (`nlu.yml`, `rules.yml`, `stories.yml`, `domain.yml`, `actions/actions.py`...), cần train lại model:
 
 ```bash
-docker compose run --rm rasa rasa train
+docker compose exec rasa rasa train
 ```
 
 Model mới sẽ được lưu trong `rasa/models/*.tar.gz` và tự động được Rasa server load ở lần khởi động tiếp theo.

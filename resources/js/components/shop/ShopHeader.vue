@@ -408,7 +408,7 @@
               class="absolute left-1/2 -translate-x-1/2 top-full pt-3 hidden group-hover:block"
             >
               <div
-                class="w-64 rounded-2xl border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-[#1e1e2e] shadow-2xl shadow-slate-900/10 overflow-hidden backdrop-blur-lg"
+                class="w-64 rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-[#1e1e2e] shadow-2xl shadow-slate-900/10 overflow-hidden backdrop-blur-lg"
               >
                 <div
                   class="px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/50 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50"
@@ -478,20 +478,6 @@
 </template>
 
 <script setup>
-/**
- * ShopHeader.vue - 商店顶部导航组件
- * 
- * 功能说明：
- * - Logo 区域：品牌标识，点击返回首页
- * - 搜索框：支持实时搜索建议、键盘导航、快捷清空
- * - 导航菜单：分类菜单，支持多级下拉
- * - 右侧按钮：登录/账户、收藏、购物车
- * - Sale 按钮：促销入口，带闪烁动画
- * - Mã giảm giá：优惠券入口
- * 
- * 作者：BMC Team
- * 更新日期：2026-04-10
- */
 
 import { onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
@@ -499,42 +485,34 @@ import productPublicService from "../../services/public/productService";
 
 // ==================== PROPS & EMITS ====================
 const props = defineProps({
-  // v-model 搜索关键词
   modelValue: { type: String, default: "" },
-  // 是否已登录
   isLoggedIn: { type: Boolean, default: false },
-  // 用户头像 URL
   avatar: { type: String, default: "" },
-  // 用户名称
   userName: { type: String, default: "" },
-  // 购物车商品数量
   cartCount: { type: Number, default: 0 },
-  // 收藏商品数量
   wishlistCount: { type: Number, default: 0 },
-  // 分类菜单数据
   menu: { type: Array, default: () => [] },
 });
 
 // 定义组件事件
 const emit = defineEmits([
-  "update:modelValue",  // 搜索关键词更新
-  "login",              // 登录按钮点击
-  "logout",             // 登出按钮点击
-  "profile",            // 个人中心点击
-  "wishlist",           // 收藏页点击
-  "cart",               // 购物车点击
-  "nav",                // 菜单导航点击
-  "sale",               // Sale 促销点击
-  "searchAll",          // 查看所有搜索结果
-  "search",             // 移动端搜索按钮点击
+  "update:modelValue",  
+  "login",              
+  "logout",             
+  "profile",            
+  "wishlist",          
+  "cart",             
+  "nav",                
+  "sale",               
+  "searchAll",          
+  "search",             
 ]);
 
 const router = useRouter();
 
-// ==================== 菜单导航 ====================
 /**
- * 触发菜单导航事件
- * @param {Object} payload - 菜单项数据
+    * 
+ * @param {Object} payload 
  */
 function emitNav(payload) {
   closeSuggest();
@@ -542,106 +520,73 @@ function emitNav(payload) {
   emit("nav", payload);
 }
 
-/**
- * Sale 促销按钮点击处理
- */
 function onSaleClick() {
   closeSuggest();
   closeAccountMenu();
   emit("sale");
 }
 
-/**
- * 跳转优惠券页面
- */
+
 function goCoupons() {
   closeSuggest();
   closeAccountMenu();
   router.push("/shop/coupons");
 }
 
-// ==================== 账户下拉菜单 ====================
-const accountWrap = ref(null);       // 账户下拉容器引用
-const showAccountMenu = ref(false);  // 下拉菜单显示状态
 
-/**
- * 切换账户下拉菜单
- */
+const accountWrap = ref(null);       
+const showAccountMenu = ref(false);  
+
 function toggleAccountMenu() {
   closeSuggest();
   showAccountMenu.value = !showAccountMenu.value;
 }
 
-/**
- * 关闭账户下拉菜单
- */
 function closeAccountMenu() {
   showAccountMenu.value = false;
 }
 
-/**
- * 登录按钮处理
- */
 function login() {
   closeAccountMenu();
   emit("login");
 }
 
-/**
- * 登出按钮处理
- */
 function logout() {
   closeAccountMenu();
   emit("logout");
 }
 
-/**
- * 跳转个人中心
- */
 function goProfile() {
   closeAccountMenu();
   emit("profile");
 }
 
-/**
- * 跳转收藏页面
- */
 function goWishlist() {
   closeAccountMenu();
   emit("wishlist");
 }
 
-/**
- * 跳转订单页面
- */
 function goOrders() {
   closeAccountMenu();
   router.push("/shop/orders");
 }
 
-/**
- * 跳转我的优惠券页面
- */
 function goMyCoupons() {
   closeAccountMenu();
   router.push("/shop/my-coupons");
 }
 
-// ==================== 搜索建议 ====================
-const searchWrap = ref(null);         // 搜索容器引用
-const loadingSuggest = ref(false);     // 加载状态
-const suggestions = ref([]);          // 搜索建议列表
-const showSuggest = ref(false);        // 建议下拉显示状态
-const activeIndex = ref(-1);           // 键盘导航当前索引
 
-// API 基础地址
+const searchWrap = ref(null);        
+const loadingSuggest = ref(false);     
+const suggestions = ref([]);         
+const showSuggest = ref(false);       
+const activeIndex = ref(-1);          
+
+
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-/**
- * 构建图片完整 URL
- * @param {String} pathOrUrl - 图片路径或完整 URL
- * @returns {String} 完整的图片 URL
- */
+
 function buildImageUrl(pathOrUrl) {
   if (!pathOrUrl) return "";
   if (String(pathOrUrl).startsWith("http")) return pathOrUrl;
@@ -649,11 +594,6 @@ function buildImageUrl(pathOrUrl) {
   return `${API_BASE}/storage/${pathOrUrl}`;
 }
 
-/**
- * 获取商品价格（优先使用促销价）
- * @param {Object} p - 商品对象
- * @returns {Number} 商品价格
- */
 function getPrice(p) {
   const sale =
     p.base_sale_price !== null && p.base_sale_price !== undefined
@@ -663,11 +603,7 @@ function getPrice(p) {
   return sale !== null ? sale : base;
 }
 
-/**
- * 映射搜索建议数据结构
- * @param {Object} p - 商品原始数据
- * @returns {Object} 映射后的数据
- */
+
 function mapSuggest(p) {
   return {
     id: p.id,
@@ -679,11 +615,7 @@ function mapSuggest(p) {
   };
 }
 
-/**
- * 格式化越南盾金额
- * @param {Number} v - 金额
- * @returns {String} 格式化后的金额字符串
- */
+
 function moneyVND(v) {
   const n = Number(v || 0);
   return new Intl.NumberFormat("vi-VN", {
@@ -692,10 +624,7 @@ function moneyVND(v) {
   }).format(n);
 }
 
-/**
- * 获取搜索建议
- * @param {String} q - 搜索关键词
- */
+
 async function fetchSuggest(q) {
   const keyword = (q || "").trim();
   if (!keyword) {
@@ -727,13 +656,8 @@ async function fetchSuggest(q) {
   }
 }
 
-// 防抖定时器
 let t = null;
 
-/**
- * 搜索输入事件处理（带防抖）
- * @param {Event} e - 输入事件
- */
 function onInput(e) {
   const v = e?.target?.value ?? "";
   emit("update:modelValue", v);
@@ -742,9 +666,6 @@ function onInput(e) {
   t = setTimeout(() => fetchSuggest(v), 250);
 }
 
-/**
- * 搜索框获得焦点事件
- */
 function onFocus() {
   if ((props.modelValue || "").trim()) {
     showSuggest.value = true;
@@ -752,60 +673,38 @@ function onFocus() {
   }
 }
 
-/**
- * 关闭搜索建议下拉
- */
 function closeSuggest() {
   showSuggest.value = false;
   activeIndex.value = -1;
 }
 
-/**
- * 清空搜索内容
- */
 function clearSearch() {
   emit("update:modelValue", "");
   suggestions.value = [];
   closeSuggest();
 }
 
-/**
- * 跳转商品详情页
- * @param {String} slug - 商品 slug
- */
 function goProduct(slug) {
   closeSuggest();
   closeAccountMenu();
   router.push(`/shop/products/${slug}`);
 }
 
-/**
- * 触发查看所有搜索结果
- */
 function emitSearchAll() {
   emit("searchAll", props.modelValue);
   closeSuggest();
 }
 
-/**
- * 键盘下箭头导航
- */
 function onArrowDown() {
   if (!showSuggest.value || !suggestions.value.length) return;
   activeIndex.value = Math.min(activeIndex.value + 1, suggestions.value.length - 1);
 }
 
-/**
- * 键盘上箭头导航
- */
 function onArrowUp() {
   if (!showSuggest.value || !suggestions.value.length) return;
   activeIndex.value = Math.max(activeIndex.value - 1, 0);
 }
 
-/**
- * 回车键确认选择
- */
 function onEnter() {
   if (!showSuggest.value) return;
 
@@ -816,11 +715,6 @@ function onEnter() {
   }
 }
 
-// ==================== 点击外部关闭下拉 ====================
-/**
- * 文档点击事件（关闭下拉菜单）
- * @param {Event} e - 点击事件
- */
 function onDocClick(e) {
   const searchEl = searchWrap.value;
   const accountEl = accountWrap.value;
@@ -842,7 +736,6 @@ onBeforeUnmount(() => {
   document.removeEventListener("click", onDocClick);
 });
 
-// 监听搜索关键词变化
 watch(
   () => props.modelValue,
   (v) => {
@@ -853,9 +746,6 @@ watch(
   }
 );
 
-/**
- * 跳转首页
- */
 function goHome() {
   closeSuggest();
   closeAccountMenu();
@@ -864,12 +754,10 @@ function goHome() {
 </script>
 
 <style scoped>
-/* Material Symbols 字体配置 */
 .material-symbols-outlined {
   font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
 }
 
-/* Badge 轻微弹跳动画 */
 @keyframes bounce-subtle {
   0%, 100% {
     transform: translateY(0);

@@ -55,8 +55,26 @@ class CartController extends Controller
 
             $item = $query->lockForUpdate()->first();
 
+            $currentQty = $item ? (int) $item->quantity : 0;
+            $newQty = $currentQty + $qty;
+
+            // Lấy stock từ variant hoặc product
+            $maxStock = null;
+            if (!empty($payload['product_variant_id'])) {
+                $variant = \App\Models\ProductVariant::find($payload['product_variant_id']);
+                $maxStock = $variant?->stock;
+            }
+            if ($maxStock === null) {
+                $product = \App\Models\Product::find($payload['product_id']);
+                $maxStock = $product?->stock ?? 999;
+            }
+
+            if ($newQty > $maxStock) {
+                abort(422, "Số lượng vượt quá tồn kho. Tối đa có thể thêm: " . ($maxStock - $currentQty));
+            }
+
             if ($item) {
-                $item->quantity += $qty;
+                $item->quantity = $newQty;
                 $item->save();
             } else {
                 CartItem::create([

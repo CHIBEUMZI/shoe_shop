@@ -35,7 +35,7 @@
         <div class="mt-8 flex flex-wrap gap-3">
           <button
             type="button"
-            class="px-6 py-3 rounded-2xl bg-slate-950 text-white text-sm md:text-[15px] font-extrabold shadow-lg shadow-slate-900/15 hover:-translate-y-0.5 hover:bg-primary transition-all"
+            class="px-6 py-3 rounded-xl bg-slate-950 text-white text-sm md:text-[15px] font-extrabold shadow-lg shadow-slate-900/15 hover:-translate-y-0.5 hover:bg-primary transition-all"
             @click="goProducts"
           >
             Xem tất cả sản phẩm
@@ -43,7 +43,7 @@
 
           <button
             type="button"
-            class="px-6 py-3 rounded-2xl text-sm md:text-[15px] font-extrabold text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 shadow-lg shadow-red-500/40 hover:shadow-xl hover:shadow-red-500/60 hover:-translate-y-1 hover:scale-105 transition-all duration-300"
+            class="px-6 py-3 rounded-xl text-sm md:text-[15px] font-extrabold text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 shadow-lg shadow-red-500/40 hover:shadow-xl hover:shadow-red-500/60 hover:-translate-y-1 hover:scale-105 transition-all duration-300"
             @click="goBigSale"
           >
             🔥 Sale lớn từ 25%
@@ -177,13 +177,13 @@
     <!-- Big sale products (NEW UI) -->
     <section class="mb-20">
       <div
-        class="relative rounded-[32px] overflow-hidden p-[1px] bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400 shadow-2xl"
+        class="relative rounded-[12px] overflow-hidden p-[1px] bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400 shadow-2xl"
       >
         <!-- Glow effect -->
         <div class="absolute -top-20 -left-20 w-72 h-72 bg-rose-500/30 blur-[120px]"></div>
         <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-orange-400/30 blur-[120px]"></div>
 
-        <div class="relative bg-white dark:bg-slate-950 rounded-[31px] px-6 md:px-10 py-8 md:py-10">
+        <div class="relative bg-white dark:bg-slate-950 rounded-[11px] px-6 md:px-10 py-8 md:py-10">
           
           <!-- Header -->
           <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-10">
@@ -321,7 +321,7 @@
         <article
           v-for="p in featured"
           :key="p.id"
-          class="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer hover:-translate-y-1"
+          class="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden shadow-sm hover:shadow-2xl transition-all border border-slate-100 dark:border-slate-800 cursor-pointer hover:-translate-y-1"
           @click="goDetail(p.slug)"
         >
           <div class="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">

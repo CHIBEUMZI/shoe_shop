@@ -31,10 +31,35 @@ rules:
       - intent: goodbye
       - action: utter_goodbye
 
-  - rule: promotion rule
+  - rule: search products with full info (brand + occasion)
+    steps:
+      - intent: search_products
+      - action: action_search_products
+
+  - rule: provide purpose -> ask for size or search
+    steps:
+      - intent: provide_purpose
+      - action: action_search_by_occasion
+
+  - rule: provide occasion standalone -> search
+    steps:
+      - intent: provide_occasion
+      - action: action_search_by_occasion
+
+  - rule: provide price range standalone -> search
+    steps:
+      - intent: provide_price_range
+      - action: action_search_by_price
+
+  - rule: provide size standalone -> search
+    steps:
+      - intent: provide_size
+      - action: action_search_by_size
+
+  - rule: promotion -> search promo
     steps:
       - intent: ask_promotion
-      - action: utter_promotion
+      - action: action_search_promo
 
   - rule: shipping rule
     steps:
@@ -56,11 +81,6 @@ rules:
       - intent: ask_store_info
       - action: utter_store_info
 
-  - rule: search products rule
-    steps:
-      - intent: search_products
-      - action: action_search_products
-
   - rule: list brands rule
     steps:
       - intent: ask_brands
@@ -70,9 +90,64 @@ rules:
     steps:
       - intent: ask_categories
       - action: action_list_categories
-                 
+
   - rule: occasion search rule
     steps:
       - intent: occasion_search
       - action: utter_occasion_search
       - action: action_search_by_occasion
+
+  - rule: gender (men)
+    steps:
+      - intent: ask_gender
+      - action: action_search_men
+
+  - rule: occasion gift
+    steps:
+      - intent: ask_occasion_gift
+      - action: action_search_by_event
+
+  - rule: activate gift recommendation form
+    steps:
+      - intent: ask_gift_for_lover
+      - action: utter_ask_gift_occasion
+      - action: gift_recommendation_form
+      - active_loop: gift_recommendation_form
+
+  - rule: submit gift recommendation form
+    condition:
+      - active_loop: gift_recommendation_form
+    steps:
+      - action: gift_recommendation_form
+      - active_loop: null
+      - action: action_suggest_gift_shoes
+
+  - rule: provide gift occasion
+    steps:
+      - intent: provide_gift_occasion
+      - action: utter_ask_recipient_gender
+
+  - rule: size guide
+    steps:
+      - intent: ask_size_guide
+      - action: action_guide_size
+
+  - rule: care guide
+    steps:
+      - intent: ask_care_guide
+      - action: action_care_guide
+
+  - rule: compare products
+    steps:
+      - intent: ask_compare
+      - action: action_compare_products
+
+  - rule: affirm continue
+    steps:
+      - intent: affirm
+      - action: utter_continue
+
+  - rule: deny stop
+    steps:
+      - intent: deny
+      - action: utter_stop

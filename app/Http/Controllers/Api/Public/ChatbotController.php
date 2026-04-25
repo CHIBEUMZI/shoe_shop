@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api\Public;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;    
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 
 class ChatbotController extends Controller
@@ -18,7 +18,12 @@ class ChatbotController extends Controller
             ], 422);
         }
 
-        $sender = optional($request->user())->id ?? $request->ip() ?? 'anonymous';
+        // Use conversation_id if provided (from frontend), otherwise fallback
+        // Using a unique ID per page load ensures fresh Rasa conversation context
+        $sender = $request->input('conversation_id')
+            ?? optional($request->user())->id
+            ?? $request->ip()
+            ?? 'anonymous';
 
         $rasaUrl = env('RASA_URL', 'http://rasa:5005/webhooks/rest/webhook');
 

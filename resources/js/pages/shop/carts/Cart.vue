@@ -257,9 +257,11 @@ import { computed, onMounted, ref } from "vue";
 import { useRouter } from "vue-router";
 import { useCartStore } from "../../../stores/cart";
 import { buildImageUrl } from "../../../utils/image";
+import { useAlert } from "../../../composables/useAlert";
 
 const router = useRouter();
 const cartStore = useCartStore();
+const notify = useAlert();
 
 const promoCode = ref("");
 const promoMsg = ref("");
@@ -322,7 +324,13 @@ async function setQty(it, q) {
   const stock = it.variant?.stock;
   if (stock !== null && stock !== undefined && Number.isFinite(Number(stock))) {
     const s = Number(stock);
-    if (s > 0 && next > s) return;
+    if (s > 0 && next > s) {
+      notify.warning("Không được vượt quá số lượng trong kho", {
+        title: "Cảnh báo",
+        duration: 2000,
+      });
+      return;
+    }
   }
 
   if (next === current) return;
@@ -331,7 +339,10 @@ async function setQty(it, q) {
   try {
     await cartStore.updateQty(it.id, next);
   } catch (e) {
-    alert(cartStore.error || "Không cập nhật được số lượng");
+    notify.error(cartStore.error || "Không cập nhật được số lượng", {
+      title: "Lỗi",
+      duration: 2500,
+    });
   } finally {
     setItemBusy(it.id, false);
   }
@@ -344,8 +355,12 @@ function onQtyInput(it, ev) {
   const stock = it.variant?.stock;
   if (stock !== null && stock !== undefined && Number.isFinite(Number(stock))) {
     const s = Number(stock);
-    if (s > 0) {
-      val = Math.min(val, s);
+    if (s > 0 && val > s) {
+      notify.warning("Không được vượt quá số lượng trong kho", {
+        title: "Cảnh báo",
+        duration: 2000,
+      });
+      val = s;
     }
   }
 
@@ -358,7 +373,10 @@ async function remove(it) {
   try {
     await cartStore.removeItem(it.id);
   } catch (e) {
-    alert(cartStore.error || "Không xóa được sản phẩm");
+    notify.error(cartStore.error || "Không xóa được sản phẩm", {
+      title: "Lỗi",
+      duration: 2500,
+    });
   } finally {
     setItemBusy(it.id, false);
   }
@@ -371,7 +389,10 @@ async function clearAll() {
   try {
     await cartStore.clearCart();
   } catch (e) {
-    alert(cartStore.error || "Không xóa được giỏ hàng");
+    notify.error(cartStore.error || "Không xóa được giỏ hàng", {
+      title: "Lỗi",
+      duration: 2500,
+    });
   } finally {
     clearBusy.value = false;
   }

@@ -356,8 +356,8 @@
                   </div>
 
                   <div class="text-[13px]">
-                    <template v-if="maxQty <= 0">
-                      <span class="font-semibold text-red-600">Hết hàng</span>
+                    <template v-if="maxQty < 5 && maxQty > 0">
+                      <span class="font-semibold text-orange-600">Chỉ còn {{ maxQty }} sản phẩm</span>
                     </template>
                     <template v-else>
                       <span class="text-slate-500">Còn </span>
@@ -381,11 +381,12 @@
               <button
                 class="flex h-12 items-center justify-center gap-2 rounded-xl bg-primary font-extrabold text-white shadow-lg shadow-primary/20 transition-all hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/25 active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0"
                 type="button"
-                :disabled="!canAddToCart || maxQty <= 0"
+                :disabled="!canAddToCart || maxQty <= 0 || addingToCart"
                 @click="addToCart"
               >
-                <span class="material-symbols-outlined text-[20px]">shopping_bag</span>
-                Thêm vào giỏ hàng
+                <span v-if="addingToCart" class="material-symbols-outlined text-[20px] animate-spin">progress_activity</span>
+                <span v-else class="material-symbols-outlined text-[20px]">shopping_bag</span>
+                {{ addingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng" }}
               </button>
 
               <button
@@ -629,6 +630,7 @@ const slug = computed(() => String(route.params.slug || ""));
 const notify = useAlert();
 
 const loading = ref(false);
+const addingToCart = ref(false);
 const error = ref("");
 
 const product = ref(null);
@@ -734,13 +736,32 @@ const canAddToCart = computed(() => {
   return true;
 });
 
-const maxQty = computed(() => {
+const availableQty = computed(() => {
   if (variants.value.length) {
     const s = Number(selectedVariant.value?.stock ?? 0);
-    return Number.isFinite(s) ? Math.max(0, s) : 0;
+    const inCart = getQtyInCart(selectedVariant.value?.id);
+    return Math.max(0, s - inCart);
   }
   const ps = Number(product.value?.stock ?? 99);
-  return Number.isFinite(ps) ? Math.max(0, ps) : 99;
+  const inCart = getQtyInCart(null);
+  return Math.max(0, ps - inCart);
+});
+
+function getQtyInCart(variantId) {
+  const cartStore = useCartStore();
+  const items = cartStore.items || [];
+  const match = items.find(it => {
+    const sameProduct = String(it.product_id) === String(product.value?.id);
+    const sameVariant = variantId
+      ? String(it.variant_id) === String(variantId)
+      : !it.variant_id;
+    return sameProduct && sameVariant;
+  });
+  return match ? Number(match.quantity || 0) : 0;
+}
+
+const maxQty = computed(() => {
+  return availableQty.value;
 });
 
 const plainTextDescription = computed(() => {
@@ -770,12 +791,25 @@ function syncQtyWithStock() {
     qtyInput.value = "1";
     return;
   }
+  const max = availableQty.value;
+  if (max <= 0) {
+    qty.value = 1;
+    qtyInput.value = "1";
+    return;
+  }
   const next = clampQty(Number(qty.value || 1));
   qty.value = next;
   qtyInput.value = String(next);
 }
 
 function incQty() {
+  if (qty.value >= maxQty.value) {
+    notify.warning("Không được vượt quá số lượng trong kho", {
+      title: "Cảnh báo",
+      duration: 2000,
+    });
+    return;
+  }
   qty.value = clampQty(Number(qty.value) + 1);
   qtyInput.value = String(qty.value);
 }
@@ -787,6 +821,12 @@ function decQty() {
 
 function commitQty() {
   const parsed = Number(String(qtyInput.value).replace(/[^\d]/g, "")) || 1;
+  if (parsed > maxQty.value) {
+    notify.warning("Không được vượt quá số lượng trong kho", {
+      title: "Cảnh báo",
+      duration: 2000,
+    });
+  }
   qty.value = clampQty(parsed);
   qtyInput.value = String(qty.value);
 }
@@ -929,8 +969,6 @@ async function fetchRelated() {
 }
 
 async function addToCart() {
-  if (!canAddToCart.value || maxQty.value <= 0) return;
-
   const product_id = product.value?.id;
   const product_variant_id = selectedVariant.value?.id || null;
   const quantity = Number(qty.value || 1);
@@ -939,16 +977,31 @@ async function addToCart() {
     const auth = useAuthStore();
     if (!auth.user) return router.push("/login");
 
+    if (quantity > availableQty.value) {
+      notify.warning("Số lượng tối đa có thể thêm là " + availableQty.value, {
+        title: "Không thể thêm",
+        duration: 3000,
+      });
+      return;
+    }
+
+    addingToCart.value = true;
     await cartStore.addToCart({ product_id, product_variant_id, quantity });
     notify.success("Đã thêm vào giỏ hàng", {
       title: "Thành công",
       duration: 2500,
     });
+    // Reset quantity to 1 after adding
+    qty.value = 1;
+    qtyInput.value = "1";
   } catch (e) {
-    notify.error(cartStore.error || "Thêm vào giỏ thất bại", {
+    const errMsg = cartStore.error || "Thêm vào giỏ thất bại";
+    notify.error(errMsg, {
       title: "Lỗi",
-      duration: 2500,
+      duration: 3000,
     });
+  } finally {
+    addingToCart.value = false;
   }
 }
 

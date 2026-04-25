@@ -256,6 +256,13 @@ import { nextTick, ref, reactive, watch } from "vue";
 import api from "../api";
 import { buildImageUrl } from "../utils/image";
 
+// Generate a new conversation ID on every page load to ensure fresh Rasa context
+function generateConversationId() {
+  return `conv_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+}
+
+const CONVERSATION_ID = generateConversationId();
+
 const open = ref(false);
 const input = ref("");
 const sending = ref(false);
@@ -265,10 +272,12 @@ const unreadCount = ref(0);
 const isTyping = ref(false);
 
 const suggestions = [
-  { icon: "👟", text: "Giày đá bóng" },
-  { icon: "👠", text: "Giày cao gót nữ" },
-  { icon: "💰", text: "Giày dưới 500k" },
+  { icon: "⚽", text: "Giày đá bóng" },
+  { icon: "🏃", text: "Giày chạy bộ" },
   { icon: "🏷️", text: "Khuyến mãi hôm nay" },
+  { icon: "💼", text: "Giày đi làm" },
+  { icon: "✨", text: "Giày sneaker hot" },
+
 ];
 
 const messages = ref([
@@ -282,6 +291,11 @@ const messages = ref([
 function clearAllTypingTimeouts() {
   typingTimeouts.value.forEach(clearTimeout);
   typingTimeouts.value = [];
+}
+
+function resetConversation() {
+  // Generate a new conversation ID for a fresh Rasa context
+  const newId = generateConversationId();
 }
 
 function toggleOpen() {
@@ -309,10 +323,11 @@ function clearChat() {
   messages.value = [
     {
       from: "bot",
-      text: "Chào bạn, mình là trợ lý ảo của BMC Shoes, mình có thể giúp gì cho bạn hôm nay?",
+      text: "Xin chào bạn! Mình là trợ lý ảo của BMC Shoes 👟 Mình có thể giúp bạn tìm giày theo nhu cầu, thương hiệu, size hay tầm giá. Bạn đang cần tư vấn gì hôm nay?",
       timestamp: new Date(),
     },
   ];
+  resetConversation();
 }
 
 async function sendSuggestion(suggestion) {
@@ -357,7 +372,7 @@ async function send() {
   try {
     sending.value = true;
     isTyping.value = true;
-    const res = await api.post("/api/v1/chatbot", { message: text });
+    const res = await api.post("/api/v1/chatbot", { message: text, conversation_id: CONVERSATION_ID });
     const data = res?.data ?? [];
 
     clearAllTypingTimeouts();
@@ -366,7 +381,17 @@ async function send() {
     if (Array.isArray(data)) {
       data.forEach((msg) => {
         if (msg?.custom?.type === "products" || msg?.custom?.type === "chips") {
-          messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
+          // Animate a short intro text, then show the custom content
+          const introText = msg?.custom?.type === "products"
+            ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
+            : "Dưới đây là các gợi ý cho bạn nhé!";
+          const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
+          messages.value.push(msgObj);
+          animateText(msgObj, () => {
+            // After intro text animation, push the actual custom card
+            messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
+            scrollToBottom();
+          });
         } else if (msg?.text) {
           const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
           messages.value.push(msgObj);
@@ -377,6 +402,14 @@ async function send() {
       const msgObj = { from: "bot", text: data.text, displayedText: "", typing: true, timestamp: new Date() };
       messages.value.push(msgObj);
       animateText(msgObj);
+    } else if (data?.custom) {
+      const introText = "Mình tìm được các sản phẩm này cho bạn nè! 👟";
+      const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: data.custom };
+      messages.value.push(msgObj);
+      animateText(msgObj, () => {
+        messages.value.push({ from: "bot", custom: data.custom, timestamp: new Date() });
+        scrollToBottom();
+      });
     } else {
       const msgObj = {
         from: "bot",
@@ -404,7 +437,7 @@ async function send() {
   }
 }
 
-function animateText(msgObj) {
+function animateText(msgObj, onComplete) {
   const msgReactive = reactive(msgObj);
   msgReactive.typing = true;
 
@@ -420,6 +453,7 @@ function animateText(msgObj) {
       typingTimeouts.value.push(timeout);
     } else {
       msgReactive.typing = false;
+      if (onComplete) onComplete();
     }
   }
 
