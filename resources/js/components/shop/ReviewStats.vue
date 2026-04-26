@@ -6,23 +6,27 @@
       <!-- Average Rating -->
       <div class="flex items-center gap-4">
         <div class="text-center min-w-20">
-          <div class="text-4xl font-bold text-amber-500">{{ stats.average_rating }}</div>
+          <div class="text-4xl font-bold text-amber-500">{{ displayRating }}</div>
           <div class="text-sm text-gray-600">trên 5</div>
         </div>
         
         <!-- Star display -->
         <div class="flex-1">
           <div class="flex items-center gap-1 mb-2">
-            <div v-for="i in 5" :key="i" class="text-yellow-400 text-lg">
-              ★
+            <div v-for="i in 5" :key="i" class="text-lg">
+              <span 
+                v-if="i <= Math.round(displayRating)"
+                class="text-yellow-400"
+              >★</span>
+              <span v-else class="text-gray-300">★</span>
             </div>
           </div>
-          <div class="text-sm text-gray-600">{{ stats.total_reviews }} đánh giá</div>
+          <div class="text-sm text-gray-600">{{ displayReviewCount }} đánh giá</div>
         </div>
       </div>
 
       <!-- Rating Distribution -->
-      <div class="pt-4 border-t border-gray-200 space-y-2">
+      <div v-if="stats.total_reviews > 0" class="pt-4 border-t border-gray-200 space-y-2">
         <div v-for="rating in [5, 4, 3, 2, 1]" :key="rating" class="flex items-center gap-2">
           <span class="text-sm text-gray-600 min-w-8">{{ rating }}★</span>
           <div class="flex-1 bg-gray-200 rounded-full h-2 overflow-hidden">
@@ -41,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import reviewService from '../../services/public/reviewService'
 
 const props = defineProps({
@@ -65,6 +69,17 @@ const stats = ref({
 
 const loading = ref(false)
 const error = ref(null)
+
+// Default to 5 sao khi chưa có đánh giá
+const displayRating = computed(() => {
+  if (stats.value.total_reviews === 0) return 5
+  return stats.value.average_rating
+})
+
+const displayReviewCount = computed(() => {
+  if (stats.value.total_reviews === 0) return 'Chưa có'
+  return stats.value.total_reviews
+})
 
 const getPercentage = (rating) => {
   if (stats.value.total_reviews === 0) return 0

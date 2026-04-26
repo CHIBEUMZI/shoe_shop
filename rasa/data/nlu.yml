@@ -529,27 +529,23 @@ nlu:
       - không cần thiết
       - bỏ qua
       - skip
+      - quay lại
+      - sửa lại
+      - nhập lại
+      - đổi ý
+      - thay đổi
+
+  - intent: ask_gift_for_lover
+    examples: |
+      - mua giày tặng người yêu
+      - tặng giày cho người yêu
+      - giày tặng bạn gái
+      - giày tặng bạn trai
 
   - intent: ask_size_guide
     examples: |
       - cách chọn size giày
       - hướng dẫn đo size giày
-      - làm sao biết size giày
-      - size giày đo như thế nào
-      - bảng size giày
-      - size giày việt nam
-      - size giày EU US khác nhau thế nào
-      - mình mang size bao nhiêu
-      - đo chân thế nào để biết size
-      - hướng dẫn đo chân
-      - cách đo bàn chân
-      - size 39 là bao nhiêu cm
-      - size 40 chân dài bao nhiêu
-      - đổi size như thế nào
-      - chọn size giày sao cho vừa
-      - giày rộng thì chọn size nào
-      - chân nhỏ thì chọn size gì
-      - mẹo chọn size giày online
 
   - intent: ask_care_guide
     examples: |
@@ -626,7 +622,6 @@ nlu:
 
   - intent: ask_occasion_gift
     examples: |
-      - tặng giày cho người yêu
       - giày tặng valentine
       - quà sinh nhật giày
       - giày tặng mẹ

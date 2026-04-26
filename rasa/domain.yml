@@ -209,7 +209,7 @@ responses:
   utter_ask_price_range:
     - text: "Bạn mong muốn tầm giá khoảng bao nhiêu? Ví dụ: dưới 500k, 500k-1 triệu, 1-2 triệu, 2-3 triệu, hoặc trên 3 triệu?"
   utter_ask_gift_occasion:
-    - text: "Bạn tặng giày cho người yêu nhân dịp gì vậy? Ví dụ: sinh nhật, kỷ niệm ngày yêu, Valentine, hay một dịp đặc biệt nào khác?"
+    - text: "Bạn tặng giày nhân dịp gì vậy? Ví dụ: sinh nhật, kỷ niệm, Valentine, hay một dịp đặc biệt nào khác?"
   utter_ask_recipient_gender:
     - text: "Người nhận quà là nam hay nữ vậy bạn?"
   utter_ask_gift_shoe_size:
@@ -238,6 +238,7 @@ responses:
 actions:
   - validate_shoe_recommendation_form
   - validate_gift_recommendation_form
+  - action_gift_go_back
   - action_suggest_shoes
   - action_suggest_gift_shoes
   - action_search_products

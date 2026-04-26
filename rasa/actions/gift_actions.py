@@ -305,22 +305,6 @@ class ActionSuggestGiftShoes(Action):
             }
         )
 
-        # Provide helpful follow-up based on what criteria user specified
-        criteria_parts = []
-        if gift_shoe_size and gift_shoe_size != "pho_bien":
-            criteria_parts.append(f"size {gift_shoe_size}")
-        if recipient_gender and recipient_gender != "khong_biet":
-            criteria_parts.append(f"giày {'nữ' if recipient_gender == 'nữ' else 'nam'}")
-        if gift_price_range:
-            criteria_parts.append(f"tầm giá {gift_price_range}")
-
-        if criteria_parts:
-            follow_up = f"Mình đã lọc theo {', '.join(criteria_parts)} cho bạn. Bạn có muốn thay đổi size, tầm giá hoặc xem thêm brand khác không? Mình sẵn sàng hỗ trợ!"
-        else:
-            follow_up = "Bạn có muốn lọc thêm theo thương hiệu, thay đổi tầm giá hoặc size không? Mình sẵn sàng hỗ trợ bạn!"
-
-        dispatcher.utter_message(text=follow_up)
-
         return [
             SlotSet("gift_occasion", None),
             SlotSet("recipient_gender", None),

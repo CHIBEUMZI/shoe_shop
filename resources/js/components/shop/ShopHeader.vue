@@ -405,42 +405,35 @@
             <!-- Dropdown menu -->
             <div
               v-if="item.children?.length"
-              class="absolute left-1/2 -translate-x-1/2 top-full pt-3 hidden group-hover:block"
+              class="absolute left-1/2 -translate-x-1/2 top-full pt-1 hidden group-hover:block"
             >
               <div
-                class="w-64 rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-[#1e1e2e] shadow-2xl shadow-slate-900/10 overflow-hidden backdrop-blur-lg"
+                class="w-80 rounded-lg border border-slate-200/60 dark:border-slate-700/60 bg-white dark:bg-[#1e1e2e] shadow-lg shadow-slate-900/15 overflow-hidden backdrop-blur-lg"
               >
-                <div
-                  class="px-4 py-3 text-xs font-bold text-slate-500 dark:text-slate-400 border-b border-slate-100 dark:border-slate-800/50 bg-gradient-to-r from-slate-50 to-white dark:from-slate-800/50 dark:to-slate-900/50"
-                >
-                  {{ item.label }}
-                </div>
-
-                <ul class="py-2">
+                <!-- Child items -->
+                <ul class="p-2 grid grid-cols-1 gap-1">
                   <li v-for="child in item.children" :key="child.id || child.slug">
                     <a
-                      class="block px-4 py-2.5 text-sm text-slate-700 dark:text-slate-200 hover:text-primary hover:bg-gradient-to-r hover:from-primary/5 hover:to-transparent transition-colors flex items-center gap-2"
+                      class="group/item flex items-center gap-3 px-4 py-3 rounded-xl text-sm text-slate-700 dark:text-slate-200 hover:bg-gradient-to-r hover:from-primary/10 hover:to-transparent dark:hover:from-primary/20 transition-all duration-200"
                       href="#"
                       @click.prevent="emitNav({ parent: item, child })"
                     >
-                      <span
-                        class="w-1.5 h-1.5 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-primary group-hover:scale-125 transition-all"
-                      ></span>
-                      {{ child.label }}
-                    </a>
-                  </li>
-
-                  <li class="mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/50">
-                    <a
-                      class="mx-2 block px-4 py-2.5 text-sm font-semibold text-primary hover:bg-primary/10 rounded-xl transition-colors flex items-center gap-2"
-                      href="#"
-                      @click.prevent="emitNav(item)"
-                    >
-                      <span class="material-symbols-outlined text-lg">arrow_forward</span>
-                      Xem tất cả {{ item.label }}
+                      <span class="font-medium">{{ child.label }}</span>
+                      <span class="material-symbols-outlined text-lg ml-auto opacity-0 group-hover/item:opacity-100 transition-opacity text-primary">arrow_forward</span>
                     </a>
                   </li>
                 </ul>
+
+                <!-- Footer -->
+                <div class="px-3 pb-3">
+                  <a
+                    class="flex items-center justify-center gap-2 px-4 py-3 text-sm font-bold text-primary bg-primary/5 hover:bg-primary/15 rounded-lg transition-colors"
+                    href="#"
+                    @click.prevent="emitNav(item)"
+                  >
+                    Xem tất cả {{ item.label }}
+                  </a>
+                </div>
               </div>
             </div>
           </li>

@@ -3,19 +3,19 @@
     <section class="mb-8">
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div>
-          <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white">
+          <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Tất cả sản phẩm
           </h1>
-          <p class="text-slate-500 dark:text-slate-400 mt-1">
+          <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">
             Khám phá toàn bộ sản phẩm trong cửa hàng
           </p>
 
           <div
             v-if="routeMinDiscount !== null"
-            class="mt-3 inline-flex items-center gap-2 rounded-full bg-rose-50 text-rose-600 px-4 py-2 text-sm font-bold"
+            class="mt-3 inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
           >
-            <span class="material-symbols-outlined text-[18px]">sell</span>
-            Đang lọc sản phẩm giảm từ {{ routeMinDiscount }}%
+            <span class="material-symbols-outlined text-[14px]">sell</span>
+            Giảm từ {{ routeMinDiscount }}%
           </div>
         </div>
 
@@ -34,19 +34,19 @@
       <!-- Sidebar -->
       <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
         <div
-          class="bg-white dark:bg-slate-900 rounded-xl p-5 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-24"
+          class="bg-white dark:bg-slate-900 rounded-lg p-5 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-24"
         >
           <div
-            class="flex items-center justify-between pb-4 mb-4 border-b border-slate-100 dark:border-slate-800"
+            class="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-slate-700"
           >
-            <div class="flex items-center gap-2 font-extrabold text-lg text-slate-900 dark:text-white">
+            <div class="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white uppercase tracking-wide">
               <span class="material-symbols-outlined text-primary">tune</span>
-              Filters
+              Bộ lọc
             </div>
 
             <button
               type="button"
-              class="text-xs font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              class="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
               @click="resetFilters"
             >
               Tải lại
@@ -75,14 +75,14 @@
 
           <div class="space-y-4">
             <!-- PRICE -->
-            <FilterSection title="Price" v-model:open="sections.price">
-              <div class="space-y-2">
+            <FilterSection title="Khoảng giá" v-model:open="sections.price">
+              <div class="space-y-1">
                 <label
                   v-for="r in priceRangesUI"
                   :key="r.key"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer rounded-xl px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-3">
                     <input
                       type="radio"
                       name="priceRange"
@@ -99,26 +99,25 @@
                 <button
                   v-if="filters.priceRange"
                   type="button"
-                  class="mt-2 text-[11px] font-bold px-3 py-1.5 rounded-xl border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+                  class="mt-2 text-[11px] font-bold px-3 py-1.5 border border-slate-300 dark:border-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 transition"
                   @click="filters.priceRange = ''"
                 >
                   Bỏ chọn giá
                 </button>
 
                 <div v-if="filters.priceRange" class="text-[11px] text-slate-500 pt-1">
-                  Đang lọc theo:
-                  <span class="font-bold">{{ priceRangeText }}</span>
+                  Đang lọc: <span class="font-bold">{{ priceRangeText }}</span>
                 </div>
               </div>
             </FilterSection>
 
             <!-- BRAND -->
-            <FilterSection title="Brand" v-model:open="sections.brand">
-              <div class="space-y-2 max-h-56 overflow-auto pr-1">
+            <FilterSection title="Thương hiệu" v-model:open="sections.brand">
+              <div class="space-y-1 max-h-56 overflow-auto pr-1">
                 <label
                   v-for="b in filteredBrands"
                   :key="b.id"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer rounded-xl px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="b.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
                   <div class="flex items-center gap-2">
@@ -143,15 +142,15 @@
             </FilterSection>
 
             <!-- CATEGORY -->
-            <FilterSection title="Category" v-model:open="sections.category">
-              <div class="space-y-2 max-h-56 overflow-auto pr-1">
+            <FilterSection title="Danh mục" v-model:open="sections.category">
+              <div class="space-y-1 max-h-56 overflow-auto pr-1">
                 <label
                   v-for="c in filteredCategories"
                   :key="c.id"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer rounded-xl px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="c.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-3">
                     <input
                       type="checkbox"
                       class="accent-primary"
@@ -173,17 +172,17 @@
             </FilterSection>
 
             <!-- SIZE -->
-            <FilterSection title="Size" v-model:open="sections.size">
+            <FilterSection title="Kích thước" v-model:open="sections.size">
               <div class="flex flex-wrap gap-2">
                 <button
                   v-for="s in filteredSizes"
                   :key="String(s.value)"
                   type="button"
-                  class="px-3 py-2 rounded-xl border text-sm font-extrabold transition"
+                  class="px-3 py-2 border text-sm font-bold transition"
                   :class="[
                     filters.sizes.includes(String(s.value))
                       ? 'bg-slate-900 text-white border-slate-900 dark:bg-primary dark:border-primary'
-                      : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800',
+                      : 'bg-white dark:bg-slate-900 border-slate-300 dark:border-slate-600 hover:border-primary',
                     s.count === 0 ? 'opacity-50 cursor-not-allowed' : ''
                   ]"
                   :disabled="s.count === 0"
@@ -193,21 +192,21 @@
                 </button>
 
                 <div v-if="filteredSizes.length === 0" class="text-xs text-slate-500">
-                  Không có size.
+                  Không có kích thước.
                 </div>
               </div>
             </FilterSection>
 
             <!-- COLOR -->
-            <FilterSection title="Color" v-model:open="sections.color">
-              <div class="space-y-2 max-h-56 overflow-auto pr-1">
+            <FilterSection title="Màu sắc" v-model:open="sections.color">
+              <div class="space-y-1 max-h-56 overflow-auto pr-1">
                 <label
                   v-for="c in filteredColors"
                   :key="String(c.value)"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer rounded-xl px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="c.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-3">
                     <input
                       type="checkbox"
                       class="accent-primary"
@@ -235,8 +234,8 @@
       <div class="flex-1 min-w-0">
         <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-            <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 whitespace-nowrap">
-              Sắp xếp theo:
+            <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
+              Sắp xếp:
             </span>
 
             <BaseSelect
@@ -244,104 +243,137 @@
               :options="sortOptions"
               placeholder="Chọn kiểu sắp xếp"
               size="md"
-              wrapperClass="w-full sm:w-[260px] md:w-[200px]"
+              wrapperClass="w-full sm:w-[200px]"
             />
           </div>
 
-          <div class="text-sm text-slate-500 dark:text-slate-400 font-medium">
-            Hiển thị {{ filteredClient.length }} / {{ meta.total }} sản phẩm
+          <div class="text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
+            {{ filteredClient.length }} / {{ meta.total }} sản phẩm
           </div>
         </div>
 
-        <div v-if="loading && page === 1" class="py-16 text-sm text-slate-500 text-center">
+        <div v-if="loading && page === 1" class="py-16 text-sm text-slate-500 text-center border border-slate-200 dark:border-slate-700">
           Đang tải sản phẩm...
         </div>
 
-        <div v-else-if="error" class="py-10 text-sm text-red-600 text-center">
+        <div v-else-if="error" class="py-10 text-sm text-red-600 text-center border border-red-200 dark:border-red-800">
           {{ error }}
         </div>
 
         <div
           v-else-if="filteredClient.length === 0"
-          class="py-16 text-sm text-slate-500 text-center bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl"
+          class="py-16 text-sm text-slate-500 text-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700"
         >
           Không tìm thấy sản phẩm phù hợp.
         </div>
 
         <div
           v-else
-          class="grid grid-cols-2 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-5 lg:gap-6"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4"
         >
           <article
             v-for="p in filteredClient"
             :key="p.id"
-            class="group bg-white dark:bg-slate-900 rounded-xl overflow-hidden border border-slate-100 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 cursor-pointer"
+            class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden hover:border-primary transition-colors cursor-pointer flex flex-col"
             @click="goDetail(p.slug)"
           >
-            <div class="relative aspect-square bg-slate-50 dark:bg-slate-800 overflow-hidden">
+            <div class="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <span
                 v-if="p.salePercent"
-                class="absolute top-3 left-3 bg-red-500 text-white text-[11px] font-black px-2.5 py-1 rounded-full uppercase z-10 shadow-sm"
+                class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 uppercase z-10 tracking-wider rounded-bl-md"
               >
-                Sale -{{ p.salePercent }}%
+                -{{ p.salePercent }}%
               </span>
 
               <img
-                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                 :src="p.image"
                 :alt="p.name"
               />
-
-              <div
-                class="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/10 to-transparent pointer-events-none"
-              ></div>
             </div>
 
-            <div class="p-4 lg:p-5">
+            <div class="p-4 flex flex-col flex-1">
               <p
-                class="text-[11px] tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
+                class="text-[10px] tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
               >
                 {{ p.brand }}
               </p>
 
               <h4
-                class="mt-2 font-extrabold text-sm md:text-base lg:text-[17px] text-slate-900 dark:text-white line-clamp-2 min-h-[50px] leading-snug"
+                class="mt-2 font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug"
               >
                 {{ p.name }}
               </h4>
 
-              <div class="flex items-end gap-2 mt-3 flex-wrap">
-                <p class="text-primary font-black text-base lg:text-xl">
+              <div class="flex items-center gap-3 mt-auto pt-3">
+                <p class="text-primary font-black text-base">
                   {{ moneyVND(p.price) }}
                 </p>
 
                 <p
                   v-if="p.compareAt"
-                  class="text-sm text-slate-400 line-through"
+                  class="text-xs text-slate-400 line-through"
                 >
                   {{ moneyVND(p.compareAt) }}
                 </p>
               </div>
+
+              <button
+                class="mt-3 w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
+              >
+                Xem chi tiết
+              </button>
             </div>
           </article>
         </div>
 
-        <div class="mt-10 flex justify-center">
-          <button
-            class="bg-white dark:bg-slate-900 px-8 py-3 rounded-2xl border border-slate-200 dark:border-slate-700 font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            type="button"
-            :disabled="loading || meta.current_page >= meta.last_page"
-            @click="loadMore"
-          >
-            {{ loading && page > 1 ? "Đang tải..." : "Xem thêm sản phẩm" }}
-          </button>
+        <div class="mt-10 flex flex-col items-center gap-4">
+          <div v-if="meta.total > 0" class="flex items-center gap-2">
+            <button
+              type="button"
+              class="h-10 px-4 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-lg"
+              :disabled="loading || meta.current_page <= 1"
+              @click="goToPage(meta.current_page - 1)"
+            >
+              <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+            </button>
+
+            <button
+              v-for="p in pageButtons"
+              :key="p.key"
+              type="button"
+              class="h-10 min-w-10 px-3 border text-sm font-semibold flex items-center justify-center transition-all rounded-lg"
+              :class="p.type === 'page'
+                ? p.page === meta.current_page
+                  ? 'border-primary bg-primary text-white'
+                  : 'border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 hover:border-primary hover:text-primary'
+                : 'border-transparent bg-transparent text-slate-400 cursor-default'"
+              :disabled="loading || p.type !== 'page'"
+              @click="p.type === 'page' ? goToPage(p.page) : undefined"
+            >
+              {{ p.label }}
+            </button>
+
+            <button
+              type="button"
+              class="h-10 px-4 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-lg"
+              :disabled="loading || meta.current_page >= meta.last_page"
+              @click="goToPage(meta.current_page + 1)"
+            >
+              <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+
+          <div class="text-sm text-slate-500 dark:text-slate-400">
+            Hiển thị {{ fromToText }}
+          </div>
         </div>
       </div>
     </section>
   </main>
 </template>
 
-<script setup>
+<script setup lang="ts">
 import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useRouter, useRoute } from "vue-router";
 
@@ -579,7 +611,7 @@ async function fetchProducts({ append = false } = {}) {
       current_page: Number(m?.current_page ?? page.value),
       last_page: Number(m?.last_page ?? 1),
       per_page: Number(m?.per_page ?? perPage.value),
-      total: Number(m?.total ?? items.value.length),
+      total: Number(m?.total ?? (append ? items.value.length : list.length)),
     };
   } catch (e) {
     error.value =
@@ -640,12 +672,56 @@ const filteredClient = computed(() => {
   return list;
 });
 
-async function loadMore() {
+async function goToPage(p) {
   if (loading.value) return;
-  if (meta.value.current_page >= meta.value.last_page) return;
-  page.value = meta.value.current_page + 1;
-  await fetchProducts({ append: true });
+  const target = Math.max(1, Math.min(p, meta.value.last_page));
+  if (target === meta.value.current_page) return;
+  page.value = target;
+  await fetchProducts();
+  productsSection.value?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+const fromToText = computed(() => {
+  const total = Number(meta.value.total || 0);
+  if (!total) return "0 sản phẩm";
+  const cur = Number(meta.value.current_page || 1);
+  const pp = Number(meta.value.per_page || 12);
+  const from = (cur - 1) * pp + 1;
+  const to = Math.min(cur * pp, total);
+  return `${from}-${to} / ${total} sản phẩm`;
+});
+
+type PageBtn =
+  | { key: string; type: "page"; page: number; label: string }
+  | { key: string; type: "dots"; label: string };
+
+const pageButtons = computed<PageBtn[]>(() => {
+  const last = meta.value.last_page;
+  if (last <= 1) return [];
+
+  const cur = meta.value.current_page;
+  const btns: PageBtn[] = [];
+
+  const addPage = (p) => btns.push({ key: `p-${p}`, type: "page", page: p, label: String(p) });
+  const addDots = (k) => btns.push({ key: `d-${k}`, type: "dots", label: "..." });
+
+  if (last <= 7) {
+    for (let p = 1; p <= last; p++) addPage(p);
+    return btns;
+  }
+
+  addPage(1);
+
+  const left = Math.max(2, cur - 1);
+  const right = Math.min(last - 1, cur + 1);
+
+  if (left > 2) addDots("l");
+  for (let p = left; p <= right; p++) addPage(p);
+  if (right < last - 1) addDots("r");
+
+  addPage(last);
+  return btns;
+});
 
 function resetFilters() {
   filters.value = {

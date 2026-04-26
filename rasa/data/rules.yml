@@ -103,6 +103,8 @@ rules:
       - action: action_search_men
 
   - rule: occasion gift
+    condition:
+      - active_loop: null
     steps:
       - intent: ask_occasion_gift
       - action: action_search_by_event
@@ -110,7 +112,6 @@ rules:
   - rule: activate gift recommendation form
     steps:
       - intent: ask_gift_for_lover
-      - action: utter_ask_gift_occasion
       - action: gift_recommendation_form
       - active_loop: gift_recommendation_form
 
@@ -146,6 +147,13 @@ rules:
     steps:
       - intent: affirm
       - action: utter_continue
+
+  - rule: go back in gift form
+    condition:
+      - active_loop: gift_recommendation_form
+    steps:
+      - intent: deny
+      - action: action_gift_go_back
 
   - rule: deny stop
     steps:

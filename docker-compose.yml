@@ -4,8 +4,8 @@ services:
       context: .
       dockerfile: ./docker/php/Dockerfile
     container_name: app_shoe_shop
-    mem_limit: 512m
-    cpu_shares: 512
+    mem_limit: 2g
+    cpu_shares: 1024
     volumes:
       - .:/var/www
     depends_on:
@@ -15,10 +15,10 @@ services:
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
+          memory: 2G
+          cpus: '2.0'
         reservations:
-          memory: 256M
+          memory: 1G
 
   queue:
     build:
@@ -49,14 +49,14 @@ services:
       - "3307:3306"
     volumes:
       - db-data:/var/lib/mysql
-    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=256M --max-connections=100
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=1G --max-connections=200 --innodb-log-file-size=256M
     networks:
       - app-network
     deploy:
       resources:
         limits:
-          memory: 512M
-          cpus: '1.0'
+          memory: 2G
+          cpus: '2.0'
 
   phpmyadmin:
     image: phpmyadmin/phpmyadmin
@@ -74,6 +74,23 @@ services:
     networks:
       - app-network
 
+  redis:
+    image: redis:alpine
+    container_name: redis_shoe_shop
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - app-network
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
+
   nginx:
     image: nginx:alpine
     container_name: nginx_shoe_shop
@@ -90,8 +107,8 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
-          cpus: '0.5'
+          memory: 512M
+          cpus: '1.0'
 
   # ===== Rasa server =====
   rasa:
@@ -136,3 +153,4 @@ networks:
 
 volumes:
   db-data:
+  redis-data:

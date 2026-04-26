@@ -2,62 +2,62 @@ import { createRouter, createWebHistory } from "vue-router";
 import { useAuthStore } from "../stores/auth";
 
 // Auth
-import Login from "../pages/auth/Login.vue";
-import Register from "../pages/auth/Register.vue";
-import ForgotPassword from "../pages/auth/ForgotPassword.vue";
-import ResetPassword from "../pages/auth/ResetPassword.vue";
+const Login = () => import("../pages/auth/Login.vue");
+const Register = () => import("../pages/auth/Register.vue");
+const ForgotPassword = () => import("../pages/auth/ForgotPassword.vue");
+const ResetPassword = () => import("../pages/auth/ResetPassword.vue");
 
 // Layouts
-import ShopLayout from "../pages/shop/Shop.vue";
-import AdminLayout from "../pages/admin/AdminDashboard.vue";
+const ShopLayout = () => import("../pages/shop/Shop.vue");
+const AdminLayout = () => import("../pages/admin/AdminDashboard.vue");
 
-// Shop pages
-import ShopHome from "../pages/shop/Home.vue";
-import ShopProductList from "../pages/shop/products/ProductList.vue";
-import ShopProductDetail from "../pages/shop/products/ProductDetail.vue";
-import Cart from "../pages/shop/carts/Cart.vue";
-import Checkout from "../pages/shop/orders/Checkout.vue";
-import OrderSuccess from "../pages/shop/orders/OrderSuccess.vue";
-import MyOrders from "../pages/shop/orders/MyOrders.vue";
-import ProfileEdit from "../pages/shop/ProfileEdit.vue";
-import Coupons from "../pages/shop/coupons/Coupons.vue";
-import MyCoupons from "../pages/shop/coupons/MyCoupons.vue";
+// Shop pages - lazy loaded
+const ShopHome = () => import("../pages/shop/Home.vue");
+const ShopProductList = () => import("../pages/shop/products/ProductList.vue");
+const ShopProductDetail = () => import("../pages/shop/products/ProductDetail.vue");
+const Cart = () => import("../pages/shop/carts/Cart.vue");
+const Checkout = () => import("../pages/shop/orders/Checkout.vue");
+const OrderSuccess = () => import("../pages/shop/orders/OrderSuccess.vue");
+const MyOrders = () => import("../pages/shop/orders/MyOrders.vue");
+const ProfileEdit = () => import("../pages/shop/ProfileEdit.vue");
+const Coupons = () => import("../pages/shop/coupons/Coupons.vue");
+const MyCoupons = () => import("../pages/shop/coupons/MyCoupons.vue");
 
-// Admin pages
-import ProductList from "../pages/admin/products/ProductList.vue";
-import ProductCreate from "../pages/admin/products/ProductCreate.vue";
-import ProductEdit from "../pages/admin/products/ProductEdit.vue";
-import ProductDetail from "../pages/admin/products/ProductDetail.vue";
+// Admin pages - lazy loaded
+const ProductList = () => import("../pages/admin/products/ProductList.vue");
+const ProductCreate = () => import("../pages/admin/products/ProductCreate.vue");
+const ProductEdit = () => import("../pages/admin/products/ProductEdit.vue");
+const ProductDetail = () => import("../pages/admin/products/ProductDetail.vue");
 
-import CategoryList from "../pages/admin/categories/CategoryList.vue";
-import CategoryCreate from "../pages/admin/categories/CategoryCreate.vue";
-import CategoryEdit from "../pages/admin/categories/CategoryEdit.vue";
-import CategoryDetail from "../pages/admin/categories/CategoryDetail.vue";
+const CategoryList = () => import("../pages/admin/categories/CategoryList.vue");
+const CategoryCreate = () => import("../pages/admin/categories/CategoryCreate.vue");
+const CategoryEdit = () => import("../pages/admin/categories/CategoryEdit.vue");
+const CategoryDetail = () => import("../pages/admin/categories/CategoryDetail.vue");
 
-import BrandList from "../pages/admin/brands/BrandList.vue";
-import BrandCreate from "../pages/admin/brands/BrandCreate.vue";
-import BrandEdit from "../pages/admin/brands/BrandEdit.vue";
-import BrandDetail from "../pages/admin/brands/BrandDetail.vue";
+const BrandList = () => import("../pages/admin/brands/BrandList.vue");
+const BrandCreate = () => import("../pages/admin/brands/BrandCreate.vue");
+const BrandEdit = () => import("../pages/admin/brands/BrandEdit.vue");
+const BrandDetail = () => import("../pages/admin/brands/BrandDetail.vue");
 
-import UserList from "../pages/admin/users/UserList.vue";
-import UserForm from "../pages/admin/users/UserForm.vue";
-import UserDetail from "../pages/admin/users/UserDetail.vue";
+const UserList = () => import("../pages/admin/users/UserList.vue");
+const UserForm = () => import("../pages/admin/users/UserForm.vue");
+const UserDetail = () => import("../pages/admin/users/UserDetail.vue");
 
-import OrderList from "../pages/admin/orders/OrderList.vue";
-import OrderDetail from "../pages/admin/orders/OrderDetail.vue";
-import Dashboard from "../pages/admin/dashboard/AdminDashboardView.vue";
+const OrderList = () => import("../pages/admin/orders/OrderList.vue");
+const OrderDetail = () => import("../pages/admin/orders/OrderDetail.vue");
+const Dashboard = () => import("../pages/admin/dashboard/AdminDashboardView.vue");
 
-import BannerList from "../pages/admin/banners/BannerList.vue";
-import BannerCreate from "../pages/admin/banners/BannerCreate.vue";
-import BannerEdit from "../pages/admin/banners/BannerEdit.vue";
+const BannerList = () => import("../pages/admin/banners/BannerList.vue");
+const BannerCreate = () => import("../pages/admin/banners/BannerCreate.vue");
+const BannerEdit = () => import("../pages/admin/banners/BannerEdit.vue");
 
-import ReviewsList from "../pages/admin/reviews/ReviewsList.vue";
-import ReviewDetail from "../pages/admin/reviews/ReviewDetail.vue";
+const ReviewsList = () => import("../pages/admin/reviews/ReviewsList.vue");
+const ReviewDetail = () => import("../pages/admin/reviews/ReviewDetail.vue");
 
-import CouponList from "../pages/admin/coupons/CouponList.vue";
-import CouponCreate from "../pages/admin/coupons/CouponCreate.vue";
-import CouponEdit from "../pages/admin/coupons/CouponEdit.vue";
-import CouponDetail from "../pages/admin/coupons/CouponDetail.vue";
+const CouponList = () => import("../pages/admin/coupons/CouponList.vue");
+const CouponCreate = () => import("../pages/admin/coupons/CouponCreate.vue");
+const CouponEdit = () => import("../pages/admin/coupons/CouponEdit.vue");
+const CouponDetail = () => import("../pages/admin/coupons/CouponDetail.vue");
 
 const routes = [
   { path: "/", redirect: "/shop" },

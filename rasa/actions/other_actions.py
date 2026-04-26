@@ -48,9 +48,6 @@ class ActionSearchPromo(Action):
                     "items": [_product_to_card(p) for p in sale_items[:6]],
                 }
             )
-            dispatcher.utter_message(
-                text="Bạn có mã voucher? Mình có thể hướng dẫn bạn nhập mã voucher khi thanh toán. Hoặc bạn muốn lọc theo size/brand nào không?"
-            )
         else:
             dispatcher.utter_message(
                 text="Hiện tại chưa có sản phẩm giảm giá 😢 Nhưng shop thường xuyên có khuyến mãi, bạn nhớ theo dõi website nhé! Bạn cần tư vấn giày nào không?"

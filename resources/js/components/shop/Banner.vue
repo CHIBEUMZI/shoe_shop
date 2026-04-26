@@ -1,7 +1,7 @@
 <template>
-  <section v-if="banners.length > 0" class="mb-12">
+  <section v-if="banners.length > 0">
     <div
-      class="relative w-full aspect-[16/7] rounded-lg overflow-hidden shadow-xl bg-slate-200 group"
+      class="relative w-full aspect-[16/7] overflow-hidden group"
     >
       <div class="relative w-full h-full">
       <transition name="fade" mode="out-in">
@@ -9,13 +9,6 @@
           class="absolute inset-0 cursor-pointer"
           @click="handleAction"
         >
-          <!-- Background -->
-          <img
-            :src="banners[currentIndex]?.image"
-            class="w-full h-full object-cover blur-2xl scale-110 opacity-40"
-          />
-
-          <!-- Main image -->
           <img
             :key="banners[currentIndex]?.id || currentIndex"
             :src="banners[currentIndex]?.image"

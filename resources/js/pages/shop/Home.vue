@@ -1,11 +1,11 @@
 <template>
-  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-8 md:py-10">
-    <!-- Hero Banner -->
+    <!-- Hero Banner - Full Width (flush with header) -->
     <Banner position="home_top" :fallback-action="goProducts" />
 
-    <!-- Intro / Hero content -->
+    <main class="max-w-7xl mx-auto px-4 lg:px-8 pb-8 md:pb-10">
+      <!-- Intro / Hero content -->
     <section
-      class="mt-10 mb-16 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center"
+      class="mb-16 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-8 items-center"
     >
       <div>
         <div
@@ -391,7 +391,7 @@
         Đi đến cửa hàng
       </button>
     </section>
-  </main>
+    </main>
 </template>
 
 <script setup>

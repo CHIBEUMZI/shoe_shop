@@ -11,7 +11,6 @@
           <line x1="6" y1="6" x2="18" y2="18"></line>
         </svg>
       </span>
-      <span class="chat-toggle-text">Chat tư vấn giày</span>
       <span class="chat-toggle-badge" v-if="unreadCount > 0 && !open">{{ unreadCount }}</span>
       <span class="chat-toggle-pulse" v-if="!open"></span>
     </button>
@@ -228,8 +227,7 @@
             <input
               v-model="input"
               placeholder="Hỏi về giày, size, tầm giá..."
-              :disabled="sending"
-              @keydown.enter.exact.prevent="send"
+              :disabled="inputDisabled"
             />
             <button type="submit" class="chat-send-btn" :disabled="sending || !input.trim()">
               <svg v-if="!sending" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -265,6 +263,7 @@ const CONVERSATION_ID = generateConversationId();
 
 const open = ref(false);
 const input = ref("");
+const inputDisabled = ref(false);
 const sending = ref(false);
 const messagesEl = ref(null);
 const typingTimeouts = ref([]);
@@ -363,77 +362,116 @@ function formatPrice(price) {
 
 async function send() {
   const text = input.value.trim();
-  if (!text) return;
+  if (!text || sending.value) return;
 
-  messages.value.push({ from: "user", text, timestamp: new Date() });
+  sending.value = true;
+  inputDisabled.value = true;
   input.value = "";
+  messages.value.push({ from: "user", text, timestamp: new Date() });
   scrollToBottom();
 
-  try {
-    sending.value = true;
-    isTyping.value = true;
-    const res = await api.post("/api/v1/chatbot", { message: text, conversation_id: CONVERSATION_ID });
-    const data = res?.data ?? [];
+  // Retry logic for resilience
+  const maxRetries = 2;
+  let lastError = null;
 
-    clearAllTypingTimeouts();
-    isTyping.value = false;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      isTyping.value = true;
+      const res = await api.post("/api/v1/chatbot", { message: text, conversation_id: CONVERSATION_ID }, {
+        timeout: 30000
+      });
+      const data = res?.data ?? [];
 
-    if (Array.isArray(data)) {
-      data.forEach((msg) => {
-        if (msg?.custom?.type === "products" || msg?.custom?.type === "chips") {
-          // Animate a short intro text, then show the custom content
-          const introText = msg?.custom?.type === "products"
-            ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
-            : "Dưới đây là các gợi ý cho bạn nhé!";
-          const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
-          messages.value.push(msgObj);
-          animateText(msgObj, () => {
-            // After intro text animation, push the actual custom card
-            messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
-            scrollToBottom();
-          });
-        } else if (msg?.text) {
-          const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
-          messages.value.push(msgObj);
-          animateText(msgObj);
-        }
-      });
-    } else if (data?.text) {
-      const msgObj = { from: "bot", text: data.text, displayedText: "", typing: true, timestamp: new Date() };
-      messages.value.push(msgObj);
-      animateText(msgObj);
-    } else if (data?.custom) {
-      const introText = "Mình tìm được các sản phẩm này cho bạn nè! 👟";
-      const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: data.custom };
-      messages.value.push(msgObj);
-      animateText(msgObj, () => {
-        messages.value.push({ from: "bot", custom: data.custom, timestamp: new Date() });
-        scrollToBottom();
-      });
-    } else {
-      const msgObj = {
-        from: "bot",
-        text: "Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé.",
-        displayedText: "",
-        typing: true,
-        timestamp: new Date(),
-      };
-      messages.value.push(msgObj);
-      animateText(msgObj);
+      clearAllTypingTimeouts();
+      isTyping.value = false;
+
+      if (Array.isArray(data)) {
+        data.forEach((msg) => {
+          // Skip if this message has no content at all
+          if (!msg?.text && !msg?.custom) return;
+
+          // Case 1: Message has both text AND custom → only show custom (it has its own intro)
+          if ((msg?.custom?.type === "products" || msg?.custom?.type === "chips") && msg?.text) {
+            const introText = msg.custom.type === "products"
+              ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
+              : "Dưới đây là các gợi ý cho bạn nhé!";
+            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
+            messages.value.push(msgObj);
+            animateText(msgObj, () => {
+              messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
+              scrollToBottom();
+            });
+          }
+          // Case 2: Only custom content (no text) → show custom with intro
+          else if (msg?.custom?.type === "products" || msg?.custom?.type === "chips") {
+            const introText = msg.custom.type === "products"
+              ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
+              : "Dưới đây là các gợi ý cho bạn nhé!";
+            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
+            messages.value.push(msgObj);
+            animateText(msgObj, () => {
+              messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
+              scrollToBottom();
+            });
+          }
+          // Case 3: Text only → animate text
+          else if (msg?.text) {
+            const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
+            messages.value.push(msgObj);
+            animateText(msgObj);
+          }
+        });
+      } else if (data?.text) {
+        const msgObj = { from: "bot", text: data.text, displayedText: "", typing: true, timestamp: new Date() };
+        messages.value.push(msgObj);
+        animateText(msgObj);
+      } else if (data?.custom) {
+        const introText = "Mình tìm được các sản phẩm này cho bạn nè! 👟";
+        const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: data.custom };
+        messages.value.push(msgObj);
+        animateText(msgObj, () => {
+          messages.value.push({ from: "bot", custom: data.custom, timestamp: new Date() });
+          scrollToBottom();
+        });
+      } else {
+        const msgObj = {
+          from: "bot",
+          text: "Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé.",
+          displayedText: "",
+          typing: true,
+          timestamp: new Date(),
+        };
+        messages.value.push(msgObj);
+        animateText(msgObj);
+      }
+
+      // Success - exit retry loop, unlock input
+      sending.value = false;
+      inputDisabled.value = false;
+      return;
+
+    } catch (e) {
+      lastError = e;
+      isTyping.value = false;
+
+      // If this is the last attempt, show error message
+      if (attempt === maxRetries) {
+        const msgObj = {
+          from: "bot",
+          text: "Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé.",
+          displayedText: "",
+          typing: true,
+          timestamp: new Date(),
+        };
+        messages.value.push(msgObj);
+        animateText(msgObj);
+        sending.value = false;
+        inputDisabled.value = false;
+      } else {
+        // Wait a bit before retry
+        await new Promise(resolve => setTimeout(resolve, 1500));
+      }
     }
-  } catch (e) {
-    isTyping.value = false;
-    const msgObj = {
-      from: "bot",
-      text: "Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé.",
-      displayedText: "",
-      typing: true,
-      timestamp: new Date(),
-    };
-    messages.value.push(msgObj);
-    animateText(msgObj);
-  } finally {
-    sending.value = false;
   }
 }
 
