@@ -724,9 +724,9 @@ async function onSubmit(payload) {
 }
 
 .err {
-  font-size: 12px;
+  font-size: 11.5px;
   color: #ef4444;
+  font-weight: 600;
   margin-top: 4px;
-  font-weight: 500;
 }
 </style>

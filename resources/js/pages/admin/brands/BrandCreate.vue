@@ -191,3 +191,5 @@ async function onSubmit(payload) {
     </template>
   </AdminEntityForm>
 </template>
+
+<style scoped></style>

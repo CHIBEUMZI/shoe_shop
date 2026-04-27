@@ -12,6 +12,16 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    /**
+     * Trạng thái đơn hàng được tính vào doanh thu (chỉ completed).
+     */
+    protected array $revenueOrderStatuses = [
+        'completed',
+    ];
+
+    /**
+     * Trạng thái đơn hàng thành công (dùng cho top sản phẩm bán chạy).
+     */
     protected array $successOrderStatuses = [
         'paid',
         'processing',
@@ -40,7 +50,7 @@ class DashboardController extends Controller
             $previousEndDate->format('YmdHis')
         );
 
-        $data = Cache::remember($cacheKey, now()->addSeconds(60), function () use (
+        $data = Cache::remember($cacheKey, now()->addSeconds(10), function () use (
             $startDate,
             $endDate,
             $previousStartDate,
@@ -106,7 +116,7 @@ class DashboardController extends Controller
 
     protected function getOverview($startDate, $endDate, $previousStartDate, $previousEndDate): array
     {
-        $statusPlaceholders = implode(',', array_fill(0, count($this->successOrderStatuses), '?'));
+        $revenueStatusPlaceholders = implode(',', array_fill(0, count($this->revenueOrderStatuses), '?'));
 
         $orderStats = DB::selectOne(
             "
@@ -114,7 +124,7 @@ class DashboardController extends Controller
                 COALESCE(SUM(
                     CASE
                         WHEN created_at BETWEEN ? AND ?
-                             AND status IN ($statusPlaceholders)
+                             AND status IN ($revenueStatusPlaceholders)
                         THEN grand_total
                         ELSE 0
                     END
@@ -123,7 +133,7 @@ class DashboardController extends Controller
                 COALESCE(SUM(
                     CASE
                         WHEN created_at BETWEEN ? AND ?
-                             AND status IN ($statusPlaceholders)
+                             AND status IN ($revenueStatusPlaceholders)
                         THEN grand_total
                         ELSE 0
                     END
@@ -147,11 +157,11 @@ class DashboardController extends Controller
             [
                 $startDate,
                 $endDate,
-                ...$this->successOrderStatuses,
+                ...$this->revenueOrderStatuses,
 
                 $previousStartDate,
                 $previousEndDate,
-                ...$this->successOrderStatuses,
+                ...$this->revenueOrderStatuses,
 
                 $startDate,
                 $endDate,
@@ -234,7 +244,7 @@ class DashboardController extends Controller
             $rows = Order::query()
                 ->selectRaw('YEAR(created_at) as year_num, MONTH(created_at) as month_num, SUM(grand_total) as total')
                 ->whereBetween('created_at', [$startDate, $endDate])
-                ->whereIn('status', $this->successOrderStatuses)
+                ->whereIn('status', $this->revenueOrderStatuses)
                 ->groupByRaw('YEAR(created_at), MONTH(created_at)')
                 ->orderByRaw('YEAR(created_at), MONTH(created_at)')
                 ->get()
@@ -260,7 +270,7 @@ class DashboardController extends Controller
         $rows = Order::query()
             ->selectRaw('DATE(created_at) as order_date, SUM(grand_total) as total')
             ->whereBetween('created_at', [$startDate, $endDate])
-            ->whereIn('status', $this->successOrderStatuses)
+            ->whereIn('status', $this->revenueOrderStatuses)
             ->groupByRaw('DATE(created_at)')
             ->orderByRaw('DATE(created_at)')
             ->get()
@@ -285,6 +295,7 @@ class DashboardController extends Controller
 
     /**
      * Lấy danh sách top sản phẩm bán chạy kèm theo size và màu phổ biến nhất.
+     * Tối ưu: Gộp thành 3 queries thay vì N+1.
      *
      * @param Carbon $startDate Ngày bắt đầu thống kê
      * @param Carbon $endDate Ngày kết thúc thống kê
@@ -292,6 +303,7 @@ class DashboardController extends Controller
      */
     protected function getTopProducts($startDate, $endDate): array
     {
+        // Query 1: Lấy top 5 sản phẩm bán chạy
         $productRows = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->join('products', 'products.id', '=', 'order_items.product_id')
@@ -307,56 +319,67 @@ class DashboardController extends Controller
                 DB::raw('SUM(order_items.quantity) as sold'),
             ]);
 
-        $result = [];
+        if ($productRows->isEmpty()) {
+            return [];
+        }
 
-        foreach ($productRows as $product) {
-            $topSizes = DB::table('order_items')
-                ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                ->where('order_items.product_id', $product->id)
-                ->whereBetween('orders.created_at', [$startDate, $endDate])
-                ->whereIn('orders.status', $this->successOrderStatuses)
-                ->whereNotNull('order_items.size')
-                ->groupBy('order_items.size')
-                ->select('order_items.size', DB::raw('SUM(order_items.quantity) as total_sold'))
-                ->orderByDesc('total_sold')
-                ->limit(3)
-                ->get()
-                ->map(fn($item) => [
-                    'size' => $item->size,
-                    'sold' => (int) $item->total_sold,
-                ])
-                ->values()
-                ->all();
+        $productIds = $productRows->pluck('id')->toArray();
 
-            $topColors = DB::table('order_items')
-                ->join('orders', 'orders.id', '=', 'order_items.order_id')
-                ->where('order_items.product_id', $product->id)
-                ->whereBetween('orders.created_at', [$startDate, $endDate])
-                ->whereIn('orders.status', $this->successOrderStatuses)
-                ->whereNotNull('order_items.color')
-                ->groupBy('order_items.color')
-                ->select('order_items.color', DB::raw('SUM(order_items.quantity) as total_sold'))
-                ->orderByDesc('total_sold')
-                ->limit(3)
-                ->get()
-                ->map(fn($item) => [
-                    'color' => $item->color,
-                    'sold' => (int) $item->total_sold,
-                ])
-                ->values()
-                ->all();
+        // Query 2: Lấy top 3 sizes cho TẤT CẢ sản phẩm (thay vì query riêng cho từng sản phẩm)
+        $allTopSizes = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('order_items.product_id', $productIds)
+            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereIn('orders.status', $this->successOrderStatuses)
+            ->whereNotNull('order_items.size')
+            ->groupBy('order_items.product_id', 'order_items.size')
+            ->select(
+                'order_items.product_id',
+                'order_items.size',
+                DB::raw('SUM(order_items.quantity) as total_sold')
+            )
+            ->orderByDesc('total_sold')
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn($items) => $items->take(3)->values())
+            ->all();
 
-            $result[] = [
+        // Query 3: Lấy top 3 colors cho TẤT CẢ sản phẩm
+        $allTopColors = DB::table('order_items')
+            ->join('orders', 'orders.id', '=', 'order_items.order_id')
+            ->whereIn('order_items.product_id', $productIds)
+            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereIn('orders.status', $this->successOrderStatuses)
+            ->whereNotNull('order_items.color')
+            ->groupBy('order_items.product_id', 'order_items.color')
+            ->select(
+                'order_items.product_id',
+                'order_items.color',
+                DB::raw('SUM(order_items.quantity) as total_sold')
+            )
+            ->orderByDesc('total_sold')
+            ->get()
+            ->groupBy('product_id')
+            ->map(fn($items) => $items->take(3)->values())
+            ->all();
+
+        // Ghép dữ liệu
+        return $productRows->map(function ($product) use ($allTopSizes, $allTopColors) {
+            return [
                 'id' => (int) $product->id,
                 'name' => $product->name,
                 'sold' => (int) $product->sold,
                 'thumbnail' => $product->thumbnail,
-                'top_sizes' => $topSizes,
-                'top_colors' => $topColors,
+                'top_sizes' => collect($allTopSizes[$product->id] ?? [])->map(fn($item) => [
+                    'size' => $item->size,
+                    'sold' => (int) $item->total_sold,
+                ])->values()->all(),
+                'top_colors' => collect($allTopColors[$product->id] ?? [])->map(fn($item) => [
+                    'color' => $item->color,
+                    'sold' => (int) $item->total_sold,
+                ])->values()->all(),
             ];
-        }
-
-        return $result;
+        })->values()->all();
     }
 
     protected function getRecentOrders(): array

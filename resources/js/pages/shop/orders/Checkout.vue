@@ -38,9 +38,13 @@
                 <input
                   v-model="form.customer_name"
                   type="text"
-                  class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  class="w-full rounded-md border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  :class="errors.customer_name ? 'border-red-500 bg-red-50/50 dark:bg-red-900/10 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:border-primary'"
                   placeholder="Nhập họ và tên"
                 />
+                <p v-if="errors.customer_name" class="mt-1.5 text-sm text-red-600">
+                  {{ errors.customer_name }}
+                </p>
               </div>
 
               <div>
@@ -50,9 +54,13 @@
                 <input
                   v-model="form.customer_phone"
                   type="text"
-                  class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  class="w-full rounded-md border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  :class="errors.customer_phone ? 'border-red-500 bg-red-50/50 dark:bg-red-900/10 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:border-primary'"
                   placeholder="Nhập số điện thoại"
                 />
+                <p v-if="errors.customer_phone" class="mt-1.5 text-sm text-red-600">
+                  {{ errors.customer_phone }}
+                </p>
               </div>
 
               <div class="md:col-span-2">
@@ -69,74 +77,34 @@
 
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Tỉnh / Thành phố
+                  Tỉnh / Thành phố <span class="text-red-500">*</span>
                 </label>
-                <div class="relative">
-                  <select
-                    v-model="form.province_obj"
-                    @change="selectProvince"
-                    :disabled="loadingProvinces"
-                    class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option :value="null">Chọn tỉnh / thành phố</option>
-                    <option v-for="prov in provinces" :key="prov.value" :value="prov">
-                      {{ prov.label }}
-                    </option>
-                  </select>
-                  <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </div>
+                <SearchableSelect
+                  v-model="form.province_code"
+                  :options="provinces"
+                  placeholder="Chọn tỉnh / thành phố"
+                  :searchable="true"
+                  :error="errors.province"
+                  :disabled="loadingProvinces"
+                  size="md"
+                  @change="selectProvince"
+                />
               </div>
 
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Quận / Huyện
+                  Xã / Phường <span class="text-red-500">*</span>
                 </label>
-                <div class="relative">
-                  <select
-                    v-model="form.district_obj"
-                    @change="selectDistrict"
-                    :disabled="!form.province_obj || loadingDistricts"
-                    class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option :value="null">Chọn quận / huyện</option>
-                    <option v-for="dist in districts" :key="dist.value" :value="dist">
-                      {{ dist.label }}
-                    </option>
-                  </select>
-                  <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
-                  Phường / Xã
-                </label>
-                <div class="relative">
-                  <select
-                    v-model="form.ward_obj"
-                    @change="selectWard"
-                    :disabled="!form.district_obj || loadingWards"
-                    class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20 appearance-none cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    <option :value="null">Chọn phường / xã</option>
-                    <option v-for="w in wards" :key="w.value" :value="w">
-                      {{ w.label }}
-                    </option>
-                  </select>
-                  <span class="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-400">
-                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3" />
-                    </svg>
-                  </span>
-                </div>
+                <SearchableSelect
+                  v-model="form.ward_code"
+                  :options="wards"
+                  placeholder="Chọn xã / phường"
+                  :searchable="true"
+                  :error="errors.ward"
+                  :disabled="!form.province_code || loadingWards"
+                  size="md"
+                  @change="selectWard"
+                />
               </div>
 
               <div class="md:col-span-2">
@@ -146,9 +114,13 @@
                 <input
                   v-model="form.address_line"
                   type="text"
-                  class="w-full rounded-md border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 px-4 py-3 text-sm outline-none focus:border-primary focus:ring-2 focus:ring-primary/20"
+                  class="w-full rounded-md border px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-primary/20"
+                  :class="errors.address_line ? 'border-red-500 bg-red-50/50 dark:bg-red-900/10 focus:border-red-500' : 'border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-900 focus:border-primary'"
                   placeholder="Số nhà, tên đường..."
                 />
+                <p v-if="errors.address_line" class="mt-1.5 text-sm text-red-600">
+                  {{ errors.address_line }}
+                </p>
               </div>
 
               <div class="md:col-span-2">
@@ -208,13 +180,13 @@
                   <div class="text-sm text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán MoMo để hoàn tất đơn hàng.</div>
                 </div>
               </label>
-              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
+              <!-- <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
                 <input v-model="form.payment_method" type="radio" value="vnpay" class="mt-1" />
                 <div>
                   <div class="font-semibold text-slate-900 dark:text-slate-100">Thanh toán online (VNPay)</div>
                   <div class="text-sm text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán VNPay để hoàn tất đơn hàng.</div>
                 </div>
-              </label>
+              </label> -->
             </div>
           </section>
 
@@ -338,7 +310,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { useCartStore } from "../../../stores/cart";
 import { useAuthStore } from "../../../stores/auth";
@@ -347,6 +319,7 @@ import orderService from "../../../services/public/orderService";
 import couponService from "../../../services/public/couponService";
 import { useAlert } from "../../../composables/useAlert";
 import { useAddress } from "../../../composables/useAddress";
+import SearchableSelect from "../../../components/SearchableSelect.vue";
 
 const router = useRouter();
 const route = useRoute();
@@ -364,15 +337,24 @@ const couponError = ref("");
 const appliedCoupon = ref(null);
 const discountAmount = ref(0);
 
+const errors = reactive({
+  customer_name: "",
+  customer_phone: "",
+  province: "",
+  district: "",
+  ward: "",
+  address_line: "",
+});
+
 const fallbackImage = "https://via.placeholder.com/400x400?text=Shoe";
 
 const form = reactive({
   customer_name: "",
   customer_phone: "",
   customer_email: "",
-  province_obj: null,
-  district_obj: null,
-  ward_obj: null,
+  province_code: "",
+  district_code: "",
+  ward_code: "",
   province: "",
   district: "",
   ward: "",
@@ -382,8 +364,7 @@ const form = reactive({
   payment_method: "cod",
 });
 
-const { provinces, districts, wards, loadingProvinces, loadingDistricts, loadingWards } =
-  useAddress(form);
+const { provinces, wards, loadingProvinces, loadingWards } = useAddress(form);
 
 const items = computed(() => cartStore.cart?.items ?? []);
 
@@ -511,21 +492,57 @@ function removeCoupon() {
 }
 
 function validateForm() {
-  if (!form.customer_name.trim()) return "Vui lòng nhập họ và tên.";
-  if (!form.customer_phone.trim()) return "Vui lòng nhập số điện thoại.";
-  if (!form.address_line.trim()) return "Vui lòng nhập địa chỉ chi tiết.";
-  if (!form.shipping_method) return "Vui lòng chọn phương thức vận chuyển.";
-  if (!form.payment_method) return "Vui lòng chọn phương thức thanh toán.";
-  if (!["cod", "vnpay", "momo"].includes(form.payment_method))
-    return "Phương thức thanh toán chưa được hỗ trợ.";
-  return "";
+  errors.customer_name = "";
+  errors.customer_phone = "";
+  errors.province = "";
+  errors.ward = "";
+  errors.address_line = "";
+
+  let isValid = true;
+
+  if (!form.customer_name.trim()) {
+    errors.customer_name = "Vui lòng nhập họ và tên.";
+    isValid = false;
+  }
+  if (!form.customer_phone.trim()) {
+    errors.customer_phone = "Vui lòng nhập số điện thoại.";
+    isValid = false;
+  }
+  if (!form.province) {
+    errors.province = "Vui lòng chọn tỉnh / thành phố.";
+    isValid = false;
+  }
+  if (!form.ward) {
+    errors.ward = "Vui lòng chọn xã / phường.";
+    isValid = false;
+  }
+  if (!form.address_line.trim()) {
+    errors.address_line = "Vui lòng nhập địa chỉ chi tiết.";
+    isValid = false;
+  }
+  if (!form.shipping_method) {
+    submitError.value = "Vui lòng chọn phương thức vận chuyển.";
+    isValid = false;
+  }
+  if (!form.payment_method) {
+    submitError.value = "Vui lòng chọn phương thức thanh toán.";
+    isValid = false;
+  }
+  if (!["cod", "vnpay", "momo"].includes(form.payment_method)) {
+    submitError.value = "Phương thức thanh toán chưa được hỗ trợ.";
+    isValid = false;
+  }
+  return isValid;
 }
 
 async function submitOrder() {
   submitError.value = "";
-  const msg = validateForm();
-  if (msg) {
-    submitError.value = msg;
+  if (!validateForm()) {
+    // Scroll to first error field
+    const firstErrorField = document.querySelector(".border-red-500");
+    if (firstErrorField) {
+      firstErrorField.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
     return;
   }
 
@@ -536,7 +553,6 @@ async function submitOrder() {
       customer_phone: form.customer_phone,
       customer_email: form.customer_email || null,
       province: form.province || null,
-      district: form.district || null,
       ward: form.ward || null,
       address_line: form.address_line,
       note: form.note || null,
@@ -577,34 +593,16 @@ async function submitOrder() {
   }
 }
 
-function selectProvince() {
-  if (form.province_obj) {
-    form.province = form.province_obj.label || "";
-  } else {
-    form.province = "";
-  }
-  form.district_obj = null;
-  form.ward_obj = null;
-  form.district = "";
+function selectProvince(provinceCode) {
+  const prov = provinces.value.find((p) => p.value === provinceCode);
+  form.province = prov?.label || "";
+  form.ward_code = "";
   form.ward = "";
 }
 
-function selectDistrict() {
-  if (form.district_obj) {
-    form.district = form.district_obj.label || "";
-  } else {
-    form.district = "";
-  }
-  form.ward_obj = null;
-  form.ward = "";
-}
-
-function selectWard() {
-  if (form.ward_obj) {
-    form.ward = form.ward_obj.label || "";
-  } else {
-    form.ward = "";
-  }
+function selectWard(wardCode) {
+  const w = wards.value.find((ward) => ward.value === wardCode);
+  form.ward = w?.label || "";
 }
 </script>
 

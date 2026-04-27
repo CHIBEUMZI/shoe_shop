@@ -965,6 +965,16 @@ function sectionGridClass(sectionKey) {
   background: #fff;
 }
 
+.control:has(+ .err) {
+  border-color: #ef4444;
+  background: #fff;
+}
+
+.control:has(+ .err):focus {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+}
+
 .control:disabled {
   background: #f1f4fa;
   color: #94a3b8;
@@ -1028,15 +1038,7 @@ select.control {
   font-size: 11.5px;
   color: #ef4444;
   font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-.err::before {
-  content: "•";
-  font-size: 16px;
-  line-height: 0;
+  margin-top: 4px;
 }
 
 /* ── Switch ── */

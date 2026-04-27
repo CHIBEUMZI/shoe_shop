@@ -51,7 +51,7 @@
         <!-- Empty -->
         <div
           v-if="filteredOrders.length === 0"
-          class="rounded-3xl border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-10 text-center"
+          class="rounded-lg border border-dashed border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 p-10 text-center"
         >
           <div
             class="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700"
@@ -78,7 +78,7 @@
           <div
             v-for="order in filteredOrders"
             :key="order.id"
-            class="overflow-hidden rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm"
+            class="overflow-hidden rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-sm"
           >
             <!-- top -->
             <div
@@ -247,7 +247,7 @@
               </div>
 
               <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div class="rounded-xl bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
+                <div class="rounded-lg bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
                   <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
                     <span class="material-symbols-outlined text-lg text-primary">local_shipping</span>
                     Thông tin giao hàng
@@ -291,7 +291,7 @@
                   </div>
                 </div>
 
-                <div class="rounded-xl bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
+                <div class="rounded-lg bg-white dark:bg-slate-800 p-5 border border-slate-200 dark:border-slate-700">
                   <h3 class="font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2 mb-4">
                     <span class="material-symbols-outlined text-lg text-primary">payments</span>
                     Tóm tắt thanh toán

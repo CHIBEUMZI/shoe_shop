@@ -17,6 +17,7 @@
             v-model="selectedRange"
             :options="rangeOptions"
             size="md"
+            @change="fetchDashboard"
           />
         </div>
 
@@ -479,7 +480,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onMounted, ref } from "vue";
 import dashboardAdminService from "../../../services/admin/dashboardAdminService";
 import { buildImageUrl } from "../../../utils/image";
 import BaseSelect from "../../../components/BaseSelect.vue";
@@ -590,11 +591,6 @@ const maxChartValue = computed(() => {
   return Math.max(...values, 1);
 });
 
-const maxTopSold = computed(() => {
-  const values = (dashboard.value.top_products || []).map((item) => Number(item.sold || 0));
-  return Math.max(...values, 1);
-});
-
 const totalStatusCount = computed(() =>
   (dashboard.value.order_status || []).reduce((sum, item) => sum + Number(item.count || 0), 0)
 );
@@ -626,10 +622,6 @@ function getBarGradient(value) {
 function getStatusPercent(count) {
   if (!totalStatusCount.value) return 0;
   return ((Number(count || 0) / totalStatusCount.value) * 100).toFixed(1);
-}
-
-function getTopProductPercent(sold) {
-  return ((Number(sold || 0) / maxTopSold.value) * 100).toFixed(1);
 }
 
 // Bảng ánh xạ tên màu -> mã hex
@@ -748,10 +740,6 @@ async function fetchDashboard() {
     loading.value = false;
   }
 }
-
-watch(selectedRange, () => {
-  fetchDashboard();
-});
 
 onMounted(() => {
   fetchDashboard();

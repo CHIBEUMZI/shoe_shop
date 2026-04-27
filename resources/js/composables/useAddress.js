@@ -1,49 +1,53 @@
-import { ref, watch } from "vue";
+import { ref, computed, watch } from "vue";
 
-const BASE = "https://provinces.open-api.vn/api";
+const BASE = "https://provinces.open-api.vn/api/v2";
 
 export function useAddress(form) {
   const provinces = ref([]);
-  const districts = ref([]);
   const wards = ref([]);
 
   const loadingProvinces = ref(false);
-  const loadingDistricts = ref(false);
   const loadingWards = ref(false);
+
+  // Search filters
+  const provinceSearch = ref("");
+  const wardSearch = ref("");
+
+  // Filtered lists for search
+  const filteredProvinces = computed(() => {
+    if (!provinceSearch.value) return provinces.value;
+    const search = provinceSearch.value.toLowerCase();
+    return provinces.value.filter(p => p.label.toLowerCase().includes(search));
+  });
 
   async function fetchProvinces() {
     loadingProvinces.value = true;
     try {
-      const res = await fetch(`${BASE}/?depth=1`);
+      const res = await fetch(`${BASE}/`);
       const data = await res.json();
-      provinces.value = data.map((p) => ({ label: p.name, value: p.code }));
+      provinces.value = data.map((p) => ({
+        label: p.name,
+        value: p.code,
+        display: p.name.replace(/^(Thành phố|Tỉnh)\s+/i, "")
+      }));
     } finally {
       loadingProvinces.value = false;
     }
   }
 
-  async function fetchDistricts(provinceCode) {
-    districts.value = [];
+  async function fetchWards() {
     wards.value = [];
-    if (!provinceCode) return;
-    loadingDistricts.value = true;
-    try {
-      const res = await fetch(`${BASE}/p/${provinceCode}?depth=2`);
-      const data = await res.json();
-      districts.value = (data.districts || []).map((d) => ({ label: d.name, value: d.code }));
-    } finally {
-      loadingDistricts.value = false;
-    }
-  }
-
-  async function fetchWards(districtCode) {
-    wards.value = [];
-    if (!districtCode) return;
+    wardSearch.value = "";
     loadingWards.value = true;
     try {
-      const res = await fetch(`${BASE}/d/${districtCode}?depth=2`);
+      const res = await fetch(`${BASE}/w/`);
       const data = await res.json();
-      wards.value = (data.wards || []).map((w) => ({ label: w.name, value: w.code }));
+      wards.value = data.map((w) => ({
+        label: w.name,
+        value: w.code,
+        display: w.name.replace(/^(Phường|Xã)\s+/i, ""),
+        province_code: w.province_code
+      }));
     } finally {
       loadingWards.value = false;
     }
@@ -53,23 +57,24 @@ export function useAddress(form) {
     () => form.province_obj,
     (val) => {
       form.province = val?.label ?? "";
-      form.district_obj = null;
-      form.district = "";
       form.ward_obj = null;
       form.ward = "";
-      fetchDistricts(val?.value);
+      wardSearch.value = "";
     }
   );
 
-  watch(
-    () => form.district_obj,
-    (val) => {
-      form.district = val?.label ?? "";
-      form.ward_obj = null;
-      form.ward = "";
-      fetchWards(val?.value);
+  // Filter wards by selected province
+  const filteredWards = computed(() => {
+    let list = wards.value;
+    if (form.province_obj?.value) {
+      list = list.filter(w => w.province_code === form.province_obj.value);
     }
-  );
+    if (wardSearch.value) {
+      const search = wardSearch.value.toLowerCase();
+      list = list.filter(w => w.label.toLowerCase().includes(search));
+    }
+    return list;
+  });
 
   watch(
     () => form.ward_obj,
@@ -79,6 +84,16 @@ export function useAddress(form) {
   );
 
   fetchProvinces();
+  fetchWards();
 
-  return { provinces, districts, wards, loadingProvinces, loadingDistricts, loadingWards };
+  return {
+    provinces,
+    wards,
+    filteredProvinces,
+    filteredWards,
+    loadingProvinces,
+    loadingWards,
+    provinceSearch,
+    wardSearch,
+  };
 }

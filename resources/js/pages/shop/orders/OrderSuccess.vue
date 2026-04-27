@@ -6,7 +6,7 @@
 
       <div
         v-else
-        class="rounded-3xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-8"
+        class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 shadow-lg p-8"
       >
         <div class="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-full bg-green-100 text-green-600">
           <span class="material-symbols-outlined text-4xl">check_circle</span>
