@@ -24,7 +24,7 @@
       <div v-else-if="pageError" class="text-sm text-red-600">{{ pageError }}</div>
 
       <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-8 space-y-6">
+        <div class="lg:col-span-7 space-y-6">
           <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
             <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-5">
               Thông tin nhận hàng
@@ -160,43 +160,10 @@
               </label>
             </div>
           </section>
-
-          <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-5">
-              Phương thức thanh toán
-            </h2>
-            <div class="space-y-3">
-              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
-                <input v-model="form.payment_method" type="radio" value="cod" class="mt-1" />
-                <div>
-                  <div class="font-semibold text-slate-900 dark:text-slate-100">Thanh toán khi nhận hàng (COD)</div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">Bạn thanh toán bằng tiền mặt khi nhận hàng.</div>
-                </div>
-              </label>
-              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
-                <input v-model="form.payment_method" type="radio" value="momo" class="mt-1" />
-                <div>
-                  <div class="font-semibold text-slate-900 dark:text-slate-100">Thanh toán online (MoMo)</div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán MoMo để hoàn tất đơn hàng.</div>
-                </div>
-              </label>
-              <!-- <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
-                <input v-model="form.payment_method" type="radio" value="vnpay" class="mt-1" />
-                <div>
-                  <div class="font-semibold text-slate-900 dark:text-slate-100">Thanh toán online (VNPay)</div>
-                  <div class="text-sm text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán VNPay để hoàn tất đơn hàng.</div>
-                </div>
-              </label> -->
-            </div>
-          </section>
-
-          <div v-if="submitError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-            {{ submitError }}
-          </div>
         </div>
 
-        <div class="lg:col-span-4">
-          <div class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-md sticky top-8">
+        <div class="lg:col-span-5">
+          <div class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-md">
             <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-5">Đơn hàng của bạn</h2>
 
             <div v-if="items.length === 0" class="text-sm text-slate-500">Giỏ hàng đang trống.</div>
@@ -289,9 +256,37 @@
                 </div>
               </div>
 
+              <div class="border-t border-slate-100 dark:border-slate-700 pt-4">
+                <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Phương thức thanh toán
+                </h3>
+                <div class="space-y-2">
+                  <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-primary/50 transition-colors"
+                    :class="{ 'border-primary bg-primary/5': form.payment_method === 'cod' }">
+                    <input v-model="form.payment_method" type="radio" value="cod" class="mt-1" />
+                    <div>
+                      <div class="font-medium text-slate-900 dark:text-slate-100 text-sm">Thanh toán khi nhận hàng (COD)</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Bạn thanh toán bằng tiền mặt khi nhận hàng.</div>
+                    </div>
+                  </label>
+                  <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-primary/50 transition-colors"
+                    :class="{ 'border-primary bg-primary/5': form.payment_method === 'momo' }">
+                    <input v-model="form.payment_method" type="radio" value="momo" class="mt-1" />
+                    <div>
+                      <div class="font-medium text-slate-900 dark:text-slate-100 text-sm">Thanh toán online (MoMo)</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán MoMo để hoàn tất đơn hàng.</div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div v-if="submitError" class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
+                {{ submitError }}
+              </div>
+
               <button
                 type="button"
-                class="mt-6 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+                class="mt-4 w-full bg-primary hover:bg-primary/90 text-white font-bold py-3.5 rounded-lg shadow-md transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="submitting || items.length === 0"
                 @click="submitOrder"
               >

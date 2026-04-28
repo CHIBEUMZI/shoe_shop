@@ -242,9 +242,13 @@ const cancelEdit = () => {
 const submitEdit = async () => {
   if (!editingReview.value) return
 
+  const review = reviews.value.find(r => r.id === editingReview.value.id)
+  if (!review) return
+
   savingId.value = editingReview.value.id
   try {
     const response = await reviewService.update(editingReview.value.id, {
+      product_id: review.product_id,
       rating: editingReview.value.newRating,
       comment: editingReview.value.newComment,
     })
