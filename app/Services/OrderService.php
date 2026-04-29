@@ -31,6 +31,7 @@ class OrderService
         $coupon = null;
         $discountTotal = 0;
         $couponCode = $data['coupon_code'] ?? null;
+        $selectedItemIds = $data['cart_item_ids'] ?? null;
 
         if ($couponCode) {
             $coupon = Coupon::where('code', $couponCode)->first();
@@ -47,14 +48,27 @@ class OrderService
             }
         }
 
-        return DB::transaction(function () use ($user, $data, $cart, $coupon, $discountTotal) {
+        return DB::transaction(function () use ($user, $data, $cart, $coupon, $discountTotal, $selectedItemIds) {
             $subtotal = 0;
 
             $shippingFee = ($data['shipping_method'] ?? 'standard') === 'express' ? 30000 : 15000;
 
             $preparedItems = [];
 
-            foreach ($cart->items as $cartItem) {
+            // Lọc cart items nếu có selectedItemIds
+            $cartItems = $cart->items;
+            if ($selectedItemIds && is_array($selectedItemIds) && count($selectedItemIds) > 0) {
+                $selectedItemIds = array_map('intval', $selectedItemIds);
+                $cartItems = $cart->items->filter(function ($item) use ($selectedItemIds) {
+                    return in_array($item->id, $selectedItemIds);
+                });
+
+                if ($cartItems->isEmpty()) {
+                    throw new RuntimeException('Không tìm thấy sản phẩm đã chọn trong giỏ hàng.');
+                }
+            }
+
+            foreach ($cartItems as $cartItem) {
                 $product = $cartItem->product;
                 $variant = $cartItem->variant;
 
@@ -179,7 +193,11 @@ class OrderService
                     ->update(['used_at' => now()]);
             }
 
-            $cart->items()->delete();
+            // Xóa chỉ các cart items đã tạo đơn hàng
+            $usedCartItemIds = $cartItems->pluck('id')->toArray();
+            if (!empty($usedCartItemIds)) {
+                $cart->items()->whereIn('id', $usedCartItemIds)->delete();
+            }
 
             return $order->load(['items', 'payments', 'coupon']);
         });

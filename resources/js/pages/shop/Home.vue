@@ -283,10 +283,10 @@
     <section class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h3 class="text-lg md:text-xl font-black tracking-tight text-slate-950 dark:text-white">
+          <h3 class="text-xl md:text-3xl font-black tracking-tight text-slate-950 dark:text-white">
             Sản phẩm nổi bật
           </h3>
-          <p class="text-slate-500 mt-0.5 text-[11px] md:text-xs font-medium">
+          <p class="text-slate-500 mt-1 text-sm font-medium">
             Những mẫu đáng chú ý được ưu tiên hiển thị
           </p>
         </div>
@@ -327,9 +327,9 @@
         <!-- Loading State -->
         <div
           v-if="loadingFeatured"
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3"
         >
-          <div v-for="i in 4" :key="i" class="bg-slate-100 rounded-lg animate-pulse h-64"></div>
+          <div v-for="i in 4" :key="i" class="bg-slate-100 rounded-lg animate-pulse h-48"></div>
         </div>
 
         <!-- Empty State -->
@@ -338,11 +338,9 @@
         </div>
 
         <!-- Products Grid -->
-        <TransitionGroup
+        <div
           v-else
-          name="product-slide"
-          tag="div"
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"
+          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 md:gap-3"
         >
           <article
             v-for="p in visibleProducts"
@@ -353,7 +351,7 @@
             <div class="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <span
                 v-if="p.badge && p.discountPercent"
-                class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 uppercase z-10 tracking-wider rounded-bl-md"
+                class="absolute top-0 left-0 bg-red-600 text-white text-[9px] font-black px-2 py-1 uppercase z-10 tracking-wider rounded-bl-md"
               >
                 -{{ p.discountPercent }}%
               </span>
@@ -364,40 +362,40 @@
               />
             </div>
 
-            <div class="p-4 flex flex-col flex-1">
+            <div class="p-3 flex flex-col flex-1">
               <p
-                class="text-[10px] tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
+                class="text-[9px] tracking-[0.15em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
               >
                 {{ p.brand }}
               </p>
 
               <h4
-                class="mt-2 font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug"
+                class="mt-1 font-bold text-[13px] text-slate-900 dark:text-white line-clamp-2 leading-snug"
               >
                 {{ p.name }}
               </h4>
 
-              <div class="flex items-center gap-3 mt-auto pt-3">
-                <p class="text-primary font-black text-base">
+              <div class="flex items-center gap-2 mt-auto pt-2">
+                <p class="text-primary font-black text-sm">
                   {{ moneyVND(p.price) }}
                 </p>
 
                 <p
                   v-if="p.compareAt"
-                  class="text-xs text-slate-400 line-through"
+                  class="text-[10px] text-slate-400 line-through"
                 >
                   {{ moneyVND(p.compareAt) }}
                 </p>
               </div>
 
               <button
-                class="mt-3 w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
+                class="mt-2 w-full py-2 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[10px] font-bold uppercase tracking-wider rounded-md hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
               >
                 Xem chi tiết
               </button>
             </div>
           </article>
-        </TransitionGroup>
+        </div>
       </div>
     </section>
 
@@ -457,12 +455,10 @@ const currentSlide = ref(0);
 const visibleSlides = ref(4);
 
 const maxSlide = computed(() => {
-  // Max slides = total products - 4 visible products
   return Math.max(0, featured.value.length - visibleSlides.value);
 });
 
 const visibleProducts = computed(() => {
-  // Show visibleSlides products, move 1 at a time
   return featured.value.slice(currentSlide.value, currentSlide.value + visibleSlides.value);
 });
 
@@ -474,7 +470,6 @@ function updateVisibleSlides() {
   } else {
     visibleSlides.value = 4;
   }
-  // Reset slide when changing visible count
   currentSlide.value = 0;
 }
 
@@ -651,23 +646,4 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Product slide animation */
-.product-slide-enter-active,
-.product-slide-leave-active {
-  transition: all 0.5s ease;
-}
-
-.product-slide-enter-from {
-  opacity: 0;
-  transform: translateX(30px);
-}
-
-.product-slide-leave-to {
-  opacity: 0;
-  transform: translateX(-30px);
-}
-
-.product-slide-move {
-  transition: transform 0.5s ease;
-}
 </style>

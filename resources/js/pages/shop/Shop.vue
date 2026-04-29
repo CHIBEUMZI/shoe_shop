@@ -51,12 +51,8 @@ const wishlistCount = ref(2);
 
 const cartCount = computed(() => {
   if (!auth.isLoggedIn) return 0;
-
-  const sum = cartStore.cart?.summary?.quantity_sum;
-  if (sum !== undefined && sum !== null) return Number(sum) || 0;
-
   const items = cartStore.cart?.items || [];
-  return items.reduce((s, it) => s + Number(it.quantity || 0), 0);
+  return items.length;
 });
 
 const categories = ref([]);

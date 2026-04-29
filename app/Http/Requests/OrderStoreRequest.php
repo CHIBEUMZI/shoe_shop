@@ -27,6 +27,8 @@ class OrderStoreRequest extends FormRequest
             'shipping_method' => ['required', 'in:standard,express'],
             'payment_method' => ['required', 'in:cod,vnpay,momo'],
             'coupon_code' => ['nullable', 'string', 'max:50'],
+            'cart_item_ids' => ['nullable', 'array'],
+            'cart_item_ids.*' => ['integer'],
         ];
     }
 

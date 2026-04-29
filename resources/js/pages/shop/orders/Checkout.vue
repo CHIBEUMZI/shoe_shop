@@ -361,7 +361,18 @@ const form = reactive({
 
 const { provinces, wards, loadingProvinces, loadingWards } = useAddress(form);
 
-const items = computed(() => cartStore.cart?.items ?? []);
+const selectedItemIds = computed(() => {
+  const ids = route.query.items;
+  if (!ids) return [];
+  return String(ids).split(',').map(id => String(id).trim()).filter(Boolean);
+});
+
+const items = computed(() => {
+  const all = cartStore.cart?.items ?? [];
+  const selected = selectedItemIds.value;
+  if (selected.length === 0) return all;
+  return all.filter(it => selected.includes(String(it.id)));
+});
 
 const subtotal = computed(() =>
   items.value.reduce((sum, it) => sum + Number(it.line_total || computedLineTotal(it)), 0)
@@ -389,7 +400,13 @@ onMounted(async () => {
       prefillFromUser();
     }
     await cartStore.fetchCart();
-    if (!items.value.length) {
+    if (selectedItemIds.value.length > 0) {
+      const matched = items.value;
+      if (matched.length === 0) {
+        pageError.value = "Không tìm thấy sản phẩm đã chọn trong giỏ hàng.";
+        return;
+      }
+    } else if (!items.value.length) {
       pageError.value = "Giỏ hàng đang trống. Vui lòng thêm sản phẩm trước khi thanh toán.";
       return;
     }
@@ -554,6 +571,7 @@ async function submitOrder() {
       shipping_method: form.shipping_method,
       payment_method: form.payment_method,
       coupon_code: appliedCoupon.value ? appliedCoupon.value.code : null,
+      cart_item_ids: selectedItemIds.value.length > 0 ? selectedItemIds.value : undefined,
     };
 
     const res = await orderService.createOrder(payload);
