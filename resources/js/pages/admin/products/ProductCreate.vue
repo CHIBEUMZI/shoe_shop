@@ -974,8 +974,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-
 /* ===== CARD ===== */
 .card {
   background: #fff;
@@ -984,7 +982,6 @@ onMounted(async () => {
   box-shadow: 0 1px 4px rgba(15,23,42,.04);
   overflow: hidden;
   margin-top: 16px;
-  font-family: 'DM Sans', sans-serif;
   transition: box-shadow .2s;
 }
 .card:hover { box-shadow: 0 4px 16px rgba(15,23,42,.07); }
@@ -1168,7 +1165,6 @@ onMounted(async () => {
   align-items: center;
   gap: 8px;
   transition: .15s;
-  font-family: 'DM Sans', sans-serif;
 }
 .btn-outline:hover { background: #f0f7ff; border-color: #93c5fd; color: #2563eb; }
 .btn-outline.sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
@@ -1227,7 +1223,6 @@ onMounted(async () => {
   padding: 0 10px;
   outline: none;
   font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
   background: #fafbfd;
   transition: .15s;
   color: #0f172a;
@@ -1326,7 +1321,6 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
   align-items: center;
   gap: 7px;
   white-space: nowrap;
-  font-family: 'DM Sans', sans-serif;
   transition: .15s;
   box-shadow: 0 2px 6px rgba(217,119,6,.35);
   flex-shrink: 0;
@@ -1538,7 +1532,6 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
   border-radius: 8px;
   padding: 0 10px;
   font-size: 12px;
-  font-family: "DM Mono", monospace;
   text-transform: uppercase;
   background: #fff;
 }

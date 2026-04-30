@@ -81,13 +81,13 @@
                 </label>
                 <SearchableSelect
                   v-model="form.province_code"
-                  :options="provinces"
+                  :options="filteredProvinces"
                   placeholder="Chọn tỉnh / thành phố"
                   :searchable="true"
                   :error="errors.province"
                   :disabled="loadingProvinces"
                   size="md"
-                  @change="selectProvince"
+                  @change="onProvinceChange"
                 />
               </div>
 
@@ -97,13 +97,13 @@
                 </label>
                 <SearchableSelect
                   v-model="form.ward_code"
-                  :options="wards"
+                  :options="filteredWards"
                   placeholder="Chọn xã / phường"
                   :searchable="true"
                   :error="errors.ward"
                   :disabled="!form.province_code || loadingWards"
                   size="md"
-                  @change="selectWard"
+                  @change="onWardChange"
                 />
               </div>
 
@@ -359,7 +359,7 @@ const form = reactive({
   payment_method: "cod",
 });
 
-const { provinces, wards, loadingProvinces, loadingWards } = useAddress(form);
+const { filteredProvinces, filteredWards, loadingProvinces, loadingWards, provinces, fetchWardsByProvince } = useAddress(form);
 
 const selectedItemIds = computed(() => {
   const ids = route.query.items;
@@ -520,11 +520,11 @@ function validateForm() {
     errors.customer_phone = "Vui lòng nhập số điện thoại.";
     isValid = false;
   }
-  if (!form.province) {
+  if (!form.province_code) {
     errors.province = "Vui lòng chọn tỉnh / thành phố.";
     isValid = false;
   }
-  if (!form.ward) {
+  if (!form.ward_code) {
     errors.ward = "Vui lòng chọn xã / phường.";
     isValid = false;
   }
@@ -580,6 +580,14 @@ async function submitOrder() {
     if (!order?.id) throw new Error("Không tạo được đơn hàng.");
 
     if (form.payment_method === "cod") {
+      // Clear cart after successful order
+      if (selectedItemIds.value.length > 0) {
+        // Only ordering some items - fetch updated cart
+        await cartStore.fetchCart();
+      } else {
+        // Ordering all items - clear cart
+        await cartStore.clearCart();
+      }
       notify.success("Đặt hàng thành công", { title: "Thành công", duration: 2200 });
       router.push(`/shop/orders/success/${order.id}`);
       return;
@@ -606,15 +614,16 @@ async function submitOrder() {
   }
 }
 
-function selectProvince(provinceCode) {
+function onProvinceChange(provinceCode) {
   const prov = provinces.value.find((p) => p.value === provinceCode);
   form.province = prov?.label || "";
   form.ward_code = "";
   form.ward = "";
+  fetchWardsByProvince(provinceCode);
 }
 
-function selectWard(wardCode) {
-  const w = wards.value.find((ward) => ward.value === wardCode);
+function onWardChange(wardCode) {
+  const w = filteredWards.value.find((ward) => ward.value === wardCode);
   form.ward = w?.label || "";
 }
 </script>

@@ -27,7 +27,7 @@
           :disabled="loading"
           @click="fetchDashboard"
         >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 24 24" fill="none">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 transition-transform group-hover:rotate-180" viewBox="0 0 24 24" fill="none">
             <path d="M20 12A8 8 0 1 1 17.657 6.343" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             <path d="M20 4V10H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
@@ -37,36 +37,45 @@
     </section>
 
     <!-- Loading -->
-    <section v-if="loading" class="space-y-6">
+    <section v-if="loading" class="relative space-y-8">
       <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div
           v-for="n in 4"
           :key="'card-skeleton-' + n"
-          class="h-32 animate-pulse rounded-lg border border-slate-200 bg-white"
+          class="h-36 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"
         ></div>
       </div>
 
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div class="h-96 animate-pulse rounded-lg border border-slate-200 bg-white lg:col-span-7"></div>
-        <div class="h-96 animate-pulse rounded-lg border border-slate-200 bg-white lg:col-span-5"></div>
+        <div class="h-96 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:col-span-7"></div>
+        <div class="h-96 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:col-span-5"></div>
       </div>
 
-      <div class="h-48 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
-      <div class="h-80 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
-      <div class="h-48 animate-pulse rounded-lg border border-slate-200 bg-white"></div>
+      <div class="h-48 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
+      <div class="h-80 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
+      <div class="h-48 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
     </section>
 
     <!-- Error -->
     <section
       v-else-if="error"
-      class="rounded-3xl border border-rose-200 bg-rose-50 p-6 text-sm text-rose-700 shadow-sm"
+      class="relative rounded-2xl border border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 p-6 text-sm shadow-sm"
     >
-      <div class="font-bold">Không tải được dữ liệu dashboard</div>
-      <div class="mt-1">{{ error }}</div>
+      <div class="flex items-center gap-3">
+        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-600" viewBox="0 0 24 24" fill="none">
+            <path d="M12 9v4M12 17h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div>
+          <div class="font-semibold text-rose-800">Không tải được dữ liệu dashboard</div>
+          <div class="mt-0.5 text-rose-600">{{ error }}</div>
+        </div>
+      </div>
 
       <button
         type="button"
-        class="mt-4 inline-flex items-center gap-2 rounded-xl bg-rose-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-700"
+        class="mt-4 inline-flex items-center gap-2 rounded-xl bg-rose-500 px-4 py-2 text-sm font-semibold text-white transition hover:bg-rose-600"
         @click="fetchDashboard"
       >
         Thử lại
@@ -76,25 +85,28 @@
     <!-- Content -->
     <template v-else>
       <!-- Stats -->
-      <section class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section class="relative grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <article
-          v-for="card in statsCards"
+          v-for="(card, index) in statsCards"
           :key="card.key"
-          class="group relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
+          class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+          :style="{ animationDelay: `${index * 100}ms` }"
         >
-          <div class="flex items-start justify-between gap-4">
+          <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
+
+          <div class="relative flex items-start justify-between gap-4">
             <div>
-              <p class="text-sm font-medium text-slate-500">{{ card.label }}</p>
-              <h3 class="mt-3 text-2xl font-black tracking-tight text-slate-900">
+              <p class="text-xs font-medium uppercase tracking-wider text-slate-500">{{ card.label }}</p>
+              <h3 class="mt-2 text-2xl font-bold text-slate-900 lg:text-3xl">
                 {{ card.value }}
               </h3>
 
               <div
-                class="mt-3 inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold"
+                class="mt-3 inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold"
                 :class="
                   Number(card.trend) >= 0
-                    ? 'bg-emerald-50 text-emerald-600'
-                    : 'bg-rose-50 text-rose-600'
+                    ? 'bg-emerald-100 text-emerald-700'
+                    : 'bg-rose-100 text-rose-700'
                 "
               >
                 <svg
@@ -104,7 +116,7 @@
                   viewBox="0 0 24 24"
                   fill="none"
                 >
-                  <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
                 <svg
@@ -114,7 +126,7 @@
                   viewBox="0 0 24 24"
                   fill="none"
                 >
-                  <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
 
                 {{ Math.abs(Number(card.trend || 0)) }}% so với kỳ trước
@@ -122,121 +134,57 @@
             </div>
 
             <div
-              class="flex h-12 w-12 items-center justify-center rounded-2xl text-white shadow-sm"
+              class="flex h-12 w-12 items-center justify-center rounded-xl shadow-md"
               :class="card.iconBg"
             >
               <span v-html="card.icon"></span>
             </div>
           </div>
-
-          <div
-            class="absolute inset-x-0 bottom-0 h-1 bg-gradient-to-r opacity-0 transition group-hover:opacity-100"
-            :class="card.barBg"
-          ></div>
         </article>
       </section>
 
-      <section class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
+      <section class="relative mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <!-- Revenue chart -->
-        <article class="relative overflow-hidden rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-7">
-          <!-- Background decoration -->
-          <div class="absolute right-0 top-0 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-50 to-transparent opacity-60"></div>
+        <article class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-7">
+          <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-100/80 to-transparent"></div>
 
-          <div class="mb-5 flex items-start justify-between gap-3">
+          <div class="relative mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 class="text-lg font-extrabold text-slate-900">Biểu đồ doanh thu</h2>
-              <p class="text-sm text-slate-500">Doanh thu theo {{ revenueLabel }}</p>
+              <h2 class="text-xl font-bold text-slate-900">Biểu đồ doanh thu</h2>
+              <p class="mt-0.5 text-sm text-slate-500">Doanh thu theo {{ revenueLabel }}</p>
             </div>
 
-            <div class="flex items-center gap-3">
-              <div v-if="revenueTrend >= 0" class="flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1.5 text-xs font-bold text-emerald-600">
+            <div class="flex flex-wrap items-center gap-3">
+              <div v-if="revenueTrend >= 0" class="flex items-center gap-1.5 rounded-full bg-emerald-100 px-3 py-1.5 text-xs font-bold text-emerald-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
                   <path d="M7 14l5-5 5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 +{{ revenueTrend }}%
               </div>
-              <div v-else class="flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1.5 text-xs font-bold text-rose-600">
+              <div v-else class="flex items-center gap-1.5 rounded-full bg-rose-100 px-3 py-1.5 text-xs font-bold text-rose-700">
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none">
                   <path d="M7 10l5 5 5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
                 {{ revenueTrend }}%
               </div>
 
-              <div class="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white">
+              <div class="rounded-xl bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-bold text-white shadow-lg shadow-indigo-500/30">
                 {{ formatCurrency(totalRevenueInChart) }}
               </div>
             </div>
           </div>
 
           <template v-if="dashboard.chart.length">
-            <div class="overflow-x-auto">
-              <!-- Y-axis labels -->
-              <div class="relative flex min-w-[680px] gap-4 pl-12">
-                <!-- Grid lines -->
-                <div class="absolute inset-x-0 bottom-12 left-12 right-0 top-0 flex flex-col justify-between pointer-events-none">
-                  <div v-for="i in 5" :key="i" class="border-b border-dashed border-slate-100"></div>
-                </div>
-
-                <!-- Y-axis -->
-                <div class="absolute left-0 top-12 bottom-12 flex flex-col justify-between text-[10px] text-slate-400 font-medium">
-                  <span>{{ formatCompactCurrency(maxChartValue) }}</span>
-                  <span>{{ formatCompactCurrency(maxChartValue * 0.75) }}</span>
-                  <span>{{ formatCompactCurrency(maxChartValue * 0.5) }}</span>
-                  <span>{{ formatCompactCurrency(maxChartValue * 0.25) }}</span>
-                  <span>0</span>
-                </div>
-
-                <!-- Bars container -->
-                <div class="flex flex-1 items-end gap-4 pt-6">
-                  <div
-                    v-for="item in dashboard.chart"
-                    :key="item.label"
-                    class="group relative flex flex-1 flex-col items-center gap-3"
-                  >
-                    <!-- Tooltip -->
-                    <div class="absolute -top-2 left-1/2 -translate-x-1/2 translate-y-full opacity-0 group-hover:opacity-100 transition-all duration-200 pointer-events-none z-10">
-                      <div class="rounded-xl border border-slate-200 bg-white px-3 py-2 text-center shadow-lg">
-                        <div class="text-xs font-bold text-slate-900">{{ formatCurrency(item.value) }}</div>
-                        <div class="absolute -top-1.5 left-1/2 -translate-x-1/2 h-3 w-3 rotate-45 border-l border-t border-slate-200 bg-white"></div>
-                      </div>
-                    </div>
-
-                    <!-- Bar -->
-                    <div class="flex h-72 w-full items-end">
-                      <div
-                        class="group-hover:opacity-80 relative w-full rounded-t-2xl bg-gradient-to-t transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-lg cursor-pointer"
-                        :style="{ height: getBarHeight(item.value) }"
-                        :class="getBarGradient(item.value)"
-                      >
-                        <!-- Shine effect -->
-                        <div class="absolute inset-0 rounded-t-2xl bg-gradient-to-t from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                      </div>
-                    </div>
-
-                    <!-- Label -->
-                    <div class="text-center">
-                      <div class="text-xs font-bold text-slate-700">{{ item.label }}</div>
-                      <div class="mt-1 text-[11px] text-slate-500">
-                        {{ formatCompactCurrency(item.value) }}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <!-- Legend -->
-            <div class="mt-6 flex items-center justify-center gap-6 border-t border-slate-100 pt-4">
-              <div class="flex items-center gap-2">
-                <div class="h-3 w-3 rounded-full bg-gradient-to-r from-indigo-600 to-sky-400"></div>
-                <span class="text-xs font-medium text-slate-500">Doanh thu</span>
-              </div>
-            </div>
+            <LineChart 
+              :labels="chartLabels" 
+              :data="chartDataValues"
+              :height="400"
+            />
           </template>
 
           <div
             v-else
-            class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-80 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             <div class="text-center">
               <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-slate-300" viewBox="0 0 24 24" fill="none">
@@ -249,10 +197,10 @@
         </article>
 
         <!-- Order status -->
-        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm lg:col-span-5">
-          <div class="mb-5">
-            <h2 class="text-lg font-extrabold text-slate-900">Trạng thái đơn hàng</h2>
-            <p class="text-sm text-slate-500">Phân bố đơn hàng hiện tại</p>
+        <article class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-5">
+          <div class="mb-6">
+            <h2 class="text-xl font-bold text-slate-900">Trạng thái đơn hàng</h2>
+            <p class="mt-0.5 text-sm text-slate-500">Phân bố đơn hàng hiện tại</p>
           </div>
 
           <template v-if="dashboard.order_status.length">
@@ -260,19 +208,19 @@
               <div
                 v-for="item in dashboard.order_status"
                 :key="item.key"
-                class="rounded-2xl border border-slate-100 bg-slate-50 p-4"
+                class="rounded-xl border border-slate-100 bg-slate-50 p-4 transition hover:bg-slate-100"
               >
-                <div class="mb-2 flex items-center justify-between gap-3">
+                <div class="mb-3 flex items-center justify-between gap-3">
                   <div class="flex items-center gap-3">
                     <span class="h-3 w-3 rounded-full" :class="item.dot"></span>
-                    <span class="text-sm font-semibold text-slate-700">{{ item.label }}</span>
+                    <span class="text-sm font-medium text-slate-700">{{ item.label }}</span>
                   </div>
-                  <span class="text-sm font-black text-slate-900">{{ item.count }}</span>
+                  <span class="text-sm font-bold text-slate-900">{{ item.count }}</span>
                 </div>
 
                 <div class="h-2 overflow-hidden rounded-full bg-slate-200">
                   <div
-                    class="h-full rounded-full transition-all"
+                    class="h-full rounded-full transition-all duration-500"
                     :class="item.bar"
                     :style="{ width: `${getStatusPercent(item.count)}%` }"
                   ></div>
@@ -283,19 +231,28 @@
 
           <div
             v-else
-            class="flex h-80 items-center justify-center rounded-2xl border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-80 items-center justify-center rounded-xl border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có dữ liệu trạng thái đơn hàng
           </div>
         </article>
       </section>
-      <!-- Row 2: Top products (1 hàng) -->
-      <section class="mt-6 grid grid-cols-1 gap-6">
-        <!-- Top products -->
-        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-lg font-extrabold text-slate-900">Top sản phẩm bán chạy</h2>
-            <p class="text-sm text-slate-500">Sản phẩm có doanh số tốt nhất</p>
+
+      <!-- Top products -->
+      <section class="relative mt-6">
+        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div class="mb-6">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+                  <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">Top sản phẩm bán chạy</h2>
+                <p class="text-sm text-slate-500">Sản phẩm có doanh số tốt nhất</p>
+              </div>
+            </div>
           </div>
 
           <template v-if="dashboard.top_products.length">
@@ -303,51 +260,79 @@
               <div
                 v-for="(product, index) in dashboard.top_products"
                 :key="product.id"
-                class="flex items-start gap-4 border border-slate-100 p-4 transition hover:bg-slate-50"
+                class="group flex items-center gap-4 rounded-xl border border-slate-100 bg-white p-3 transition-all duration-300 hover:border-amber-200 hover:shadow-md"
               >
-                <div class="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden bg-slate-100">
+                <!-- Rank badge -->
+                <div
+                  v-if="index < 3"
+                  class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white shadow-md"
+                  :class="index === 0 ? 'bg-gradient-to-br from-amber-400 to-orange-500' : index === 1 ? 'bg-gradient-to-br from-slate-300 to-slate-400' : 'bg-gradient-to-br from-amber-600 to-amber-700'"
+                >
+                  {{ index + 1 }}
+                </div>
+                <div v-else class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-xs font-bold text-slate-500">
+                  {{ index + 1 }}
+                </div>
+
+                <!-- Product image -->
+                <div class="relative flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-slate-100 shadow-sm">
                   <img
                     v-if="product.thumbnail"
                     :src="buildImageUrl(product.thumbnail)"
                     :alt="product.name"
                     class="h-full w-full object-cover"
                   />
-                  <span v-else class="text-sm font-bold text-slate-400">IMG</span>
+                  <svg v-else xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-slate-300" viewBox="0 0 24 24" fill="none">
+                    <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z" fill="currentColor"/>
+                  </svg>
                 </div>
 
+                <!-- Product info -->
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-start justify-between gap-3">
-                    <div class="min-w-0 flex-1">
-                      <p class="text-sm font-bold text-slate-900">
-                        {{ index + 1 }}. {{ product.name }}
-                      </p>
-                      <p class="mt-1 text-xs text-slate-500">
-                        Đã bán {{ product.sold }} sản phẩm
-                      </p>
-                    </div>
-                    <span class="shrink-0 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-bold text-amber-600">
-                      #{{ index + 1 }}
+                  <div class="flex items-center justify-between gap-2">
+                    <h3 class="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-amber-700 transition-colors">
+                      {{ product.name }}
+                    </h3>
+                    <span class="shrink-0 rounded-full bg-indigo-100 px-2.5 py-0.5 text-xs font-semibold text-indigo-700">
+                      {{ product.sold }} đã bán
                     </span>
                   </div>
 
-                  <!-- Top sizes và màu -->
-                  <div class="mt-3 flex flex-wrap items-center gap-2">
-                    <span
-                      v-for="(sizeItem, sIdx) in product.top_sizes"
-                      :key="'size-' + product.id + '-' + sIdx"
-                      class="inline-flex items-center gap-1 rounded-full bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-600"
-                    >
-                      {{ sizeItem.size }}
-                    </span>
-                    <span
-                      v-for="(colorItem, cIdx) in product.top_colors"
-                      :key="'color-' + product.id + '-' + cIdx"
-                      class="inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium"
-                      :class="getColorClass(colorItem.color)"
-                    >
-                      <span class="h-2.5 w-2.5 rounded-full border border-black/10" :style="{ backgroundColor: getColorHex(colorItem.color) }"></span>
-                      {{ colorItem.color }}
-                    </span>
+                  <div class="mt-2 flex flex-wrap items-center gap-3">
+                    <!-- Sizes -->
+                    <div v-if="product.top_sizes && product.top_sizes.length" class="flex items-center gap-1.5">
+                      <span class="text-xs font-medium text-slate-400">Size:</span>
+                      <div class="flex items-center gap-1">
+                        <span
+                          v-for="(sizeItem, sIdx) in product.top_sizes.slice(0, 5)"
+                          :key="'size-' + product.id + '-' + sIdx"
+                          class="rounded-md bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700"
+                        >
+                          {{ sizeItem.size }}
+                        </span>
+                        <span v-if="product.top_sizes.length > 5" class="text-xs text-slate-400">
+                          +{{ product.top_sizes.length - 5 }}
+                        </span>
+                      </div>
+                    </div>
+
+                    <!-- Colors -->
+                    <div v-if="product.top_colors && product.top_colors.length" class="flex items-center gap-1.5">
+                      <span class="text-xs font-medium text-slate-400">Màu:</span>
+                      <div class="flex items-center gap-1">
+                        <span
+                          v-for="(colorItem, cIdx) in product.top_colors.slice(0, 6)"
+                          :key="'color-' + product.id + '-' + cIdx"
+                          class="flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600"
+                        >
+                          <span class="h-3 w-3 rounded-full border border-black/20" :style="{ backgroundColor: getColorHex(colorItem.color) }"></span>
+                          {{ colorItem.color }}
+                        </span>
+                        <span v-if="product.top_colors.length > 6" class="text-xs text-slate-400">
+                          +{{ product.top_colors.length - 6 }}
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -356,60 +341,70 @@
 
           <div
             v-else
-            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có dữ liệu sản phẩm bán chạy
           </div>
         </article>
       </section>
 
-      <!-- Row 3: Đơn hàng mới -->
-      <section class="mt-6">
-        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-lg font-extrabold text-slate-900">Đơn hàng mới</h2>
-            <p class="text-sm text-slate-500">Danh sách đơn hàng gần đây</p>
+      <!-- Recent orders -->
+      <section class="relative mt-6">
+        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div class="mb-6">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 shadow-lg shadow-sky-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+                  <path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2M9 5a2 2 0 0 0 2 2h2a2 2 0 0 0 2-2M9 5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M9 12h6M9 16h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">Đơn hàng mới</h2>
+                <p class="text-sm text-slate-500">Danh sách đơn hàng gần đây</p>
+              </div>
+            </div>
           </div>
 
           <template v-if="dashboard.recent_orders.length">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto rounded-xl border border-slate-200">
               <table class="min-w-full">
-                <thead>
+                <thead class="bg-slate-50">
                   <tr>
-                    <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Mã đơn
                     </th>
-                    <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Khách hàng
                     </th>
-                    <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Tổng tiền
                     </th>
-                    <th class="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-slate-400">
+                    <th class="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
                       Trạng thái
                     </th>
                   </tr>
                 </thead>
 
-                <tbody>
+                <tbody class="divide-y divide-slate-100">
                   <tr
                     v-for="order in dashboard.recent_orders"
                     :key="order.id"
-                    class="bg-slate-50"
+                    class="transition-colors hover:bg-slate-50"
                   >
-                    <td class="whitespace-nowrap px-3 py-3 text-sm font-bold text-slate-900">
+                    <td class="whitespace-nowrap px-4 py-4 text-sm font-semibold text-indigo-600">
                       #{{ order.code }}
                     </td>
-                    <td class="px-3 py-3 text-sm text-slate-700">
-                      <div class="font-semibold">{{ order.customer_name }}</div>
+                    <td class="px-4 py-4">
+                      <div class="font-medium text-slate-900">{{ order.customer_name }}</div>
                       <div class="text-xs text-slate-400">{{ order.created_at }}</div>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-3 text-sm font-semibold text-slate-800">
+                    <td class="whitespace-nowrap px-4 py-4 text-sm font-semibold text-emerald-600">
                       {{ formatCurrency(order.total_amount) }}
                     </td>
-                    <td class="px-3 py-3">
+                    <td class="px-4 py-4">
                       <span
-                        class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold"
+                        class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold"
                         :class="getOrderStatusClass(order.status)"
                       >
                         {{ order.status_label }}
@@ -423,19 +418,28 @@
 
           <div
             v-else
-            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có đơn hàng gần đây
           </div>
         </article>
       </section>
 
-      <!-- Row 4: Khách hàng mới -->
-      <section class="mt-6">
-        <article class="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-          <div class="mb-5">
-            <h2 class="text-lg font-extrabold text-slate-900">Khách hàng mới</h2>
-            <p class="text-sm text-slate-500">Người dùng đăng ký gần đây</p>
+      <!-- New customers -->
+      <section class="relative mt-6">
+        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+          <div class="mb-6">
+            <div class="flex items-center gap-3">
+              <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-fuchsia-500 shadow-lg shadow-violet-500/30">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11A4 4 0 1 0 9.5 3a4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-xl font-bold text-slate-900">Khách hàng mới</h2>
+                <p class="text-sm text-slate-500">Người dùng đăng ký gần đây</p>
+              </div>
+            </div>
           </div>
 
           <template v-if="dashboard.new_customers.length">
@@ -443,20 +447,20 @@
               <div
                 v-for="customer in dashboard.new_customers"
                 :key="customer.id"
-                class="flex items-center gap-3 border border-slate-100 p-3 transition hover:bg-slate-50"
+                class="flex items-center gap-3 rounded-xl border border-slate-100 p-3 transition-all duration-300 hover:border-violet-200 hover:bg-violet-50/50"
               >
-                <div class="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-slate-100">
+                <div class="relative flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-violet-100 to-fuchsia-100 shadow-sm">
                   <img
                     v-if="customer.avatar"
                     :src="buildImageUrl(customer.avatar)"
                     :alt="customer.name"
                     class="h-full w-full object-cover"
                   />
-                  <span v-else class="text-xs font-bold text-slate-400">AVT</span>
+                  <span v-else class="text-sm font-bold text-violet-600">{{ getInitials(customer.name) }}</span>
                 </div>
 
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-sm font-bold text-slate-900">{{ customer.name }}</p>
+                  <p class="truncate text-sm font-semibold text-slate-900">{{ customer.name }}</p>
                   <p class="truncate text-xs text-slate-500">{{ customer.email }}</p>
                 </div>
 
@@ -469,7 +473,7 @@
 
           <div
             v-else
-            class="flex h-48 items-center justify-center border border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
+            class="flex h-48 items-center justify-center border-2 border-dashed border-slate-200 bg-slate-50 text-sm text-slate-400"
           >
             Chưa có khách hàng mới
           </div>
@@ -480,10 +484,11 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref } from "vue";
+import { computed, onMounted, ref, watch } from "vue";
 import dashboardAdminService from "../../../services/admin/dashboardAdminService";
 import { buildImageUrl } from "../../../utils/image";
 import BaseSelect from "../../../components/BaseSelect.vue";
+import LineChart from "../../../components/admin/LineChart.vue";
 const loading = ref(false);
 const error = ref("");
 const selectedRange = ref("30days");
@@ -521,10 +526,10 @@ const statsCards = computed(() => [
     label: "Tổng doanh thu",
     value: formatCurrency(dashboard.value.overview.revenue),
     trend: dashboard.value.overview.revenue_growth,
-    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-600",
+    iconBg: "bg-gradient-to-br from-emerald-400 to-teal-500 shadow-emerald-500/30",
     barBg: "from-emerald-400 to-teal-500",
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
         <path d="M12 1v22M17 5H9.5a3.5 3.5 0 0 0 0 7H14.5a3.5 3.5 0 0 1 0 7H6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
       </svg>
     `,
@@ -534,10 +539,10 @@ const statsCards = computed(() => [
     label: "Tổng đơn hàng",
     value: Number(dashboard.value.overview.orders || 0).toLocaleString("vi-VN"),
     trend: dashboard.value.overview.orders_growth,
-    iconBg: "bg-gradient-to-br from-sky-500 to-indigo-600",
+    iconBg: "bg-gradient-to-br from-sky-400 to-indigo-500 shadow-sky-500/30",
     barBg: "from-sky-400 to-indigo-500",
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
         <path d="M3 6h19l-2 8H7L5 4H2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <circle cx="9" cy="19" r="1.5" fill="currentColor"/>
         <circle cx="18" cy="19" r="1.5" fill="currentColor"/>
@@ -549,10 +554,10 @@ const statsCards = computed(() => [
     label: "Tổng khách hàng",
     value: Number(dashboard.value.overview.customers || 0).toLocaleString("vi-VN"),
     trend: dashboard.value.overview.customers_growth,
-    iconBg: "bg-gradient-to-br from-violet-500 to-fuchsia-600",
+    iconBg: "bg-gradient-to-br from-violet-400 to-fuchsia-500 shadow-violet-500/30",
     barBg: "from-violet-400 to-fuchsia-500",
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
         <path d="M16 21v-2a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4v2M9.5 11A4 4 0 1 0 9.5 3a4 4 0 0 0 0 8ZM21 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `,
@@ -562,10 +567,10 @@ const statsCards = computed(() => [
     label: "Tổng sản phẩm",
     value: Number(dashboard.value.overview.products || 0).toLocaleString("vi-VN"),
     trend: dashboard.value.overview.products_growth,
-    iconBg: "bg-gradient-to-br from-amber-500 to-orange-600",
+    iconBg: "bg-gradient-to-br from-amber-400 to-orange-500 shadow-amber-500/30",
     barBg: "from-amber-400 to-orange-500",
     icon: `
-      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-white" viewBox="0 0 24 24" fill="none">
         <path d="M20 7 12 3 4 7l8 4 8-4ZM4 7v10l8 4 8-4V7M12 11v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     `,
@@ -590,6 +595,10 @@ const maxChartValue = computed(() => {
   const values = (dashboard.value.chart || []).map((item) => Number(item.value || 0));
   return Math.max(...values, 1);
 });
+
+// Computed properties for chart data
+const chartLabels = computed(() => dashboard.value.chart.map(item => item.label));
+const chartDataValues = computed(() => dashboard.value.chart.map(item => Number(item.value)));
 
 const totalStatusCount = computed(() =>
   (dashboard.value.order_status || []).reduce((sum, item) => sum + Number(item.count || 0), 0)
@@ -661,7 +670,7 @@ function getColorClass(colorName) {
   if (!colorName) return 'bg-slate-100 text-slate-600';
   const normalized = colorName.toLowerCase().trim();
 
-  // Map tên màu -> cặp bg/text color tương ứng
+  // Map tên màu -> cặp bg/text color tương ứng (light theme)
   const colorClasses = {
     'đen': 'bg-slate-800 text-white', 'black': 'bg-slate-800 text-white',
     'đỏ': 'bg-red-100 text-red-700', 'red': 'bg-red-100 text-red-700',
@@ -694,15 +703,15 @@ function getInitials(name) {
 
 function getOrderStatusClass(status) {
   const map = {
-    pending: "bg-amber-50 text-amber-600",
-    paid: "bg-sky-50 text-sky-600",
-    processing: "bg-indigo-50 text-indigo-600",
-    shipping: "bg-violet-50 text-violet-600",
-    completed: "bg-emerald-50 text-emerald-600",
-    cancelled: "bg-rose-50 text-rose-600",
+    pending: "bg-amber-100 text-amber-700",
+    paid: "bg-sky-100 text-sky-700",
+    processing: "bg-indigo-100 text-indigo-700",
+    shipping: "bg-violet-100 text-violet-700",
+    completed: "bg-emerald-100 text-emerald-700",
+    cancelled: "bg-rose-100 text-rose-700",
   };
 
-  return map[status] || "bg-slate-100 text-slate-600";
+  return map[status] || "bg-slate-100 text-slate-700";
 }
 
 

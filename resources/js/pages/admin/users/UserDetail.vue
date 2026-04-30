@@ -432,17 +432,11 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap");
-
-* {
-  box-sizing: border-box;
-}
-
 .page {
   min-height: 100vh;
   padding: 24px 28px 40px;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .wrap {
@@ -872,7 +866,7 @@ onMounted(async () => {
   justify-content: center;
   gap: 6px;
   transition: all 0.15s;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .btn-ghost {

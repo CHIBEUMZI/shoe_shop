@@ -522,8 +522,6 @@ function colState(size) {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
-
 * { box-sizing: border-box; }
 
 /* ===== PAGE ===== */
@@ -531,7 +529,7 @@ function colState(size) {
   min-height: 100vh;
   padding: 24px 28px 40px;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .wrap {
@@ -599,7 +597,7 @@ function colState(size) {
   align-items: center;
   gap: 7px;
   transition: all .15s;
-  font-family: 'DM Sans', sans-serif;
+  font-family: inherit;
 }
 .btn .material-symbols-outlined { font-size: 18px; }
 
@@ -679,7 +677,6 @@ function colState(size) {
   margin-top: 16px;
   box-shadow: 0 1px 4px rgba(15,23,42,.04);
   transition: box-shadow .2s;
-  font-family: 'DM Sans', sans-serif;
 }
 .card:hover { box-shadow: 0 4px 16px rgba(15,23,42,.07); }
 
@@ -782,7 +779,6 @@ function colState(size) {
   padding: 10px 14px;
   background: #fafbfd;
   color: #0f172a;
-  font-family: 'DM Sans', sans-serif;
   font-size: 13.5px;
   line-height: 1.5;
   min-height: 42px;
@@ -1126,7 +1122,6 @@ function colState(size) {
   border-radius: 8px;
   padding: 0 10px;
   font-size: 13px;
-  font-family: 'DM Sans', sans-serif;
   background: #fafbfd;
   color: #0f172a;
   display: flex;

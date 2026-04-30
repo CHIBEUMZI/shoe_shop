@@ -413,8 +413,6 @@ const usagePercent = computed(() => {
 </template>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
-
 * {
   box-sizing: border-box;
 }
@@ -423,7 +421,7 @@ const usagePercent = computed(() => {
   min-height: 100vh;
   padding: 24px 28px 40px;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .wrap {
@@ -626,7 +624,6 @@ const usagePercent = computed(() => {
   outline: none;
   background: #fafbfd;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
   font-size: 14px;
   font-weight: 600;
   min-height: 44px;
@@ -752,7 +749,7 @@ const usagePercent = computed(() => {
   align-items: center;
   gap: 6px;
   transition: all 0.15s;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .btn-ghost {

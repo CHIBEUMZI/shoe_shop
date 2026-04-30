@@ -123,7 +123,7 @@ class DashboardController extends Controller
             SELECT
                 COALESCE(SUM(
                     CASE
-                        WHEN created_at BETWEEN ? AND ?
+                        WHEN updated_at BETWEEN ? AND ?
                              AND status IN ($revenueStatusPlaceholders)
                         THEN grand_total
                         ELSE 0
@@ -132,7 +132,7 @@ class DashboardController extends Controller
 
                 COALESCE(SUM(
                     CASE
-                        WHEN created_at BETWEEN ? AND ?
+                        WHEN updated_at BETWEEN ? AND ?
                              AND status IN ($revenueStatusPlaceholders)
                         THEN grand_total
                         ELSE 0
@@ -141,14 +141,14 @@ class DashboardController extends Controller
 
                 SUM(
                     CASE
-                        WHEN created_at BETWEEN ? AND ?
+                        WHEN updated_at BETWEEN ? AND ?
                         THEN 1 ELSE 0
                     END
                 ) AS current_orders,
 
                 SUM(
                     CASE
-                        WHEN created_at BETWEEN ? AND ?
+                        WHEN updated_at BETWEEN ? AND ?
                         THEN 1 ELSE 0
                     END
                 ) AS previous_orders
@@ -242,11 +242,11 @@ class DashboardController extends Controller
     {
         if ($mode === 'month') {
             $rows = Order::query()
-                ->selectRaw('YEAR(created_at) as year_num, MONTH(created_at) as month_num, SUM(grand_total) as total')
-                ->whereBetween('created_at', [$startDate, $endDate])
+                ->selectRaw('YEAR(updated_at) as year_num, MONTH(updated_at) as month_num, SUM(grand_total) as total')
+                ->whereBetween('updated_at', [$startDate, $endDate])
                 ->whereIn('status', $this->revenueOrderStatuses)
-                ->groupByRaw('YEAR(created_at), MONTH(created_at)')
-                ->orderByRaw('YEAR(created_at), MONTH(created_at)')
+                ->groupByRaw('YEAR(updated_at), MONTH(updated_at)')
+                ->orderByRaw('YEAR(updated_at), MONTH(updated_at)')
                 ->get()
                 ->keyBy(fn ($item) => $item->year_num . '-' . $item->month_num);
 
@@ -268,11 +268,11 @@ class DashboardController extends Controller
         }
 
         $rows = Order::query()
-            ->selectRaw('DATE(created_at) as order_date, SUM(grand_total) as total')
-            ->whereBetween('created_at', [$startDate, $endDate])
+            ->selectRaw('DATE(updated_at) as order_date, SUM(grand_total) as total')
+            ->whereBetween('updated_at', [$startDate, $endDate])
             ->whereIn('status', $this->revenueOrderStatuses)
-            ->groupByRaw('DATE(created_at)')
-            ->orderByRaw('DATE(created_at)')
+            ->groupByRaw('DATE(updated_at)')
+            ->orderByRaw('DATE(updated_at)')
             ->get()
             ->keyBy('order_date');
 
@@ -307,7 +307,7 @@ class DashboardController extends Controller
         $productRows = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->join('products', 'products.id', '=', 'order_items.product_id')
-            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereBetween('orders.updated_at', [$startDate, $endDate])
             ->whereIn('orders.status', $this->successOrderStatuses)
             ->groupBy('products.id', 'products.name', 'products.thumbnail')
             ->orderByDesc(DB::raw('SUM(order_items.quantity)'))
@@ -329,7 +329,7 @@ class DashboardController extends Controller
         $allTopSizes = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->whereIn('order_items.product_id', $productIds)
-            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereBetween('orders.updated_at', [$startDate, $endDate])
             ->whereIn('orders.status', $this->successOrderStatuses)
             ->whereNotNull('order_items.size')
             ->groupBy('order_items.product_id', 'order_items.size')
@@ -348,7 +348,7 @@ class DashboardController extends Controller
         $allTopColors = DB::table('order_items')
             ->join('orders', 'orders.id', '=', 'order_items.order_id')
             ->whereIn('order_items.product_id', $productIds)
-            ->whereBetween('orders.created_at', [$startDate, $endDate])
+            ->whereBetween('orders.updated_at', [$startDate, $endDate])
             ->whereIn('orders.status', $this->successOrderStatuses)
             ->whereNotNull('order_items.color')
             ->groupBy('order_items.product_id', 'order_items.color')

@@ -20,10 +20,22 @@ export function useAddress(form) {
     return provinces.value.filter(p => p.label.toLowerCase().includes(search));
   });
 
+  const filteredWards = computed(() => {
+    let list = wards.value;
+    if (form.province_code) {
+      list = list.filter(w => w.province_code === Number(form.province_code));
+    }
+    if (wardSearch.value) {
+      const search = wardSearch.value.toLowerCase();
+      list = list.filter(w => w.label.toLowerCase().includes(search));
+    }
+    return list;
+  });
+
   async function fetchProvinces() {
     loadingProvinces.value = true;
     try {
-      const res = await fetch(`${BASE}/`);
+      const res = await fetch(`${BASE}/p/`);
       const data = await res.json();
       provinces.value = data.map((p) => ({
         label: p.name,
@@ -35,56 +47,49 @@ export function useAddress(form) {
     }
   }
 
-  async function fetchWards() {
-    wards.value = [];
-    wardSearch.value = "";
+  async function fetchWardsByProvince(provinceCode) {
+    if (!provinceCode) {
+      wards.value = [];
+      return;
+    }
+
     loadingWards.value = true;
     try {
-      const res = await fetch(`${BASE}/w/`);
+      // Use depth=2 to get wards nested in province
+      const res = await fetch(`${BASE}/p/${provinceCode}?depth=2`);
       const data = await res.json();
-      wards.value = data.map((w) => ({
-        label: w.name,
-        value: w.code,
-        display: w.name.replace(/^(Phường|Xã)\s+/i, ""),
-        province_code: w.province_code
-      }));
+
+      if (data.wards && data.wards.length > 0) {
+        wards.value = data.wards.map((w) => ({
+          label: w.name,
+          value: w.code,
+          display: w.name.replace(/^(Phường|Xã|Thị trấn)\s+/i, ""),
+          province_code: provinceCode
+        }));
+      } else {
+        wards.value = [];
+      }
+    } catch (error) {
+      console.error("Error fetching wards:", error);
+      wards.value = [];
     } finally {
       loadingWards.value = false;
     }
   }
 
+  // Watch province changes - reset ward when province changes
   watch(
-    () => form.province_obj,
-    (val) => {
-      form.province = val?.label ?? "";
-      form.ward_obj = null;
-      form.ward = "";
-      wardSearch.value = "";
-    }
-  );
-
-  // Filter wards by selected province
-  const filteredWards = computed(() => {
-    let list = wards.value;
-    if (form.province_obj?.value) {
-      list = list.filter(w => w.province_code === form.province_obj.value);
-    }
-    if (wardSearch.value) {
-      const search = wardSearch.value.toLowerCase();
-      list = list.filter(w => w.label.toLowerCase().includes(search));
-    }
-    return list;
-  });
-
-  watch(
-    () => form.ward_obj,
-    (val) => {
-      form.ward = val?.label ?? "";
+    () => form.province_code,
+    (newVal, oldVal) => {
+      if (newVal !== oldVal) {
+        form.ward_code = "";
+        form.ward = "";
+        wards.value = [];
+      }
     }
   );
 
   fetchProvinces();
-  fetchWards();
 
   return {
     provinces,
@@ -95,5 +100,6 @@ export function useAddress(form) {
     loadingWards,
     provinceSearch,
     wardSearch,
+    fetchWardsByProvince,
   };
 }

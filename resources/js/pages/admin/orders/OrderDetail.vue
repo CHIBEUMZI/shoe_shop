@@ -688,7 +688,7 @@ async function rejectCancel() {
   min-height: 100vh;
   padding: 24px 28px 40px;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .wrap {

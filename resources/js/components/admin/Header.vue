@@ -6,9 +6,11 @@
     <div class="flex items-center gap-4 min-w-0">
       <!-- Logo + Title -->
       <div class="flex items-center gap-3 min-w-0">
-        <div class="size-12 rounded-full bg-white/10 flex items-center justify-center ring-2 ring-white/15">
-          <span class="material-symbols-outlined text-[24px]">admin_panel_settings</span>
-        </div>
+        <img
+          :src="`${apiBase}/storage/logo/logo.png`"
+          alt="BMC Shoes Logo"
+          class="h-10 w-auto object-contain"
+        />
         <div class="text-2xl font-extrabold tracking-tight truncate">BMC Shoes</div>
       </div>
 
@@ -120,6 +122,9 @@ import { useAdminUiStore } from "@/stores/adminUi";
 const router = useRouter();
 const auth = useAuthStore();
 const ui = useAdminUiStore();
+
+const API_BASE = import.meta.env.VITE_API_URL || "";
+const apiBase = API_BASE.replace(/\/$/, "");
 
 const open = ref(false);
 const loading = ref(false);

@@ -7,11 +7,11 @@
       <div class="flex items-center justify-between h-16 lg:h-[72px] gap-4">
         <!-- LEFT: Logo -->
         <div class="flex items-center gap-3 flex-shrink-0 cursor-pointer group" @click="goHome">
-          <div
-            class="size-11 bg-gradient-to-br from-primary to-primary/80 rounded-xl flex items-center justify-center text-white shadow-lg shadow-primary/25 group-hover:shadow-xl group-hover:shadow-primary/30 group-hover:scale-105 transition-all duration-300"
-          >
-            <span class="material-symbols-outlined text-2xl">trolley</span>
-          </div>
+          <img
+            :src="`${apiBase}/storage/logo/logo.png`"
+            alt="BMC Shoes Logo"
+            class="h-11 w-auto object-contain group-hover:opacity-80 transition-opacity duration-300"
+          />
           <div class="flex flex-col">
             <h1
               class="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight"
@@ -578,6 +578,7 @@ const activeIndex = ref(-1);
 
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
+const apiBase = API_BASE.replace(/\/$/, "");
 
 
 function buildImageUrl(pathOrUrl) {

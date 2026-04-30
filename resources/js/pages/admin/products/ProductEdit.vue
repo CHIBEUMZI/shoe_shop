@@ -929,8 +929,6 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
-
 /* ===== CARD ===== */
 .card {
   background: #fff;
@@ -939,7 +937,6 @@ onMounted(async () => {
   box-shadow: 0 1px 4px rgba(15,23,42,.04);
   overflow: hidden;
   margin-top: 16px;
-  font-family: 'DM Sans', sans-serif;
   transition: box-shadow .2s;
 }
 .card:hover { box-shadow: 0 4px 16px rgba(15,23,42,.07); }
@@ -1035,7 +1032,7 @@ onMounted(async () => {
   border: 1.5px solid #e2e8f0; background: #fff; padding: 8px 12px;
   border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer;
   color: #374151; display: inline-flex; align-items: center; gap: 8px;
-  transition: .15s; font-family: 'DM Sans', sans-serif;
+  transition: .15s;
 }
 .btn-outline:hover { background: #f0f7ff; border-color: #93c5fd; color: #2563eb; }
 .btn-outline.sm { padding: 6px 10px; font-size: 12px; border-radius: 8px; }
@@ -1065,7 +1062,7 @@ onMounted(async () => {
 
 .tcontrol {
   width: 100%; height: 40px; border: 1.5px solid #e2e8f0; border-radius: 8px;
-  padding: 0 10px; outline: none; font-size: 13px; font-family: 'DM Sans', sans-serif;
+  padding: 0 10px; outline: none; font-size: 13px;
   background: #fafbfd; transition: .15s; color: #0f172a;
 }
 .tcontrol:hover { border-color: #c7d4e8; background: #fff; }
@@ -1104,7 +1101,7 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
   height: 38px; background: linear-gradient(135deg, #f59e0b, #d97706);
   border: none; border-radius: 10px; padding: 0 16px; font-size: 13px; font-weight: 700;
   color: #fff; cursor: pointer; display: inline-flex; align-items: center; gap: 7px;
-  white-space: nowrap; font-family: 'DM Sans', sans-serif; transition: .15s;
+  white-space: nowrap; transition: .15s;
   box-shadow: 0 2px 6px rgba(217,119,6,.35); flex-shrink: 0;
 }
 .btn-apply:hover { background: linear-gradient(135deg, #d97706, #b45309); box-shadow: 0 4px 12px rgba(217,119,6,.45); }
@@ -1231,7 +1228,6 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
   border-radius: 8px;
   padding: 0 10px;
   font-size: 12px;
-  font-family: "DM Mono", monospace;
   text-transform: uppercase;
   background: #fff;
 }

@@ -352,17 +352,11 @@ onMounted(fetchReview)
 </script>
 
 <style scoped>
-@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap");
-
-* {
-  box-sizing: border-box;
-}
-
 .page {
   min-height: 100vh;
   padding: 24px 28px 40px;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .wrap {
@@ -569,7 +563,6 @@ onMounted(fetchReview)
   outline: none;
   background: #fafbfd;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
   font-size: 14px;
   font-weight: 600;
   min-height: 44px;
@@ -579,7 +572,6 @@ onMounted(fetchReview)
 }
 
 .mono {
-  font-family: "DM Mono", monospace;
   font-size: 12.5px;
 }
 
@@ -788,7 +780,6 @@ onMounted(fetchReview)
 .product-sku {
   font-size: 12px;
   color: #64748b;
-  font-family: "DM Mono", monospace;
 }
 
 .product-price {
@@ -855,7 +846,6 @@ onMounted(fetchReview)
   padding: 12px 14px;
   background: #fafbfd;
   color: #0f172a;
-  font-family: "DM Sans", sans-serif;
   font-size: 14px;
   line-height: 1.6;
   resize: vertical;
@@ -901,7 +891,7 @@ onMounted(fetchReview)
   justify-content: center;
   gap: 6px;
   transition: all 0.15s;
-  font-family: "DM Sans", sans-serif;
+  font-family: inherit;
 }
 
 .btn-ghost {
