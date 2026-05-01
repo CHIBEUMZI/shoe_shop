@@ -289,7 +289,7 @@
 
                 <!-- Product info -->
                 <div class="min-w-0 flex-1">
-                  <div class="flex items-center justify-between gap-2">
+                  <div class="flex items-center gap-2">
                     <h3 class="text-sm font-semibold text-slate-900 line-clamp-1 group-hover:text-amber-700 transition-colors">
                       {{ product.name }}
                     </h3>
