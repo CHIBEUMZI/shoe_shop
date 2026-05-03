@@ -546,6 +546,22 @@ nlu:
     examples: |
       - cách chọn size giày
       - hướng dẫn đo size giày
+      - hướng dẫn tôi chọn size giày đi
+      - mình muốn biết cách chọn size
+      - chỉ mình cách đo size giày
+      - làm sao chọn size giày
+      - chọn size giày thế nào
+      - cách đo chân để chọn size
+      - đo chân như thế nào để chọn size
+      - mình không biết chọn size
+      - mình không biết size giày
+      - mình chưa biết size của mình
+      - cách quy đổi size giày
+      - bảng size giày là gì
+      - đo chân bao nhiêu thì mang size nào
+      - chân dài bao nhiêu thì chọn size nào
+      - size giày nữ nam khác nhau thế nào
+      - size giày này tính sao
 
   - intent: ask_care_guide
     examples: |
@@ -594,6 +610,101 @@ nlu:
       - giày da hay giày vải tốt hơn
       - đệm EVA hay đệm gel tốt hơn
       - đế cao su hay đế TPU tốt hơn
+
+  - intent: ask_faq
+    examples: |
+      - shop có câu hỏi thường gặp không
+      - FAQ của shop là gì
+      - cho mình hỏi về chính sách shop
+      - mình muốn hỏi về bảo hành
+      - shop hỗ trợ những thông tin gì
+      - giao hàng và đổi trả thế nào
+      - cách thanh toán ra sao
+      - shop có thể trả lời nhanh FAQ không
+      - chính sách bảo hành và đổi trả
+      - phí ship và thanh toán như thế nào
+      - cần hỏi về thông tin shop
+      - mình muốn xem FAQ
+      - shop trả lời câu hỏi thường gặp giúp mình
+      - hỗ trợ khách hàng thế nào
+      - chính sách mua hàng ra sao
+      - giày này có sale không
+      - shop có giày cho nữ không
+      - giá này ổn không
+      - cái này có màu khác không
+      - còn hàng không
+      - hàng này sao vậy
+      - cho mình hỏi thêm
+      - nói rõ hơn về đôi này
+      - đôi này phù hợp ai
+      - mẫu này hợp đi đâu
+      - giày này có tốt không
+      - giày này có êm không
+      - màu này đẹp không
+
+  - intent: ask_clarify
+    examples: |
+      - đôi này thế nào
+      - mẫu này có ổn không
+      - cái này có được không
+      - hàng này sao vậy
+      - có đáng mua không
+      - cho mình hỏi thêm
+      - nói rõ hơn về đôi này
+      - đôi này phù hợp ai
+      - mẫu này hợp đi đâu
+      - giày này có tốt không
+      - giày này có êm không
+      - màu này đẹp không
+      - size này vừa không
+      - cái này sao
+      - đôi này thế nào nhỉ
+      - mình hỏi thêm về mẫu này
+      - còn gì nữa không
+      - có phù hợp không
+      - hợp với mình không
+      - nên lấy đôi này không
+      - có nên mua không
+      - nói kỹ hơn đi
+      - giày này thế nào vậy
+      - mẫu này có gì đặc biệt
+      - đôi này hợp không
+      - cái này ổn không
+      - nghe thế nào
+      - tư vấn thêm đi
+      - nói rõ thêm được không
+      - giày này thế nào vậy
+      - mẫu này có gì đặc biệt
+      - đôi này hợp không
+      - cái này ổn không
+      - nghe thế nào
+      - tư vấn thêm đi
+      - nói rõ thêm được không
+
+  - intent: ask_clarify
+    examples: |
+      - đôi này thế nào
+      - mẫu này có ổn không
+      - cái này có được không
+      - hàng này sao vậy
+      - có đáng mua không
+      - cho mình hỏi thêm
+      - nói rõ hơn về đôi này
+      - đôi này phù hợp ai
+      - mẫu này hợp đi đâu
+      - giày này có tốt không
+      - giày này có êm không
+      - màu này đẹp không
+      - size này vừa không
+      - cái này sao
+      - đôi này thế nào nhỉ
+      - mình hỏi thêm về mẫu này
+      - còn gì nữa không
+      - có phù hợp không
+      - hợp với mình không
+      - nên lấy đôi này không
+      - có nên mua không
+      - nói kỹ hơn đi
 
   - intent: ask_gender
     examples: |

@@ -4,91 +4,13 @@ from typing import Any, Dict, List, Text
 from rasa_sdk import Action, Tracker
 from rasa_sdk.executor import CollectingDispatcher
 
+from rasa_sdk.events import SlotSet
+
 from .api_client import _fetch_products, _product_to_card
+from .constants import _get_advice_for_purpose
 
 
-class ActionSearchPromo(Action):
-
-    def name(self) -> Text:
-        return "action_search_promo"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
-        text = (tracker.latest_message or {}).get("text") or ""
-        t = text.lower()
-
-        promo_type = "sale"
-        if any(k in t for k in ["flash", "flash sale", "deal", "sốc", "hot"]):
-            promo_type = "flash_sale"
-        elif any(k in t for k in ["voucher", "mã", "giảm"]):
-            promo_type = "voucher"
-
-        try:
-            items = _fetch_products(search=None, size=None, price_range=None, limit=8)
-        except Exception:
-            items = []
-
-        if not items:
-            dispatcher.utter_message(
-                text="Hiện tại chưa có chương trình khuyến mãi đặc biệt nào 😢 Bạn thử quay lại sau nhé, hoặc xem các sản phẩm bình thường?"
-            )
-            return []
-
-        sale_items = [p for p in items if p.get("base_sale_price") and p.get("base_price")]
-
-        if sale_items:
-            dispatcher.utter_message(
-                json_message={
-                    "type": "products",
-                    "title": "🏷️ Đây là các sản phẩm đang được GIẢM GIÁ tại BMC Shoes:",
-                    "items": [_product_to_card(p) for p in sale_items[:6]],
-                }
-            )
-        else:
-            dispatcher.utter_message(
-                text="Hiện tại chưa có sản phẩm giảm giá 😢 Nhưng shop thường xuyên có khuyến mãi, bạn nhớ theo dõi website nhé! Bạn cần tư vấn giày nào không?"
-            )
-        return []
-
-
-class ActionCompareProducts(Action):
-
-    def name(self) -> Text:
-        return "action_compare_products"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
-
-        dispatcher.utter_message(
-            text="Để so sánh sản phẩm, bạn có thể truy cập trang so sánh trên website của BMC Shoes. Tại đó, bạn có thể chọn tối đa 3-4 sản phẩm và so sánh chi tiết về giá, thông số kỹ thuật, đánh giá từ khách hàng."
-        )
-        dispatcher.utter_message(
-            text="Bạn muốn mình tìm và so sánh cụ thể những mẫu nào? Hoặc mình gợi ý sản phẩm theo nhu cầu của bạn trước?"
-        )
-        return []
-
-
-class ActionGuideSize(Action):
-
-    def name(self) -> Text:
-        return "action_guide_size"
-
-    def run(
-        self,
-        dispatcher: CollectingDispatcher,
-        tracker: Tracker,
-        domain: Dict[Text, Any],
-    ) -> List[Dict[Text, Any]]:
-
-        guide_text = """📏 **Hướng dẫn chọn SIZE giày chuẩn:**
+SIZE_GUIDE_TEXT = """📏 **Hướng dẫn chọn SIZE giày chuẩn:**
 
 **Cách đo:**
 1. Chuẩn bị 1 tờ giấy A4 đặt trên sàn phẳng
@@ -114,8 +36,133 @@ class ActionGuideSize(Action):
 
 Bạn muốn mình tìm giày theo size nào?"""
 
-        dispatcher.utter_message(text=guide_text)
+
+def _size_guide_brief() -> str:
+    return "Bạn có thể đo chiều dài bàn chân bằng cm, rồi đối chiếu bảng size của shop. Nếu bạn gửi mình số cm, mình sẽ gợi ý size gần đúng ngay."
+
+
+class ActionSearchPromo(Action):
+
+    def name(self) -> Text:
+        return "action_search_promo"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        text = (tracker.latest_message or {}).get("text") or ""
+        t = text.lower()
+
+        promo_type = "sale"
+        if any(k in t for k in ["flash", "flash sale", "deal", "sốc", "hot"]):
+            promo_type = "flash_sale"
+        elif any(k in t for k in ["voucher", "mã", "giảm"]):
+            promo_type = "voucher"
+
+        try:
+            items = _fetch_products(search=None, size=None, price_range=None, limit=12)
+        except Exception:
+            items = []
+
+        if not items:
+            dispatcher.utter_message(
+                text="Hiện tại chưa có chương trình khuyến mãi đặc biệt nào 😢 Bạn thử quay lại sau nhé, hoặc xem các sản phẩm bình thường?"
+            )
+            return []
+
+        sale_items = [p for p in items if p.get("has_sale")]
+        best_items = sale_items or items
+        title = "🏷️ Đây là các sản phẩm đang được GIẢM GIÁ tại BMC Shoes:" if sale_items else "🏷️ Đây là một số sản phẩm nổi bật bạn có thể tham khảo:" 
+
+        dispatcher.utter_message(
+            json_message={
+                "type": "products",
+                "title": title,
+                "items": [_product_to_card(p) for p in best_items[:6]],
+            }
+        )
+        if promo_type == "voucher":
+            dispatcher.utter_message(text="Nếu bạn muốn, mình có thể tiếp tục lọc các mẫu đang sale theo brand, size hoặc tầm giá.")
         return []
+
+
+class ActionCompareProducts(Action):
+
+    def name(self) -> Text:
+        return "action_compare_products"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        text = (tracker.latest_message or {}).get("text") or ""
+        t = text.lower()
+
+        if any(k in t for k in ["nike", "adidas", "puma", "converse", "vans", "asics", "new balance", "reebok"]):
+            dispatcher.utter_message(
+                text="Mình chưa có màn hình so sánh trực tiếp ngay trong chat, nhưng mình có thể giúp bạn chọn nhanh theo nhu cầu: độ êm, độ bền, chạy bộ, đi làm hay thời trang. Bạn muốn so sánh theo tiêu chí nào?"
+            )
+            return []
+
+        dispatcher.utter_message(
+            text="Để so sánh sản phẩm, bạn có thể truy cập trang so sánh trên website của BMC Shoes. Tại đó, bạn có thể chọn tối đa 3-4 sản phẩm và so sánh chi tiết về giá, thông số kỹ thuật, đánh giá từ khách hàng."
+        )
+        dispatcher.utter_message(
+            text="Bạn muốn mình tìm và so sánh cụ thể những mẫu nào? Hoặc mình gợi ý sản phẩm theo nhu cầu của bạn trước?"
+        )
+        return []
+
+
+class ActionGuideSize(Action):
+
+    def name(self) -> Text:
+        return "action_guide_size"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+
+        dispatcher.utter_message(text=SIZE_GUIDE_TEXT)
+        return []
+
+
+class ActionFAQ(Action):
+
+    def name(self) -> Text:
+        return "action_faq"
+
+    def run(
+        self,
+        dispatcher: CollectingDispatcher,
+        tracker: Tracker,
+        domain: Dict[Text, Any],
+    ) -> List[Dict[Text, Any]]:
+        text = (tracker.latest_message or {}).get("text") or ""
+        t = text.lower()
+
+        if any(k in t for k in ["size", "đo chân", "bàn chân", "cm", "chọn size", "hướng dẫn", "đo size", "cách chọn size"]):
+            dispatcher.utter_message(text=_size_guide_brief())
+            dispatcher.utter_message(text="Nếu bạn muốn, mình có thể hướng dẫn chi tiết cách đo chân để chọn size chuẩn hơn. Còn nếu bạn đang xem một đôi giày cụ thể, mình sẽ lọc size phù hợp cho đôi đó luôn.")
+            return [SlotSet("clarify_expected", "size"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm size đúng không?")]
+        if any(k in t for k in ["sale", "giảm giá", "khuyến mãi", "voucher", "freeship"]):
+            dispatcher.utter_message(text="Hiện tại mình có thể tìm các sản phẩm đang sale hoặc lọc theo tầm giá. Nếu bạn muốn, hãy gửi tên brand, loại giày hoặc mức giá bạn mong muốn.")
+            return [SlotSet("clarify_expected", "price"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm giá đúng không?")]
+        if any(k in t for k in ["da", "vải", "canvas", "suede", "bảo quản", "vệ sinh"]):
+            dispatcher.utter_message(text="Mình có thể tư vấn cách vệ sinh và bảo quản theo từng chất liệu như da, vải canvas, da lộn hoặc giày thể thao. Bạn cứ nói rõ loại giày nhé.")
+            return [SlotSet("clarify_expected", "comfort"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm độ êm hay cách bảo quản của mẫu này?")]
+        if any(k in t for k in ["nam", "nữ", "gender", "giới tính"]):
+            dispatcher.utter_message(text="Mình có thể lọc giày theo nam, nữ hoặc unisex. Bạn chỉ cần nói rõ nhu cầu, mình sẽ gợi ý theo đúng nhóm phù hợp.")
+            return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn muốn lọc theo nam, nữ hay unisex?")]
+
+        dispatcher.utter_message(text="Mình có thể hỗ trợ tư vấn size, giá, sale, chất liệu, brand và mục đích sử dụng. Bạn hỏi tự nhiên như đang chat với nhân viên tư vấn nhé!")
+        return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm size, giá, độ êm hay brand của mẫu này?")]
 
 
 class ActionCareGuide(Action):
@@ -132,18 +179,28 @@ class ActionCareGuide(Action):
         text = (tracker.latest_message or {}).get("text") or ""
         t = text.lower()
 
-        if any(k in t for k in ["da", "leather", "suede", "nubuck"]):
+        if any(k in t for k in ["da lộn", "suede", "nubuck"]):
+            guide_text = """🧴 **Hướng dẫn bảo quản giày DA LỘN / SUEDE:**
+
+1. **Không dùng nước trực tiếp** để chà mạnh lên bề mặt
+2. **Dùng bàn chải suede** chải nhẹ theo một chiều
+3. **Xử lý vết bẩn khô** bằng gôm tẩy suede hoặc khăn khô mềm
+4. **Xịt chống nước/chống bám bẩn** trước khi sử dụng
+5. **Phơi khô tự nhiên** nếu giày bị ẩm, tránh nắng gắt và máy sấy
+6. **Nhét shoe tree hoặc giấy** để giữ form khi không dùng
+
+Bạn cần tư vấn thêm sản phẩm chăm sóc giày nào không?"""
+        elif any(k in t for k in ["da", "leather"]):
             guide_text = """🧴 **Hướng dẫn bảo quản giày DA:**
 
 1. **Lau sạch** sau mỗi lần sử dụng bằng khăn ẩm
 2. **Sấy khô** tự nhiên, tránh phơi nắng gắt hoặc sấy lửa
 3. **Sử dụng kem/sáp dưỡng da** chuyên dụng 1-2 lần/tuần
 4. **Lưu trữ** trong hộp giày hoặc túi vải, có miếng lót giữ form
-5. **Với da lộn (suede)**: dùng bàn chải chuyên dụng chải nhẹ theo chiều lông
-6. **Chống ẩm** bằng xịt chống nước chuyên dụng cho da
+5. **Chống ẩm** bằng xịt chống nước chuyên dụng cho da
 
 Bạn cần tư vấn thêm sản phẩm chăm sóc giày nào không?"""
-        elif any(k in t for k in ["vải", "canvas", "fabric", "vải"]):
+        elif any(k in t for k in ["vải", "canvas", "fabric"]):
             guide_text = """🧼 **Hướng dẫn vệ sinh giày VẢI/CANVAS:**
 
 1. **Giặt tay** bằng nước ấm + xà phòng nhẹ, tránh giặt máy

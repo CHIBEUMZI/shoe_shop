@@ -23,6 +23,52 @@ def _shop_products_list_url(*, search: Optional[str] = None, category_id: Option
     return url + (("?" + "&".join(qs)) if qs else "")
 
 
+def _safe_int(value: Any) -> Optional[int]:
+    try:
+        return int(value) if value is not None and str(value).strip() != "" else None
+    except Exception:
+        return None
+
+
+def _best_variant_info(p: dict) -> dict:
+    variants = p.get("variants") or []
+    if not isinstance(variants, list):
+        variants = []
+
+    active = [v for v in variants if isinstance(v, dict) and (v.get("is_active") is True or v.get("is_active") is None)]
+    candidate_list = active or variants
+
+    sizes = []
+    colors = []
+    stocks = []
+    sale_prices = []
+
+    for v in candidate_list:
+        size = v.get("size")
+        color = v.get("color")
+        stock = _safe_int(v.get("stock"))
+        sale_price = _safe_int(v.get("sale_price"))
+        price = _safe_int(v.get("price"))
+
+        if size not in (None, ""):
+            sizes.append(str(size))
+        if color not in (None, ""):
+            colors.append(str(color))
+        if stock is not None:
+            stocks.append(stock)
+        if sale_price is not None:
+            sale_prices.append(sale_price)
+        elif price is not None:
+            sale_prices.append(price)
+
+    return {
+        "sizes": list(dict.fromkeys(sizes)),
+        "colors": list(dict.fromkeys(colors)),
+        "total_stock": sum(stocks) if stocks else None,
+        "min_variant_price": min(sale_prices) if sale_prices else None,
+    }
+
+
 def _product_to_card(p: dict) -> dict:
     name = p.get("name") or "Sản phẩm"
     slug = p.get("slug") or ""
@@ -34,13 +80,20 @@ def _product_to_card(p: dict) -> dict:
     except Exception:
         price_int = None
 
+    variant_info = _best_variant_info(p)
+    display_price = variant_info.get("min_variant_price") or price_int
+
     return {
         "name": name,
         "slug": slug,
         "url": _shop_product_url(slug) if slug else os.getenv("SHOP_WEB_BASE_URL", "http://localhost:8080"),
         "thumbnail": thumb,
-        "price": price_int,
-        "price_text": _format_vnd(price_int) if price_int is not None else "",
+        "price": display_price,
+        "price_text": _format_vnd(display_price) if display_price is not None else "",
+        "sizes": variant_info.get("sizes") or [],
+        "colors": variant_info.get("colors") or [],
+        "stock": variant_info.get("total_stock"),
+        "has_sale": bool(p.get("base_sale_price") or variant_info.get("min_variant_price")),
     }
 
 
@@ -212,7 +265,15 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
 
     scene = OCCASION_SCENE_MAP.get(occasion, {})
     effective_price_range = price_range if price_range else scene.get("price_range", None)
-    style_keywords = scene.get("style_keywords", [])
+    style_keywords = [str(kw).strip().lower() for kw in (scene.get("style_keywords", []) or []) if str(kw).strip()]
+
+    # Stronger guard rails for sport-specific requests.
+    if occasion == "football":
+        style_keywords = list(dict.fromkeys(style_keywords + ["đá bóng", "bóng đá", "football", "sân cỏ", "tf", "fg", "sg", "mercurial", "predator", "copa"]))
+    elif occasion == "running":
+        style_keywords = list(dict.fromkeys(style_keywords + ["chạy bộ", "running", "jogging", "marathon"]))
+    elif occasion == "gym":
+        style_keywords = list(dict.fromkeys(style_keywords + ["gym", "tập gym", "fitness", "crossfit", "training", "workout"]))
 
     params: Dict[str, Any] = {
         "per_page": 12,
@@ -235,55 +296,75 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
         except Exception:
             return []
 
-    def _get_items_flexible(base_params: dict, search_term: Optional[str] = None) -> List[dict]:
-        """Try with search term, fall back to no search if needed."""
-        if search_term:
-            items = _get_items({**base_params, "search": search_term})
-            if items:
-                return items
-        return []
+    def _text_blob(p: dict) -> str:
+        parts = [
+            str(p.get("name") or ""),
+            str(p.get("slug") or ""),
+            str(p.get("short_description") or ""),
+            str(p.get("description") or ""),
+        ]
+        for v in p.get("variants") or []:
+            if isinstance(v, dict):
+                parts.extend([str(v.get("name") or ""), str(v.get("color") or ""), str(v.get("size") or "")])
+        return " ".join(parts).lower()
+
+    def _is_relevant(p: dict) -> bool:
+        blob = _text_blob(p)
+        if not blob:
+            return False
+        if occasion == "football":
+            return any(k in blob for k in ["đá bóng", "bóng đá", "football", "tf", "fg", "sg", "sân cỏ", "mercurial", "predator", "copa"])
+        if occasion == "running":
+            return any(k in blob for k in ["chạy bộ", "running", "jogging", "marathon"])
+        if occasion == "gym":
+            return any(k in blob for k in ["gym", "tập gym", "fitness", "crossfit", "training", "workout"])
+        return any(k in blob for k in style_keywords)
 
     try:
-        # Try 1: occasion filter
+        candidate_sets: List[List[dict]] = []
+
         items = _get_items({**params, "occasion": [occasion]})
         if items:
-            return items[:limit]
+            candidate_sets.append(items)
 
-        # Try 2: style_keywords search (from constants)
         for kw in style_keywords:
             items = _get_items({**params, "search": kw})
             if items:
-                return items[:limit]
+                candidate_sets.append(items)
+                break
 
-        # Try 3: occasion name as search term
         items = _get_items({**params, "search": occasion})
         if items:
-            return items[:limit]
+            candidate_sets.append(items)
 
-        # Try 4: Relax price constraint - no price filter
         if min_vnd is not None or max_vnd is not None:
             params_no_price = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
-
             items = _get_items({**params_no_price, "occasion": [occasion]})
             if items:
-                return items[:limit]
-
+                candidate_sets.append(items)
             for kw in style_keywords:
                 items = _get_items({**params_no_price, "search": kw})
                 if items:
-                    return items[:limit]
+                    candidate_sets.append(items)
+                    break
 
-        # Try 5: Relax occasion filter - no occasion, no price
         params_relaxed = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
         for kw in style_keywords:
             items = _get_items({**params_relaxed, "search": kw})
             if items:
-                return items[:limit]
+                candidate_sets.append(items)
+                break
 
-        # Try 6: Just popular products sorted by popularity
-        items = _get_items({"per_page": 12, "sort": "popular"})
-        if items:
-            return items[:limit]
+        for candidates in candidate_sets:
+            filtered = [p for p in candidates if _is_relevant(p)]
+            if filtered:
+                return filtered[:limit]
+
+        if occasion not in {"football", "running", "gym", "sports"}:
+            items = _get_items({"per_page": 12, "sort": "popular"})
+            filtered = [p for p in items if _is_relevant(p)]
+            if filtered:
+                return filtered[:limit]
 
         return []
     except Exception:

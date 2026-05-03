@@ -45,10 +45,21 @@ def _parse_budget_text_to_range(text: Optional[str]) -> Tuple[Optional[int], Opt
         t,
     )
     if m:
-        unit1 = m.group(2) or m.group(4) or "tr"
-        unit2 = m.group(4) or m.group(2) or "tr"
-        a = to_vnd(m.group(1), unit1)
-        b = to_vnd(m.group(3), unit2)
+        left_num = float(m.group(1).replace(",", "."))
+        right_num = float(m.group(3).replace(",", "."))
+        left_unit = m.group(2)
+        right_unit = m.group(4)
+
+        if not left_unit and not right_unit:
+            if max(left_num, right_num) <= 20:
+                left_unit = right_unit = "tr"
+            elif max(left_num, right_num) <= 2000:
+                left_unit = right_unit = "k"
+            else:
+                left_unit = right_unit = ""
+
+        a = to_vnd(m.group(1), left_unit or "tr")
+        b = to_vnd(m.group(3), right_unit or left_unit or "tr")
         return (a, b)
 
     m = re.search(r"([0-9]+(?:[.,][0-9]+)?)\s*(triệu|trieu|tr|m|k|nghìn|nghin)", t)

@@ -50,7 +50,7 @@ const values = ref({
 
 async function uploadBannerImage(file) {
   try {
-    return await uploadAdminService.upload(file, "banners");
+    return await uploadAdminService.uploadBannerImage(file);
   } catch (e) {
     const msg =
       e?.response?.data?.message || e?.message || "Tải ảnh banner thất bại.";

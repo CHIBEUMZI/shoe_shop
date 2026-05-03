@@ -250,7 +250,7 @@
 </template>
 
 <script setup>
-import { nextTick, ref, reactive, watch } from "vue";
+import { nextTick, ref, reactive } from "vue";
 import api from "../api";
 import { buildImageUrl } from "../utils/image";
 
@@ -259,7 +259,7 @@ function generateConversationId() {
   return `conv_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 }
 
-const CONVERSATION_ID = generateConversationId();
+const CONVERSATION_ID = ref(generateConversationId());
 
 const open = ref(false);
 const input = ref("");
@@ -269,6 +269,7 @@ const messagesEl = ref(null);
 const typingTimeouts = ref([]);
 const unreadCount = ref(0);
 const isTyping = ref(false);
+const responseQueue = ref(Promise.resolve());
 
 const suggestions = [
   { icon: "⚽", text: "Giày đá bóng" },
@@ -276,7 +277,6 @@ const suggestions = [
   { icon: "🏷️", text: "Khuyến mãi hôm nay" },
   { icon: "💼", text: "Giày đi làm" },
   { icon: "✨", text: "Giày sneaker hot" },
-
 ];
 
 const messages = ref([
@@ -294,7 +294,7 @@ function clearAllTypingTimeouts() {
 
 function resetConversation() {
   // Generate a new conversation ID for a fresh Rasa context
-  const newId = generateConversationId();
+  CONVERSATION_ID.value = generateConversationId();
 }
 
 function toggleOpen() {
@@ -370,133 +370,111 @@ async function send() {
   messages.value.push({ from: "user", text, timestamp: new Date() });
   scrollToBottom();
 
-  // Retry logic for resilience
-  const maxRetries = 2;
-  let lastError = null;
+  const enqueueResponse = async () => {
+    // Retry logic for resilience
+    const maxRetries = 2;
 
-  for (let attempt = 0; attempt <= maxRetries; attempt++) {
-    try {
-      isTyping.value = true;
-      const res = await api.post("/api/v1/chatbot", { message: text, conversation_id: CONVERSATION_ID }, {
-        timeout: 30000
-      });
-      const data = res?.data ?? [];
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        isTyping.value = true;
+        const res = await api.post("/api/v1/chatbot", { message: text, conversation_id: CONVERSATION_ID.value }, {
+          timeout: 30000
+        });
+        const data = res?.data ?? [];
 
-      clearAllTypingTimeouts();
-      isTyping.value = false;
+        clearAllTypingTimeouts();
+        isTyping.value = false;
 
-      if (Array.isArray(data)) {
-        data.forEach((msg) => {
-          // Skip if this message has no content at all
-          if (!msg?.text && !msg?.custom) return;
+        const botPayloads = Array.isArray(data) ? data : [data];
 
-          // Case 1: Message has both text AND custom → only show custom (it has its own intro)
-          if ((msg?.custom?.type === "products" || msg?.custom?.type === "chips") && msg?.text) {
+        for (const msg of botPayloads) {
+          if (!msg?.text && !msg?.custom) continue;
+
+          if (msg?.custom?.type === "products" || msg?.custom?.type === "chips") {
             const introText = msg.custom.type === "products"
               ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
               : "Dưới đây là các gợi ý cho bạn nhé!";
-            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
+            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date() };
             messages.value.push(msgObj);
-            animateText(msgObj, () => {
-              messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
-              scrollToBottom();
-            });
+            await animateText(msgObj);
+            messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
+            scrollToBottom();
+            await new Promise(resolve => setTimeout(resolve, 450));
+            continue;
           }
-          // Case 2: Only custom content (no text) → show custom with intro
-          else if (msg?.custom?.type === "products" || msg?.custom?.type === "chips") {
-            const introText = msg.custom.type === "products"
-              ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
-              : "Dưới đây là các gợi ý cho bạn nhé!";
-            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: msg.custom };
-            messages.value.push(msgObj);
-            animateText(msgObj, () => {
-              messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
-              scrollToBottom();
-            });
-          }
-          // Case 3: Text only → animate text
-          else if (msg?.text) {
-            const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
-            messages.value.push(msgObj);
-            animateText(msgObj);
-          }
-        });
-      } else if (data?.text) {
-        const msgObj = { from: "bot", text: data.text, displayedText: "", typing: true, timestamp: new Date() };
-        messages.value.push(msgObj);
-        animateText(msgObj);
-      } else if (data?.custom) {
-        const introText = "Mình tìm được các sản phẩm này cho bạn nè! 👟";
-        const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date(), _skipCustom: true, _custom: data.custom };
-        messages.value.push(msgObj);
-        animateText(msgObj, () => {
-          messages.value.push({ from: "bot", custom: data.custom, timestamp: new Date() });
-          scrollToBottom();
-        });
-      } else {
-        const msgObj = {
-          from: "bot",
-          text: "Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé.",
-          displayedText: "",
-          typing: true,
-          timestamp: new Date(),
-        };
-        messages.value.push(msgObj);
-        animateText(msgObj);
-      }
 
-      // Success - exit retry loop, unlock input
-      sending.value = false;
-      inputDisabled.value = false;
-      return;
+          const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
+          messages.value.push(msgObj);
+          await animateText(msgObj);
+          await new Promise(resolve => setTimeout(resolve, 250));
+        }
 
-    } catch (e) {
-      lastError = e;
-      isTyping.value = false;
+        if (!botPayloads.length) {
+          const msgObj = {
+            from: "bot",
+            text: "Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé.",
+            displayedText: "",
+            typing: true,
+            timestamp: new Date(),
+          };
+          messages.value.push(msgObj);
+          await animateText(msgObj);
+        }
 
-      // If this is the last attempt, show error message
-      if (attempt === maxRetries) {
-        const msgObj = {
-          from: "bot",
-          text: "Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé.",
-          displayedText: "",
-          typing: true,
-          timestamp: new Date(),
-        };
-        messages.value.push(msgObj);
-        animateText(msgObj);
-        sending.value = false;
-        inputDisabled.value = false;
-      } else {
-        // Wait a bit before retry
+        return;
+      } catch (e) {
+        isTyping.value = false;
+        if (attempt === maxRetries) {
+          const msgObj = {
+            from: "bot",
+            text: "Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé.",
+            displayedText: "",
+            typing: true,
+            timestamp: new Date(),
+          };
+          messages.value.push(msgObj);
+          await animateText(msgObj);
+          return;
+        }
         await new Promise(resolve => setTimeout(resolve, 1500));
       }
     }
-  }
+  };
+
+  responseQueue.value = responseQueue.value.then(enqueueResponse).finally(() => {
+    sending.value = false;
+    inputDisabled.value = false;
+    isTyping.value = false;
+  });
+
+  await responseQueue.value;
 }
 
 function animateText(msgObj, onComplete) {
   const msgReactive = reactive(msgObj);
   msgReactive.typing = true;
 
-  let index = 0;
-  const chars = msgReactive.text.split("");
+  return new Promise((resolve) => {
+    let index = 0;
+    const chars = msgReactive.text.split("");
 
-  function addChar() {
-    if (index < chars.length) {
-      msgReactive.displayedText += chars[index];
-      index++;
-      scrollToBottom();
-      const timeout = setTimeout(addChar, 18 + Math.random() * 12);
-      typingTimeouts.value.push(timeout);
-    } else {
-      msgReactive.typing = false;
-      if (onComplete) onComplete();
+    function addChar() {
+      if (index < chars.length) {
+        msgReactive.displayedText += chars[index];
+        index++;
+        scrollToBottom();
+        const timeout = setTimeout(addChar, 18 + Math.random() * 12);
+        typingTimeouts.value.push(timeout);
+      } else {
+        msgReactive.typing = false;
+        if (onComplete) onComplete();
+        resolve();
+      }
     }
-  }
 
-  const timeout = setTimeout(addChar, 200);
-  typingTimeouts.value.push(timeout);
+    const timeout = setTimeout(addChar, 200);
+    typingTimeouts.value.push(timeout);
+  });
 }
 </script>
 

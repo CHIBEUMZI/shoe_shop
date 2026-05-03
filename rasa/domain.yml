@@ -30,6 +30,9 @@ intents:
   - ask_gender
   - ask_occasion_gift
   - ask_gift_for_lover
+  - ask_faq
+  - ask_clarify
+  - nlu_fallback
 
 entities:
   - purpose
@@ -114,6 +117,21 @@ slots:
         entity: brand
         conditions:
           - active_loop: null
+  last_product_query:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
+  clarify_expected:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
+  clarify_question:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
   purpose:
     type: text
     influence_conversation: true
@@ -205,7 +223,7 @@ responses:
   utter_ask_purpose:
     - text: "Bạn muốn tìm giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi, du lịch, tập gym, hay đi tiệc..."
   utter_ask_shoe_size:
-    - text: "Bạn thường mang size giày bao nhiêu? Nếu không biết, bạn có thể đo chiều dài bàn chân (cm) và mình sẽ tư vấn size phù hợp nhé!"
+    - text: "Bạn thường mang size giày bao nhiêu? Nếu chưa biết size, bạn chỉ cần gửi chiều dài bàn chân theo cm, mình sẽ quy đổi size cho bạn nhé!"
   utter_ask_price_range:
     - text: "Bạn mong muốn tầm giá khoảng bao nhiêu? Ví dụ: dưới 500k, 500k-1 triệu, 1-2 triệu, 2-3 triệu, hoặc trên 3 triệu?"
   utter_ask_gift_occasion:
@@ -230,6 +248,20 @@ responses:
     - text: "Cảm ơn bạn đã trò chuyện cùng BMC Shoes! Nếu cần tư vấn thêm về giày, cứ nhắn mình nhé. Chúc bạn tìm được đôi giày ưng ý! 👟"
   utter_default:
     - text: "Mình chưa hiểu rõ ý bạn 😅 Bạn có thể nói rõ hơn không? Ví dụ: bạn cần giày để làm gì, thương hiệu nào, hay tầm giá bao nhiêu?"
+  utter_nlu_fallback:
+    - text: "Mình chưa chắc đã hiểu đúng ý bạn. Bạn có thể nói rõ hơn một chút không? Ví dụ: loại giày, size, tầm giá, hoặc dịp sử dụng."
+  utter_faq_hint:
+    - text: "Nếu bạn hỏi về chính sách, bảo hành, giao hàng hoặc thanh toán, mình có thể trả lời ngay trong chat. Bạn cứ hỏi tự nhiên nhé!"
+  utter_faq_generic:
+    - text: "Mình có thể hỗ trợ size, sale, chất liệu, thương hiệu, bảo quản và cách chọn giày phù hợp. Bạn cứ hỏi cụ thể hơn nhé!"
+  utter_ask_clarify:
+    - text: "Mình chưa chắc bạn đang hỏi về size, giá, brand, chất liệu hay mục đích sử dụng. Bạn nói rõ hơn một chút nhé, ví dụ: 'giày này có size 42 không?' hoặc 'giày này hợp đi làm không?'"
+  utter_ask_clarify_size_price_comfort:
+    - text: "Bạn đang quan tâm điều nào nhất ở đôi này: size, giá hay độ êm? Chỉ cần trả lời 1 từ thôi, mình sẽ tư vấn tiếp đúng ý bạn."
+  utter_ask_clarify_general:
+    - text: "Bạn muốn mình xem đôi này theo tiêu chí nào: size, giá, độ êm, brand hay mục đích sử dụng?"
+  utter_ask_clarify_choice:
+    - text: "Bạn đang quan tâm điều nào nhất ở đôi này: size, giá hay độ êm? Chỉ cần trả lời 1 từ thôi, mình sẽ tư vấn tiếp đúng ý bạn."
   utter_continue:
     - text: "Bạn muốn mình gợi ý thêm sản phẩm khác không? Hay bạn muốn lọc theo tiêu chí khác (size, giá, thương hiệu)?"
   utter_stop:
@@ -254,6 +286,7 @@ actions:
   - action_compare_products
   - action_guide_size
   - action_care_guide
+  - action_faq
 
 session_config:
   session_expiration_time: 60

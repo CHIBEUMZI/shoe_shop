@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Mail;
 use RuntimeException;
+use Throwable;
 
 class OrderController extends Controller
 {
@@ -104,7 +105,7 @@ class OrderController extends Controller
         }
 
         if ($order->payment_method === 'momo') {
-            return $this->createMomoPayment($request, $order);
+            return $this->createMomoPayment($order);
         }
 
         return response()->json([
@@ -169,8 +170,19 @@ class OrderController extends Controller
         $hashSecret = (string) config('services.vnpay.hash_secret');
         $vnpUrl = (string) config('services.vnpay.url');
         $returnUrl = (string) config('services.vnpay.return_url');
+        $ipnUrl = (string) config('services.vnpay.ipn_url');
+        $frontendSuccessUrl = (string) config('services.vnpay.frontend_success_url');
+        $frontendFailUrl = (string) config('services.vnpay.frontend_fail_url');
 
-        if ($tmnCode === '' || $hashSecret === '' || $vnpUrl === '' || $returnUrl === '') {
+        if (
+            $tmnCode === '' ||
+            $hashSecret === '' ||
+            $vnpUrl === '' ||
+            $returnUrl === '' ||
+            $ipnUrl === '' ||
+            $frontendSuccessUrl === '' ||
+            $frontendFailUrl === ''
+        ) {
             return response()->json([
                 'message' => 'Thiếu cấu hình VNPAY.',
             ], 500);
@@ -209,26 +221,27 @@ class OrderController extends Controller
             $inputData['vnp_BankCode'] = $request->string('bank_code')->toString();
         }
 
-        ksort($inputData);
+        $inputData = array_filter($inputData, static fn ($value) => $value !== null && $value !== '');
 
-        $query = http_build_query($inputData);
-        $hashData = urldecode($query);
+        ksort($inputData);
+        $query = $this->buildVnpayQueryString($inputData);
+        $hashData = $this->buildVnpayHashData($inputData);
         $secureHash = hash_hmac('sha512', $hashData, $hashSecret);
 
         $paymentUrl = $vnpUrl
             . '?'
             . $query
-            . '&vnp_SecureHashType=SHA512'
             . '&vnp_SecureHash='
             . $secureHash;
 
         logger()->info('VNPAY_CREATE_PAYMENT', [
             'order_id' => $order->id,
+            'payment_id' => $payment->id,
             'txn_ref' => $txnRef,
             'amount' => $amount,
             'return_url' => $returnUrl,
+            'ipn_url' => $ipnUrl,
             'hash_data' => $hashData,
-            'secure_hash' => $secureHash,
         ]);
 
         return response()->json([
@@ -239,11 +252,12 @@ class OrderController extends Controller
                 'amount' => $order->grand_total,
                 'payment_url' => $paymentUrl,
                 'payment_id' => $payment->id,
+                'txn_ref' => $txnRef,
             ],
         ]);
     }
 
-    protected function createMomoPayment(Request $request, Order $order)
+    protected function createMomoPayment(Order $order)
     {
         $partnerCode = (string) config('services.momo.partner_code');
         $accessKey = (string) config('services.momo.access_key');
@@ -403,7 +417,7 @@ class OrderController extends Controller
 
         if (!$this->verifyVnpaySignature($params)) {
             return redirect(
-                config('services.vnpay.frontend_fail_url') . '?message=' . urlencode('Sai chữ ký VNPAY')
+                $this->buildVnpayRedirectUrl('fail', ['message' => 'Sai chữ ký VNPAY'])
             );
         }
 
@@ -418,7 +432,7 @@ class OrderController extends Controller
 
         if (!$payment) {
             return redirect(
-                config('services.vnpay.frontend_fail_url') . '?message=' . urlencode('Không tìm thấy giao dịch')
+                $this->buildVnpayRedirectUrl('fail', ['message' => 'Không tìm thấy giao dịch'])
             );
         }
 
@@ -428,7 +442,7 @@ class OrderController extends Controller
 
         if (!$order) {
             return redirect(
-                config('services.vnpay.frontend_fail_url') . '?message=' . urlencode('Không tìm thấy đơn hàng')
+                $this->buildVnpayRedirectUrl('fail', ['message' => 'Không tìm thấy đơn hàng'])
             );
         }
 
@@ -437,24 +451,26 @@ class OrderController extends Controller
                 $this->markOrderAsPaid($order, $params, 'vnpay');
 
                 return redirect(
-                    rtrim((string) config('services.vnpay.frontend_success_url'), '/') . '/' . $order->id
+                    $this->buildVnpayRedirectUrl('success', ['order_id' => $order->id])
                 );
             }
 
             $this->markOrderAsFailed($order, $params, 'vnpay');
 
             return redirect(
-                config('services.vnpay.frontend_fail_url')
-                . '?order_id=' . $order->id
-                . '&message=' . urlencode('Thanh toán thất bại')
+                $this->buildVnpayRedirectUrl('fail', [
+                    'order_id' => $order->id,
+                    'message' => 'Thanh toán thất bại',
+                ])
             );
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return redirect(
-                config('services.vnpay.frontend_fail_url')
-                . '?order_id=' . $order->id
-                . '&message=' . urlencode('Lỗi xử lý thanh toán')
+                $this->buildVnpayRedirectUrl('fail', [
+                    'order_id' => $order->id,
+                    'message' => 'Lỗi xử lý thanh toán',
+                ])
             );
         }
     }
@@ -475,6 +491,8 @@ class OrderController extends Controller
         $txnRef = $params['vnp_TxnRef'] ?? null;
         $responseCode = $params['vnp_ResponseCode'] ?? null;
         $transactionStatus = $params['vnp_TransactionStatus'] ?? null;
+        $transactionNo = $params['vnp_TransactionNo'] ?? null;
+        $amount = isset($params['vnp_Amount']) ? ((int) $params['vnp_Amount']) / 100 : null;
 
         $payment = Payment::query()
             ->where('transaction_code', $txnRef)
@@ -499,9 +517,16 @@ class OrderController extends Controller
             ]);
         }
 
+        if ($amount !== null && (float) $order->grand_total !== (float) $amount) {
+            return response()->json([
+                'RspCode' => '04',
+                'Message' => 'Invalid amount',
+            ]);
+        }
+
         try {
             if ($responseCode === '00' && ($transactionStatus === '00' || $transactionStatus === null)) {
-                $this->markOrderAsPaid($order, $params, 'vnpay');
+                $this->markOrderAsPaid($order, array_merge($params, ['vnp_TransactionNo' => $transactionNo]), 'vnpay');
             } else {
                 $this->markOrderAsFailed($order, $params, 'vnpay');
             }
@@ -510,7 +535,7 @@ class OrderController extends Controller
                 'RspCode' => '00',
                 'Message' => 'Confirm Success',
             ]);
-        } catch (\Throwable $e) {
+        } catch (Throwable $e) {
             report($e);
 
             return response()->json([
@@ -674,7 +699,7 @@ class OrderController extends Controller
 
         ksort($filtered);
 
-        $hashData = urldecode(http_build_query($filtered));
+        $hashData = $this->buildVnpayHashData($filtered);
         $computedHash = hash_hmac('sha512', $hashData, $hashSecret);
 
         logger()->info('VNPAY_VERIFY_SIGNATURE', [
@@ -728,6 +753,28 @@ class OrderController extends Controller
         ]);
 
         return hash_equals(strtolower($computedSignature), strtolower($receivedSignature));
+    }
+
+    protected function buildVnpayQueryString(array $params): string
+    {
+        $pairs = [];
+
+        foreach ($params as $key => $value) {
+            $pairs[] = urlencode((string) $key) . '=' . urlencode((string) $value);
+        }
+
+        return implode('&', $pairs);
+    }
+
+    protected function buildVnpayHashData(array $params): string
+    {
+        $pairs = [];
+
+        foreach ($params as $key => $value) {
+            $pairs[] = urlencode((string) $key) . '=' . urlencode((string) $value);
+        }
+
+        return implode('&', $pairs);
     }
 
     protected function markOrderAsPaid(Order $order, array $payload = [], string $provider = 'vnpay'): void
@@ -811,6 +858,27 @@ class OrderController extends Controller
         $order->update([
             'payment_status' => 'failed',
         ]);
+    }
+
+    protected function buildVnpayRedirectUrl(string $status, array $query = []): string
+    {
+        $base = $status === 'success'
+            ? (string) config('services.vnpay.frontend_success_url')
+            : (string) config('services.vnpay.frontend_fail_url');
+
+        $base = rtrim($base, '/');
+        $query = array_filter($query, static fn ($value) => $value !== null && $value !== '');
+
+        if ($status === 'success') {
+            $orderId = $query['order_id'] ?? null;
+            unset($query['order_id']);
+
+            if ($orderId !== null && $orderId !== '') {
+                $base .= '/' . urlencode((string) $orderId);
+            }
+        }
+
+        return $base . (empty($query) ? '' : ('?' . http_build_query($query)));
     }
 
     protected function sendOrderMailIfNeeded(Order $order, string $type = 'created'): void

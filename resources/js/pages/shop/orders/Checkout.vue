@@ -277,6 +277,14 @@
                       <div class="text-xs text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán MoMo để hoàn tất đơn hàng.</div>
                     </div>
                   </label>
+                  <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3 cursor-pointer hover:border-primary/50 transition-colors"
+                    :class="{ 'border-primary bg-primary/5': form.payment_method === 'vnpay' }">
+                    <input v-model="form.payment_method" type="radio" value="vnpay" class="mt-1" />
+                    <div>
+                      <div class="font-medium text-slate-900 dark:text-slate-100 text-sm">Thanh toán online (VNPay)</div>
+                      <div class="text-xs text-slate-500 dark:text-slate-400">Bạn sẽ được chuyển sang cổng thanh toán VNPay để hoàn tất đơn hàng.</div>
+                    </div>
+                  </label>
                 </div>
               </div>
 

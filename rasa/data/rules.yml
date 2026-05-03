@@ -143,6 +143,16 @@ rules:
       - intent: ask_compare
       - action: action_compare_products
 
+  - rule: FAQ answer
+    steps:
+      - intent: ask_faq
+      - action: action_faq
+
+  - rule: clarify ambiguous faq
+    steps:
+      - intent: ask_clarify
+      - action: action_faq
+
   - rule: affirm continue
     steps:
       - intent: affirm
@@ -159,3 +169,8 @@ rules:
     steps:
       - intent: deny
       - action: utter_stop
+
+  - rule: nlu fallback
+    steps:
+      - intent: nlu_fallback
+      - action: utter_nlu_fallback

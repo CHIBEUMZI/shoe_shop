@@ -42,11 +42,13 @@ class ValidateShoeRecommendationForm(FormValidationAction):
     ) -> Dict[Text, Any]:
         parsed = _parse_size(value)
         if not parsed:
-            v_lower = value.lower()
-            if any(w in v_lower for w in ["không biết", "chưa rõ", "tư vấn"]):
-                dispatcher.utter_message(text="Bạn có thể áng chừng size (ví dụ khoảng 39, 40) hoặc tự đo chiều dài bàn chân báo mình để chọn chuẩn nhé!")
+            v_lower = value.lower() if value else ""
+            if any(w in v_lower for w in ["không biết", "chưa rõ", "không rõ", "không biết size", "tư vấn", "hướng dẫn", "cách chọn", "đo chân", "chọn size"]):
+                dispatcher.utter_message(
+                    text="Không sao, mình hướng dẫn nhanh nhé: hãy đo chiều dài bàn chân bằng cm rồi gửi cho mình. Ví dụ 24.5cm thường tương ứng size 39-40; 25cm thường khoảng size 40; 25.5cm thường khoảng size 41."
+                )
                 return {"shoe_size": None}
-            dispatcher.utter_message(text="Bạn cho mình xin size dạng số nhé (ví dụ: 38, 39, 40, 41, 42).")
+            dispatcher.utter_message(text="Bạn cho mình xin size dạng số nhé (ví dụ: 38, 39, 40, 41, 42). Nếu chưa biết size, bạn chỉ cần gửi chiều dài bàn chân theo cm.")
             return {"shoe_size": None}
         return {"shoe_size": parsed}
 

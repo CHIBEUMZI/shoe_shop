@@ -187,6 +187,14 @@ async function onPickFile(field, e) {
   if (!file) return;
 
   const name = field.name;
+  const maxSizeBytes = Number(field.maxSizeMB ?? 5) * 1024 * 1024;
+
+  if (Number.isFinite(maxSizeBytes) && file.size > maxSizeBytes) {
+    cleanupPreview(name);
+    serverError.value = `Ảnh tối đa ${field.maxSizeMB ?? 5}MB.`;
+    e.target.value = "";
+    return;
+  }
 
   cleanupPreview(name);
   localPreview.value = { ...localPreview.value, [name]: URL.createObjectURL(file) };

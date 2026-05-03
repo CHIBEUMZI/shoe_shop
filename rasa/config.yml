@@ -11,15 +11,22 @@ pipeline:
   min_ngram: 1
   max_ngram: 4
 - name: DIETClassifier
-  epochs: 100
+  epochs: 150
+  constrain_similarities: true
+  entity_recognition: true
 - name: EntitySynonymMapper
 - name: ResponseSelector
-  epochs: 100
+  epochs: 150
+- name: FallbackClassifier
+  threshold: 0.35
+  ambiguity_threshold: 0.1
 
 policies:
 - name: RulePolicy
+  core_fallback_action_name: "utter_nlu_fallback"
+  core_fallback_threshold: 0.3
 - name: MemoizationPolicy
 - name: TEDPolicy
-  epochs: 50
+  epochs: 100
 
 assistant_id: 20260408-155722-serious-denotation

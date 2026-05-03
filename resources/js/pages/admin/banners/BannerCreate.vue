@@ -46,15 +46,7 @@ const values = ref({
 
 async function uploadBannerImage(file) {
   try {
-    if (typeof uploadAdminService.uploadBannerImage === "function") {
-      return await uploadAdminService.uploadBannerImage(file, "banners");
-    }
-
-    if (typeof uploadAdminService.upload === "function") {
-      return await uploadAdminService.upload(file, "banners");
-    }
-
-    throw new Error("Upload service chưa hỗ trợ upload banner.");
+    return await uploadAdminService.uploadBannerImage(file);
   } catch (e) {
     const msg =
       e?.response?.data?.message || e?.message || "Tải ảnh banner thất bại.";

@@ -5,6 +5,7 @@ from .list_actions import ActionListBrands, ActionListCategories
 from .other_actions import (
     ActionCareGuide,
     ActionCompareProducts,
+    ActionFAQ,
     ActionGuideSize,
     ActionSearchPromo,
 )

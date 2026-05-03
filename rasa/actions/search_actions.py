@@ -17,7 +17,7 @@ from .api_client import (
     _shop_products_list_url,
 )
 from .constants import OCCASION_SCENE_MAP, _get_advice_for_purpose
-from .utils import _clean_search_query, _get_entity, _parse_size
+from .utils import _clean_search_query, _get_entity, _parse_size, _parse_budget_text_to_range
 
 
 class ActionSuggestShoes(Action):
@@ -42,9 +42,6 @@ class ActionSuggestShoes(Action):
         try:
             if occasion:
                 data = _fetch_products_by_occasion(occasion, limit=5, price_range=price)
-                if not data:
-                    data = _fetch_products(search=None, size=size, price_range=price, category_ids=None, limit=5)
-                    fallback_called = True
             else:
                 cat_ids = _infer_category_ids_from_text(purpose)
                 search_query = None if cat_ids else purpose
@@ -101,31 +98,42 @@ class ActionSearchProducts(Action):
 
         size = ent_size or _parse_size(text)
         price_range = ent_price_range or text
+        parsed_price = _parse_budget_text_to_range(price_range)
 
         brand = ent_brand or _infer_brand_from_text(text)
         search = brand or _clean_search_query(text)
         cat_ids = _infer_category_ids_from_text(ent_purpose or text)
 
+        if ent_purpose:
+            search = None
+
         occasion = _infer_occasion_from_text(text)
         items = []
-        fallback_called = False
 
         try:
             if occasion:
                 items = _fetch_products_by_occasion(occasion, limit=5, price_range=price_range)
-                if not items:
-                    items = _fetch_products(search=None, size=size, price_range=price_range, category_ids=None, limit=5)
-                    fallback_called = True
             else:
-                items = _fetch_products(search=search, size=size, price_range=price_range, category_ids=cat_ids or None, limit=5)
-                if not items and size:
-                    items = _fetch_products(search=search, size=None, price_range=price_range, category_ids=cat_ids or None, limit=5)
-                if not items and price_range:
-                    items = _fetch_products(search=search, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
-                if not items and cat_ids:
-                    items = _fetch_products(search=None, size=size, price_range=price_range, category_ids=cat_ids, limit=5)
+                if parsed_price != (None, None):
+                    items = _fetch_products(search=search, size=size, price_range=price_range, category_ids=cat_ids or None, limit=5)
+                    if not items and size:
+                        items = _fetch_products(search=search, size=None, price_range=price_range, category_ids=cat_ids or None, limit=5)
+                    if not items and cat_ids:
+                        items = _fetch_products(search=None, size=size, price_range=price_range, category_ids=cat_ids, limit=5)
+                else:
+                    items = _fetch_products(search=search, size=size, price_range=None, category_ids=cat_ids or None, limit=5)
+                    if not items and size:
+                        items = _fetch_products(search=search, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
+                    if not items and cat_ids:
+                        items = _fetch_products(search=None, size=size, price_range=None, category_ids=cat_ids, limit=5)
         except Exception:
             items = []
+
+        if not items and not occasion and parsed_price == (None, None) and size:
+            try:
+                items = _fetch_products(search=search, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
+            except Exception:
+                items = []
 
         if not items:
             if brand:
@@ -204,19 +212,34 @@ class ActionSearchProducts(Action):
             )
             return []
 
-        if occasion and not fallback_called:
+        if occasion:
             scene = OCCASION_SCENE_MAP.get(occasion, {})
             advice_text = scene.get("advice", _get_advice_for_purpose(ent_purpose or text))
         else:
             advice_text = _get_advice_for_purpose(ent_purpose or text)
 
+        cards = [_product_to_card(p) for p in items[:5]]
+        enriched_lines = []
+        for c in cards[:3]:
+            extra = []
+            if c.get("price_text"):
+                extra.append(f"giá {c['price_text']}")
+            if c.get("sizes"):
+                extra.append(f"size {'/'.join(c['sizes'][:4])}")
+            if c.get("colors"):
+                extra.append(f"màu {'/'.join(c['colors'][:3])}")
+            if extra:
+                enriched_lines.append(f"- {c['name']}: " + ", ".join(extra))
+
         dispatcher.utter_message(
             json_message={
                 "type": "products",
                 "title": advice_text,
-                "items": [_product_to_card(p) for p in items[:5]],
+                "items": cards,
             }
         )
+        if enriched_lines:
+            dispatcher.utter_message(text="Một vài thông tin nhanh mình lấy được từ sản phẩm:\n" + "\n".join(enriched_lines))
         dispatcher.utter_message(text="Bạn muốn mình lọc thêm theo size hoặc tầm giá cụ thể không?")
         return []
 
@@ -226,6 +249,15 @@ class ActionSearchByOccasion(Action):
     def name(self) -> Text:
         return "action_search_by_occasion"
 
+    def _clarify_prompt(self, field: Text) -> Text:
+        if field == "size":
+            return "Bạn đang quan tâm size đúng không? Nếu có, hãy gửi size hoặc chiều dài bàn chân, mình sẽ tư vấn tiếp ngay."
+        if field == "price":
+            return "Bạn đang quan tâm giá đúng không? Hãy gửi tầm giá mong muốn, mình sẽ lọc đúng mẫu cho bạn."
+        if field == "comfort":
+            return "Bạn đang quan tâm độ êm đúng không? Mình sẽ giải thích thêm về độ êm và mức độ thoải mái của mẫu này."
+        return "Bạn đang quan tâm điều nào nhất ở đôi này: size, giá hay độ êm?"
+
     def run(
         self,
         dispatcher: CollectingDispatcher,
@@ -234,15 +266,55 @@ class ActionSearchByOccasion(Action):
     ) -> List[Dict[Text, Any]]:
         text = (tracker.latest_message or {}).get("text") or ""
         entities = (tracker.latest_message or {}).get("entities") or []
+        expected = tracker.get_slot("clarify_expected")
+
+        if expected:
+            if expected == "size":
+                size = _parse_size(text)
+                if not size:
+                    size = _parse_size(tracker.get_slot("last_product_query"))
+                if not size:
+                    dispatcher.utter_message(text="Bạn gửi giúp mình size hoặc số cm bàn chân nhé, mình sẽ tiếp tục lọc đúng mẫu cho bạn.")
+                    return []
+                try:
+                    items = _fetch_products(search=None, size=size, price_range=tracker.get_slot("price_range"), limit=5)
+                except Exception:
+                    items = []
+                if items:
+                    dispatcher.utter_message(text=f"Mình đã lọc theo size {size} cho bạn đây:")
+                    dispatcher.utter_message(json_message={"type": "products", "title": f"👟 Gợi ý theo size {size}", "items": [_product_to_card(p) for p in items[:5]]})
+                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                dispatcher.utter_message(text=f"Mình chưa tìm được mẫu phù hợp theo size {size}. Bạn có muốn nới tầm giá hoặc đổi brand không?")
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+
+            if expected == "price":
+                price_text = text or tracker.get_slot("last_product_query")
+                min_vnd, max_vnd = _parse_budget_text_to_range(price_text)
+                if min_vnd is None and max_vnd is None:
+                    dispatcher.utter_message(text="Bạn gửi giúp mình tầm giá nhé, ví dụ: dưới 1 triệu, 1-2 triệu, hoặc 2-3 triệu.")
+                    return []
+                try:
+                    items = _fetch_products(search=None, size=None, price_range=price_text, limit=5)
+                except Exception:
+                    items = []
+                if items:
+                    dispatcher.utter_message(text="Mình đã lọc theo tầm giá bạn vừa chọn:")
+                    dispatcher.utter_message(json_message={"type": "products", "title": "💰 Gợi ý theo ngân sách", "items": [_product_to_card(p) for p in items[:5]]})
+                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                dispatcher.utter_message(text="Mình chưa tìm được sản phẩm trong tầm giá này. Bạn muốn mình nới ngân sách hay đổi sang dòng khác không?")
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+
+            if expected == "comfort":
+                query = tracker.get_slot("last_product_query") or text
+                dispatcher.utter_message(text=f"Về độ êm của mẫu này, mình sẽ ưu tiên giày có đệm tốt, form vừa chân và đế hỗ trợ ổn định. Nếu bạn muốn, mình có thể lọc luôn các mẫu êm hơn theo nhu cầu '{query}'.")
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
 
         ent_occasion = _get_entity(entities, "occasion")
         occasion = ent_occasion or _infer_occasion_from_text(text)
 
         if not occasion:
-            dispatcher.utter_message(
-                text="Mình chưa hiểu bạn muốn tìm giày cho dịp gì. Bạn có thể mô tả cụ thể hơn không (ví dụ: đi chơi Valentine, phỏng vấn, dạo phố...)?"
-            )
-            return []
+            dispatcher.utter_message(text=self._clarify_prompt("general"))
+            return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", self._clarify_prompt("general"))]
 
         scene = OCCASION_SCENE_MAP.get(occasion, {})
         advice = scene.get("advice", "Mình đã tìm được một số mẫu giày phù hợp cho bạn:")
@@ -253,30 +325,22 @@ class ActionSearchByOccasion(Action):
             items = []
 
         if not items:
-            # Try without price filter
             try:
                 items = _fetch_products_by_occasion(occasion, limit=5, price_range=None)
             except Exception:
                 items = []
 
         if not items:
-            dispatcher.utter_message(
-                text=f"Mình chưa tìm được giày phù hợp cho dịp này 😢 Bạn thử mô tả cụ thể hơn (brand/size/tầm giá) nhé, mình sẽ tìm cho bạn!"
-            )
+            dispatcher.utter_message(text=f"Mình chưa tìm được giày phù hợp cho dịp này 😢 Bạn thử mô tả cụ thể hơn (brand/size/tầm giá) nhé, mình sẽ tìm cho bạn!")
             return []
 
-        dispatcher.utter_message(
-            json_message={
-                "type": "products",
-                "title": advice,
-                "items": [_product_to_card(p) for p in items[:5]],
-            }
-        )
-        dispatcher.utter_message(
-            text="Bạn có muốn lọc thêm theo thương hiệu, size hoặc thay đổi tầm giá không? Mình sẵn sàng hỗ trợ bạn!"
-        )
+        cards = [_product_to_card(p) for p in items[:5]]
+        if occasion in {"football", "running", "gym", "sports"}:
+            advice = advice + " Mình chỉ hiển thị các mẫu đúng nhóm thể thao để bạn dễ chọn hơn."
 
-        return []
+        dispatcher.utter_message(json_message={"type": "products", "title": advice, "items": cards})
+        dispatcher.utter_message(text="Bạn có muốn lọc thêm theo thương hiệu, size hoặc thay đổi tầm giá không? Mình sẵn sàng hỗ trợ bạn!")
+        return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
 
 
 class ActionSearchByBrand(Action):
