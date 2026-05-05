@@ -356,13 +356,36 @@ const alert = ref({
   message: "",
 });
 let alertTimer = null;
+let countdownTimer = null;
+const now = ref(Date.now());
 
-const countdownItems = [
-  { value: "01", label: "Ngày" },
-  { value: "02", label: "Giờ" },
-  { value: "22", label: "Phút" },
-  { value: "04", label: "Giây" },
-];
+const saleEndsAt = computed(() => {
+  const configured = import.meta.env.VITE_HOME_SALE_END_AT;
+  const parsed = configured ? new Date(configured).getTime() : NaN;
+  if (!Number.isNaN(parsed)) return parsed;
+
+  const twoDaysLater = new Date();
+  twoDaysLater.setDate(twoDaysLater.getDate() + 2);
+  twoDaysLater.setHours(0, 0, 0, 0);
+  return twoDaysLater.getTime();
+});
+
+const countdownMs = computed(() => Math.max(0, saleEndsAt.value - now.value));
+
+const countdownItems = computed(() => {
+  const totalSeconds = Math.floor(countdownMs.value / 1000);
+  const days = Math.floor(totalSeconds / 86400);
+  const hours = Math.floor((totalSeconds % 86400) / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+
+  return [
+    { value: String(days).padStart(2, "0"), label: "Ngày" },
+    { value: String(hours).padStart(2, "0"), label: "Giờ" },
+    { value: String(minutes).padStart(2, "0"), label: "Phút" },
+    { value: String(seconds).padStart(2, "0"), label: "Giây" },
+  ];
+});
 
 const maxSlide = computed(() => {
   return Math.max(0, featured.value.length - visibleSlides.value);
@@ -583,9 +606,18 @@ onMounted(() => {
   fetchCoupons();
   fetchFeatured();
   fetchBigSaleProducts();
+
+  now.value = Date.now();
+  countdownTimer = setInterval(() => {
+    now.value = Date.now();
+  }, 1000);
 });
 
 onBeforeUnmount(() => {
   clearAlertTimer();
+  if (countdownTimer) {
+    clearInterval(countdownTimer);
+    countdownTimer = null;
+  }
 });
 </script>

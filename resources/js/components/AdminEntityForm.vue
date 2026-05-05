@@ -735,7 +735,7 @@ function sectionGridClass(sectionKey) {
   gap: 14px;
   background: #fff;
   border: 1px solid #e8ecf4;
-  border-radius: 14px;
+  border-radius: 10px;
   padding: 16px 20px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
@@ -853,7 +853,7 @@ function sectionGridClass(sectionKey) {
 .section {
   background: #fff;
   border: 1px solid #e8ecf4;
-  border-radius: 16px;
+  border-radius: 10px;
   /* overflow: hidden đã xóa — cho phép dropdown con hiển thị ra ngoài */
   overflow: visible;
   margin-bottom: 16px;
@@ -871,7 +871,7 @@ function sectionGridClass(sectionKey) {
   display: flex;
   align-items: center;
   gap: 12px;
-  border-radius: 16px 16px 0 0;
+  border-radius: 10px 10px 0 0;
   background: #fff;
 }
 

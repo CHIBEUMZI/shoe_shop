@@ -7,17 +7,17 @@
       </div>
 
       <div class="grid w-full grid-cols-2 gap-4 sm:grid-cols-3 lg:w-auto lg:grid-cols-3">
-        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div class="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
           <div class="text-sm text-slate-500">Tổng đánh giá</div>
           <div class="mt-2 text-2xl font-black text-slate-900">{{ stats.total || 0 }}</div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div class="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
           <div class="text-sm text-slate-500">Đã phản hồi</div>
           <div class="mt-2 text-2xl font-black text-green-600">{{ stats.replied || 0 }}</div>
         </div>
 
-        <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 shadow-sm">
+        <div class="rounded-lg border border-slate-200 bg-white px-4 py-4 shadow-sm">
           <div class="text-sm text-slate-500">Chưa phản hồi</div>
           <div class="mt-2 text-2xl font-black text-amber-600">{{ stats.unreplied || 0 }}</div>
         </div>

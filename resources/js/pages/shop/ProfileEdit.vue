@@ -271,7 +271,7 @@ function goBack() {
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-2xl mb-6 w-fit">
+      <div class="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg mb-6 w-fit">
         <button
           @click="activeTab = 'info'"
           class="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
@@ -297,7 +297,7 @@ function goBack() {
       </div>
 
       <!-- Tab: Info -->
-      <div v-if="activeTab === 'info'" class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div v-if="activeTab === 'info'" class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div class="p-6 border-b border-slate-100 dark:border-slate-800">
           <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
             Thông tin cá nhân
@@ -311,7 +311,7 @@ function goBack() {
           <!-- Avatar -->
           <div class="flex flex-col sm:flex-row gap-6 items-start">
             <div class="flex-shrink-0 relative">
-              <div class="size-24 rounded-2xl overflow-hidden bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700">
+              <div class="size-24 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700">
                 <img
                   v-if="previewAvatar"
                   :src="previewAvatar"
@@ -491,7 +491,7 @@ function goBack() {
       </div>
 
       <!-- Tab: Password -->
-      <div v-if="activeTab === 'password'" class="bg-white dark:bg-slate-900 rounded-2xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
+      <div v-if="activeTab === 'password'" class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
         <div class="p-6 border-b border-slate-100 dark:border-slate-800">
           <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
             Đổi mật khẩu

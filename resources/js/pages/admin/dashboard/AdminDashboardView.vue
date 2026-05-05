@@ -42,24 +42,24 @@
         <div
           v-for="n in 4"
           :key="'card-skeleton-' + n"
-          class="h-36 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"
+          class="h-36 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm"
         ></div>
       </div>
 
       <div class="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        <div class="h-96 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:col-span-7"></div>
-        <div class="h-96 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm lg:col-span-5"></div>
+        <div class="h-96 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm lg:col-span-7"></div>
+        <div class="h-96 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm lg:col-span-5"></div>
       </div>
 
-      <div class="h-48 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
-      <div class="h-80 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
-      <div class="h-48 animate-pulse rounded-2xl border border-slate-200/80 bg-white shadow-sm"></div>
+      <div class="h-48 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm"></div>
+      <div class="h-80 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm"></div>
+      <div class="h-48 animate-pulse rounded-lg border border-slate-200/80 bg-white shadow-sm"></div>
     </section>
 
     <!-- Error -->
     <section
       v-else-if="error"
-      class="relative rounded-2xl border border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 p-6 text-sm shadow-sm"
+      class="relative rounded-lg border border-rose-200 bg-gradient-to-r from-rose-50 to-pink-50 p-6 text-sm shadow-sm"
     >
       <div class="flex items-center gap-3">
         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-100">
@@ -89,7 +89,7 @@
         <article
           v-for="(card, index) in statsCards"
           :key="card.key"
-          class="group relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
+          class="group relative overflow-hidden rounded-lg border border-slate-200/80 bg-white p-5 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg"
           :style="{ animationDelay: `${index * 100}ms` }"
         >
           <div class="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-indigo-50/50 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></div>
@@ -145,7 +145,7 @@
 
       <section class="relative mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
         <!-- Revenue chart -->
-        <article class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-7">
+        <article class="relative overflow-hidden rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-7">
           <div class="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-gradient-to-br from-indigo-100/80 to-transparent"></div>
 
           <div class="relative mb-6 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
@@ -197,7 +197,7 @@
         </article>
 
         <!-- Order status -->
-        <article class="rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-5">
+        <article class="rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm lg:col-span-5">
           <div class="mb-6">
             <h2 class="text-xl font-bold text-slate-900">Trạng thái đơn hàng</h2>
             <p class="mt-0.5 text-sm text-slate-500">Phân bố đơn hàng hiện tại</p>
@@ -240,7 +240,7 @@
 
       <!-- Top products -->
       <section class="relative mt-6">
-        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <article class="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm">
           <div class="mb-6">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg shadow-amber-500/30">
@@ -350,7 +350,7 @@
 
       <!-- Recent orders -->
       <section class="relative mt-6">
-        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <article class="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm">
           <div class="mb-6">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-sky-400 to-cyan-500 shadow-lg shadow-sky-500/30">
@@ -427,7 +427,7 @@
 
       <!-- New customers -->
       <section class="relative mt-6">
-        <article class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-6 shadow-sm">
+        <article class="overflow-hidden rounded-lg border border-slate-200/80 bg-white p-6 shadow-sm">
           <div class="mb-6">
             <div class="flex items-center gap-3">
               <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-violet-400 to-fuchsia-500 shadow-lg shadow-violet-500/30">

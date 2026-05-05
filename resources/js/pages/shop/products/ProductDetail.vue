@@ -121,7 +121,7 @@
           <div class="space-y-3">
             <!-- Main Image with Zoom -->
             <div
-              class="group relative overflow-hidden rounded-2xl bg-gradient-to-br from-slate-100 via-white to-slate-100 shadow-lg"
+              class="group relative overflow-hidden rounded-lg bg-gradient-to-br from-slate-100 via-white to-slate-100 shadow-lg"
               @mouseenter="isZooming = true"
               @mouseleave="isZooming = false"
               @mousemove="handleZoom"
@@ -173,7 +173,7 @@
 
             <!-- Trust Badges -->
             <div class="grid grid-cols-3 gap-2">
-              <div class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
+              <div class="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
                 <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow">
                   <span class="material-symbols-outlined text-[14px] text-white">local_shipping</span>
                 </div>
@@ -182,7 +182,7 @@
                 </div>
               </div>
 
-              <div class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
+              <div class="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
                 <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow">
                   <span class="material-symbols-outlined text-[14px] text-white">verified</span>
                 </div>
@@ -190,7 +190,7 @@
                   <h4 class="text-[10px] font-bold text-slate-900 truncate">100% Chính hãng</h4>
                 </div>
               </div>
-              <div class="flex items-center gap-2 rounded-xl border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
+              <div class="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
                 <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-green-500 to-green-600 shadow">
                   <span class="material-symbols-outlined text-[14px] text-white">support_agent</span>
                 </div>
@@ -203,7 +203,7 @@
 
           <!-- RIGHT: Product Info -->
           <div class="lg:sticky lg:top-4 lg:h-fit">
-            <div class="rounded-2xl border border-slate-200/60 bg-white p-4 shadow-lg sm:p-5 lg:p-6">
+            <div class="rounded-lg border border-slate-200/60 bg-white p-4 shadow-lg sm:p-5 lg:p-6">
               <!-- Brand & Rating -->
               <div class="mb-3 flex flex-wrap items-center gap-2">
                 <span
@@ -241,7 +241,7 @@
               </div>
 
               <!-- Price -->
-              <div class="mt-4 rounded-xl bg-gradient-to-r from-slate-50 to-slate-100/50 p-4 ring-1 ring-slate-200/50">
+              <div class="mt-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100/50 p-4 ring-1 ring-slate-200/50">
                 <div class="flex flex-wrap items-end gap-2">
                   <div class="flex items-baseline gap-2">
                     <span class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 sm:text-3xl">
@@ -298,7 +298,7 @@
                       v-for="c in colors"
                       :key="c"
                       type="button"
-                      class="group relative h-9 w-9 rounded-xl border-2 transition-all duration-200"
+                      class="group relative h-9 w-9 rounded-lg border-2 transition-all duration-200"
                       :style="{ backgroundColor: colorToCss(c) }"
                       :class="[
                         c === selectedColor
@@ -359,7 +359,7 @@
                   </label>
 
                   <div class="flex items-center gap-3">
-                    <div class="inline-flex items-center overflow-hidden rounded-xl border-2 border-slate-200 bg-white shadow-sm">
+                    <div class="inline-flex items-center overflow-hidden rounded-lg border-2 border-slate-200 bg-white shadow-sm">
                       <button
                         type="button"
                         class="grid h-9 w-9 place-items-center text-slate-700 transition-all hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
@@ -405,7 +405,7 @@
               <!-- Actions -->
               <div class="space-y-2">
                 <button
-                  class="group relative flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
+                  class="group relative flex h-11 w-full items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/90 font-bold text-white shadow-lg transition-all duration-200 hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-50"
                   type="button"
                   :disabled="!canAddToCart || maxQty <= 0 || addingToCart"
                   @click="addToCart"
@@ -417,7 +417,7 @@
 
                 <div class="grid grid-cols-2 gap-2">
                   <button
-                    class="flex h-10 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold text-slate-900 transition-all duration-200 hover:border-primary hover:text-primary active:scale-95"
+                    class="flex h-10 items-center justify-center gap-1.5 rounded-lg border-2 border-slate-200 bg-white text-xs font-bold text-slate-900 transition-all duration-200 hover:border-primary hover:text-primary active:scale-95"
                     type="button"
                     @click="buyNow"
                   >
@@ -426,7 +426,7 @@
                   </button>
 
                   <button
-                    class="flex h-10 items-center justify-center gap-1.5 rounded-xl border-2 border-slate-200 bg-white text-xs font-bold text-slate-900 transition-all duration-200 hover:border-red-400 hover:text-red-500 active:scale-95"
+                    class="flex h-10 items-center justify-center gap-1.5 rounded-lg border-2 border-slate-200 bg-white text-xs font-bold text-slate-900 transition-all duration-200 hover:border-red-400 hover:text-red-500 active:scale-95"
                     type="button"
                     @click="addToWishlist"
                   >
@@ -450,7 +450,7 @@
             <button
               v-for="tabItem in tabs"
               :key="tabItem.key"
-              class="group relative flex-shrink-0 rounded-xl px-4 py-2 text-xs font-bold transition-all duration-200"
+              class="group relative flex-shrink-0 rounded-lg px-4 py-2 text-xs font-bold transition-all duration-200"
               :class="[
                 tab === tabItem.key
                   ? 'bg-gradient-to-r from-primary to-primary/90 text-white shadow'
@@ -492,7 +492,7 @@
                 <div class="text-sm font-semibold text-slate-900">{{ product.brand?.name || "-" }}</div>
               </div>
 
-              <div class="rounded-xl bg-slate-50 p-3 transition-all hover:shadow">
+              <div class="rounded-lg bg-slate-50 p-3 transition-all hover:shadow">
                 <div class="mb-1 flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[14px] text-primary">category</span>
                   <span class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Danh mục</span>
@@ -557,7 +557,7 @@
             v-else
             v-for="p in related"
             :key="p.id"
-            class="group cursor-pointer overflow-hidden rounded-2xl border border-slate-200/60 bg-white shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
+            class="group cursor-pointer overflow-hidden rounded-lg border border-slate-200/60 bg-white shadow transition-all duration-200 hover:-translate-y-1 hover:shadow-lg"
             @click="goDetail(p.slug)"
           >
             <div class="relative overflow-hidden">
@@ -597,7 +597,7 @@
           </div>
 
           <button
-            class="flex h-10 flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary to-primary/90 text-xs font-bold text-white shadow transition-all hover:-translate-y-0.5 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
+            class="flex h-10 flex-1 items-center justify-center gap-2 rounded-lg bg-gradient-to-r from-primary to-primary/90 text-xs font-bold text-white shadow transition-all hover:-translate-y-0.5 active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
             type="button"
             :disabled="!canAddToCart || maxQty <= 0"
             @click="addToCart"
@@ -607,7 +607,7 @@
           </button>
 
           <button
-            class="grid h-10 w-10 place-items-center rounded-xl border border-slate-200 bg-white shadow transition-all hover:border-red-400 hover:text-red-500 active:scale-95"
+            class="grid h-10 w-10 place-items-center rounded-lg border border-slate-200 bg-white shadow transition-all hover:border-red-400 hover:text-red-500 active:scale-95"
             type="button"
             @click="addToWishlist"
           >
@@ -621,11 +621,11 @@
       v-else
       class="mx-auto max-w-6xl px-4 py-6"
     >
-      <div class="rounded-2xl border border-slate-200/60 bg-white p-6 text-center shadow-lg">
+      <div class="rounded-lg border border-slate-200/60 bg-white p-6 text-center shadow-lg">
         <span class="material-symbols-outlined text-5xl text-slate-300">inventory_2</span>
         <p class="mt-3 text-sm font-medium text-slate-500">Không tìm thấy sản phẩm</p>
         <button
-          class="mt-4 rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow"
+          class="mt-4 rounded-lg bg-primary px-5 py-2.5 text-sm font-bold text-white transition-all hover:-translate-y-0.5 hover:shadow"
           @click="goShop"
         >
           Quay lại cửa hàng

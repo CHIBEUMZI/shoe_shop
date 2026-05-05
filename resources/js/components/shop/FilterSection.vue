@@ -1,5 +1,5 @@
 <template>
-  <div class="rounded-2xl border border-slate-100 dark:border-slate-800 overflow-hidden">
+  <div class="rounded-lg border border-slate-100 dark:border-slate-800 overflow-hidden">
     <button
       type="button"
       class="w-full flex items-center justify-between px-3 py-3 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 transition"

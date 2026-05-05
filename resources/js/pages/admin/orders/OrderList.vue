@@ -39,32 +39,32 @@
     </div>
 
     <div class="mb-4 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Tổng đơn</div>
         <div class="mt-2 text-2xl font-black text-slate-900">{{ meta.total }}</div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Chờ xử lý</div>
         <div class="mt-2 text-2xl font-black text-amber-600">{{ countByStatus("pending") }}</div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Đã xác nhận</div>
         <div class="mt-2 text-2xl font-black text-blue-600">{{ countByStatus("confirmed") }}</div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Đang giao</div>
         <div class="mt-2 text-2xl font-black text-sky-600">{{ countByStatus("shipping") }}</div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Hoàn thành</div>
         <div class="mt-2 text-2xl font-black text-green-600">{{ countByStatus("completed") }}</div>
       </div>
 
-      <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+      <div class="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
         <div class="text-sm text-slate-500">Đã hủy</div>
         <div class="mt-2 text-2xl font-black text-red-600">{{ countByStatus("cancelled") }}</div>
       </div>

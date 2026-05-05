@@ -81,7 +81,7 @@
         <!-- Dropdown -->
         <div
           v-if="open"
-          class="absolute right-0 mt-2 w-64 bg-white text-slate-900 border border-slate-200 rounded-2xl shadow-lg overflow-hidden z-50"
+          class="absolute right-0 mt-2 w-64 bg-white text-slate-900 border border-slate-200 rounded-lg shadow-lg overflow-hidden z-50"
         >
           <div class="px-4 py-3 border-b border-slate-200">
             <div class="text-sm font-extrabold truncate">{{ displayName }}</div>

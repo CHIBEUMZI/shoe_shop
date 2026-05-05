@@ -62,7 +62,7 @@
               <input
                 v-model="filterSearch"
                 type="text"
-                class="w-full rounded-2xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                class="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
                 placeholder="Tìm brand/danh mục..."
               />
               <span

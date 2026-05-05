@@ -375,7 +375,7 @@
       class="fixed inset-0 z-50 flex items-center justify-center p-4"
       @click.self="closeCancelModal"
     >
-      <div class="w-full max-w-md rounded-2xl bg-white dark:bg-slate-800 shadow-xl overflow-hidden">
+      <div class="w-full max-w-md rounded-lg bg-white dark:bg-slate-800 shadow-xl overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-200 dark:border-slate-700">
           <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100">
             Yêu cầu hủy đơn hàng

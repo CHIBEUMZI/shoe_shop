@@ -1,7 +1,7 @@
 <template>
   <div
     :class="wrapperClass"
-    class="pointer-events-auto relative overflow-hidden rounded-2xl border p-4 shadow-xl backdrop-blur-sm"
+    class="pointer-events-auto relative overflow-hidden rounded-lg border p-4 shadow-xl backdrop-blur-sm"
     role="alert"
   >
     <div class="flex items-start gap-3">

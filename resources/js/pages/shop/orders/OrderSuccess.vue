@@ -22,28 +22,28 @@
         </div>
 
         <div class="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div class="rounded-2xl bg-slate-50 dark:bg-slate-900 p-4">
+          <div class="rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
             <div class="text-sm text-slate-500">Mã đơn hàng</div>
             <div class="mt-1 font-bold text-slate-900 dark:text-slate-100">
               {{ order.code }}
             </div>
           </div>
 
-          <div class="rounded-2xl bg-slate-50 dark:bg-slate-900 p-4">
+          <div class="rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
             <div class="text-sm text-slate-500">Tổng thanh toán</div>
             <div class="mt-1 font-bold text-primary">
               {{ moneyVND(order.grand_total || 0) }}
             </div>
           </div>
 
-          <div class="rounded-2xl bg-slate-50 dark:bg-slate-900 p-4">
+          <div class="rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
             <div class="text-sm text-slate-500">Phương thức thanh toán</div>
             <div class="mt-1 font-bold text-slate-900 dark:text-slate-100">
               {{ paymentMethodText(order.payment_method) }}
             </div>
           </div>
 
-          <div class="rounded-2xl bg-slate-50 dark:bg-slate-900 p-4">
+          <div class="rounded-lg bg-slate-50 dark:bg-slate-900 p-4">
             <div class="text-sm text-slate-500">Trạng thái thanh toán</div>
             <div class="mt-1 font-bold text-slate-900 dark:text-slate-100">
               {{ paymentStatusText(order.payment_status) }}
@@ -51,7 +51,7 @@
           </div>
         </div>
 
-        <div class="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+        <div class="mt-8 rounded-lg border border-slate-200 dark:border-slate-700 p-5">
           <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-3">
             Thông tin nhận hàng
           </h2>
@@ -69,7 +69,7 @@
           </div>
         </div>
 
-        <div class="mt-8 rounded-2xl border border-slate-200 dark:border-slate-700 p-5">
+        <div class="mt-8 rounded-lg border border-slate-200 dark:border-slate-700 p-5">
           <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">
             Sản phẩm đã đặt
           </h2>
