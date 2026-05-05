@@ -1,286 +1,181 @@
 <template>
-    <!-- Hero Banner - Full Width (flush with header) -->
+  <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
     <Banner position="home_top" :fallback-action="goProducts" />
 
-    <main class="max-w-7xl mx-auto px-4 lg:px-6 pb-6 md:pb-8">
-      <!-- Intro / Hero content -->
-    <section
-      class="mb-10 lg:mb-14 grid grid-cols-1 lg:grid-cols-[1.2fr_0.8fr] gap-6 lg:gap-8 items-center"
-    >
-      <div>
-        <div
-          class="inline-flex items-center gap-2 rounded-full bg-primary/10 text-primary px-3 py-1.5 text-[10px] font-extrabold uppercase tracking-[0.22em] mb-4"
-        >
-          <span class="material-symbols-outlined text-xs">local_mall</span>
-          BMC Shoes
-        </div>
-
-        <h1
-          class="max-w-3xl text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black leading-[1.1] tracking-[-0.02em] text-slate-950 dark:text-white mb-4"
-        >
-          Chọn đôi giày
-          <span class="text-primary">đúng gu</span>
-          <br />
-          cho phong cách của bạn
-        </h1>
-
-        <p
-          class="text-slate-600 dark:text-slate-300 text-sm md:text-[15px] leading-6 max-w-2xl font-medium"
-        >
-          Từ sneaker trẻ trung, giày chạy bộ năng động đến các mẫu thời trang hiện đại,
-          cửa hàng mang đến nhiều lựa chọn phù hợp cho nhu cầu hằng ngày, học tập, đi
-          chơi và vận động.
-        </p>
-
-        <div class="mt-6 flex flex-wrap gap-3">
-          <button
-            type="button"
-            class="px-5 py-2.5 rounded-xl bg-slate-950 text-white text-sm font-extrabold shadow-lg shadow-slate-900/15 hover:-translate-y-0.5 hover:bg-primary transition-all"
-            @click="goProducts"
-          >
-            Xem tất cả sản phẩm
-          </button>
-
-          <button
-            type="button"
-            class="px-5 py-2.5 rounded-xl text-sm font-extrabold text-white bg-gradient-to-r from-red-500 via-orange-500 to-yellow-500 shadow-lg shadow-red-500/40 hover:shadow-xl hover:shadow-red-500/60 hover:-translate-y-1 hover:scale-105 transition-all duration-300"
-            @click="goBigSale"
-          >
-            🔥 Sale lớn từ 25%
-          </button>
-        </div>
-
-        <div class="mt-6 flex flex-wrap gap-2">
-          <div
-            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
-          >
-            <span class="material-symbols-outlined text-primary text-base">bolt</span>
-            Mẫu mới
-          </div>
-          <div
-            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
-          >
-            <span class="material-symbols-outlined text-primary text-base">sell</span>
-            Ưu đãi
-          </div>
-          <div
-            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-3 py-1.5 text-[11px] font-semibold text-slate-600 dark:text-slate-300"
-          >
-            <span class="material-symbols-outlined text-primary text-base">favorite</span>
-            Đa phong cách
-          </div>
-        </div>
+    <main class="mx-auto max-w-7xl space-y-8 px-4 pb-10 pt-4 lg:px-6 lg:pt-6">
+      <div v-if="alert.visible" class="fixed right-4 top-4 z-50 w-[min(92vw,420px)]">
+        <BaseAlert
+          :type="alert.type"
+          :title="alert.title"
+          :message="alert.message"
+          :duration="3500"
+          @close="hideAlert"
+        />
       </div>
-
-      <div class="grid grid-cols-2 gap-3">
-        <div
-          class="rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white p-4 shadow-xl"
-        >
-          <div class="text-2xl md:text-3xl font-black tracking-tight mb-1">100+</div>
-          <p class="text-slate-300 text-xs font-medium leading-5">
-            Mẫu giày đa dạng
-          </p>
+      <!-- Coupons row -->
+      <section class="mb-8">
+        <div class="mb-4 flex items-center gap-3">
+          <span class="h-6 w-1 rounded-full bg-red-600"></span>
+          <h2 class="text-sm font-black uppercase tracking-[0.18em] text-slate-900 dark:text-white">
+            Khuyến mãi dành cho bạn
+          </h2>
         </div>
 
-        <div
-          class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 shadow-sm"
-        >
-          <div class="text-2xl md:text-3xl font-black tracking-tight mb-1 text-primary">
-            25%+
-          </div>
-          <p class="text-slate-500 text-xs font-medium leading-5">
-            Deal sale mỗi ngày
-          </p>
+        <div v-if="loadingCoupons" class="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
+          <div v-for="i in 4" :key="i" class="h-[92px] rounded-xl bg-slate-200/70 dark:bg-slate-800 animate-pulse"></div>
         </div>
 
-        <div
-          class="rounded-2xl bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-4 shadow-sm"
-        >
-          <div class="text-2xl md:text-3xl font-black tracking-tight mb-1">Trend</div>
-          <p class="text-slate-500 text-xs font-medium leading-5">
-            Thiết kế hiện đại
-          </p>
+        <div v-else-if="coupons.length === 0" class="rounded-xl border border-dashed border-slate-300 bg-white py-8 text-center text-sm font-medium text-slate-500 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-400">
+          Chưa có mã giảm giá nào.
         </div>
 
-        <div
-          class="rounded-2xl bg-gradient-to-br from-primary/15 to-pink-100 dark:from-primary/20 dark:to-slate-800 border border-primary/10 p-4 shadow-sm"
-        >
-          <div class="text-2xl md:text-3xl font-black tracking-tight mb-1 text-slate-900 dark:text-white">
-            Hot
-          </div>
-          <p class="text-slate-600 dark:text-slate-300 text-xs font-medium leading-5">
-            Sản phẩm nổi bật
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Benefits -->
-    <section class="mb-10">
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div
-          class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-start gap-3 shadow-sm"
-        >
-          <div
-            class="size-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0"
+        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <article
+            v-for="coupon in coupons"
+            :key="coupon.id"
+            class="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_14px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(15,23,42,0.12)] dark:bg-slate-900"
           >
-            <span class="material-symbols-outlined text-sm">workspace_premium</span>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white mb-0.5">
-              Sản phẩm chọn lọc
-            </h3>
-            <p class="text-xs text-slate-500 leading-5 font-medium">
-              Gợi ý những mẫu giày đẹp, dễ phối đồ và hợp xu hướng.
-            </p>
-          </div>
-        </div>
+            <div class="absolute inset-y-0 left-0 w-3 bg-red-600"></div>
+            <div class="absolute inset-y-0 left-3 w-[2px] border-l border-dashed border-red-200/80 dark:border-red-900/60"></div>
 
-        <div
-          class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-start gap-3 shadow-sm"
-        >
-          <div
-            class="size-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shrink-0"
-          >
-            <span class="material-symbols-outlined text-sm">local_fire_department</span>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white mb-0.5">
-              Deal sale hấp dẫn
-            </h3>
-            <p class="text-xs text-slate-500 leading-5 font-medium">
-              Tập trung hiển thị các sản phẩm giảm giá mạnh.
-            </p>
-          </div>
-        </div>
+            <div class="grid min-h-[180px] gap-4 p-4 pl-6 md:grid-cols-[1fr_auto] md:items-stretch">
+              <div class="flex flex-col justify-between gap-4">
+                <div class="space-y-3">
+                  <div class="flex items-center gap-2">
+                    <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+                      Mã giảm giá
+                    </span>
+                  </div>
 
-        <div
-          class="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 flex items-start gap-3 shadow-sm"
-        >
-          <div
-            class="size-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0"
-          >
-            <span class="material-symbols-outlined text-sm">rocket_launch</span>
-          </div>
-          <div>
-            <h3 class="font-extrabold text-sm text-slate-900 dark:text-white mb-0.5">
-              Phong cách trẻ trung
-            </h3>
-            <p class="text-xs text-slate-500 leading-5 font-medium">
-              Giao diện sáng, hiện đại, rõ ràng và dễ nhìn.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
+                  <h3 class="line-clamp-2 break-words text-[22px] font-extrabold leading-7 text-slate-900 dark:text-white">
+                    {{ coupon.name }}
+                  </h3>
 
-    <!-- Big sale products -->
-    <section class="mb-14">
-      <div
-        class="relative rounded-xl overflow-hidden p-[1px] bg-gradient-to-r from-rose-500 via-pink-500 to-orange-400 shadow-xl"
-      >
-        <!-- Glow effect -->
-        <div class="absolute -top-12 -left-12 w-48 h-48 bg-rose-500/20 blur-[80px]"></div>
-        <div class="absolute -bottom-12 -right-12 w-48 h-48 bg-orange-400/20 blur-[80px]"></div>
-
-        <div class="relative bg-white dark:bg-slate-950 rounded-[9px] px-5 md:px-8 py-6 md:py-8">
-
-          <!-- Header -->
-          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-            <div>
-              <div class="flex items-center gap-2 mb-2">
-                <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider bg-rose-500 text-white rounded-full">
-                  🔥 Flash Sale
-                </span>
-
-                <span class="text-[10px] font-bold text-rose-600 bg-rose-100 px-2.5 py-1 rounded-full">
-                  Sắp kết thúc
-                </span>
-              </div>
-
-              <h2 class="text-xl md:text-3xl font-black text-slate-950 dark:text-white leading-tight">
-                Giảm giá lên đến <span class="text-rose-500">50%</span>
-              </h2>
-
-              <p class="text-slate-500 mt-1 text-xs md:text-sm font-medium">
-                Những đôi giày hot đang sale mạnh – số lượng có hạn!
-              </p>
-            </div>
-
-            <button
-              class="px-5 py-2.5 rounded-xl bg-rose-500 text-white text-sm font-extrabold shadow-lg hover:scale-105 hover:shadow-xl transition-all"
-              @click="goBigSale"
-            >
-              Mua ngay
-            </button>
-          </div>
-
-          <!-- Products -->
-          <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            <div v-if="loadingBigSale" class="col-span-full text-slate-500 text-sm">
-              Đang tải...
-            </div>
-
-            <article
-              v-for="p in bigSaleProducts"
-              :key="p.id"
-              class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden hover:border-primary transition-colors cursor-pointer flex flex-col"
-              @click="goDetail(p.slug)"
-            >
-              <div class="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
-                <span
-                  v-if="p.discountPercent"
-                  class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 uppercase z-10 tracking-wider rounded-bl-md"
-                >
-                  -{{ p.discountPercent }}%
-                </span>
-                <img
-                  class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                  :src="p.image"
-                  :alt="p.name"
-                />
-              </div>
-
-              <div class="p-4 flex flex-col flex-1">
-                <p
-                  class="text-[10px] tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
-                >
-                  {{ p.brand }}
-                </p>
-
-                <h4
-                  class="mt-2 font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug"
-                >
-                  {{ p.name }}
-                </h4>
-
-                <div class="flex items-center gap-3 mt-auto pt-3">
-                  <p class="text-primary font-black text-base">
-                    {{ moneyVND(p.price) }}
+                  <p class="text-[13px] font-medium leading-5 text-slate-500 dark:text-slate-400">
+                    Giảm {{ coupon.value_formatted }} • Áp dụng cho đơn từ {{ moneyVND(coupon.min_order_amount || 0) }}
                   </p>
-
-                  <p
-                    v-if="p.compareAt"
-                    class="text-xs text-slate-400 line-through"
-                  >
-                    {{ moneyVND(p.compareAt) }}
+                  <div>
+                  <p class="break-words text-[12px] font-black tracking-[0.22em] text-slate-900 dark:text-white">
+                    Mã: {{ coupon.code }}
                   </p>
                 </div>
+                </div>
 
+                <div class="flex items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
+                  <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
+                    ⏳
+                  </span>
+                  <span>HSD: <span class="font-bold text-slate-900 dark:text-white">{{ coupon.expires_at_formatted || 'Không giới hạn' }}</span></span>
+                </div>
                 <button
-                  class="mt-3 w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-rose-500 hover:text-white transition-colors"
+                  type="button"
+                  class="mt-4 rounded-full bg-slate-950 px-4 py-2.5 text-[12px] font-black text-white transition-all duration-300 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  :disabled="claimingCouponCode === coupon.code"
+                  @click="claimCoupon(coupon.code)"
                 >
-                  Xem ngay
+                  {{ claimingCouponCode === coupon.code ? 'Đang nhận...' : 'Nhận voucher' }}
                 </button>
               </div>
-            </article>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- Sale block -->
+      <section
+        class="rounded-[18px] bg-[#e31212] p-3 shadow-[0_18px_50px_rgba(226,18,18,0.32)] md:p-4"
+      >
+        <div class="mb-3 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div class="flex items-center gap-2 text-white">
+            <span class="text-xl">⚡</span>
+            <h2 class="text-sm font-black uppercase tracking-[0.16em] md:text-base">
+              Sản phẩm khuyến mãi
+            </h2>
+          </div>
+
+          <div class="flex items-center gap-2 text-center">
+            <div v-for="item in countdownItems" :key="item.label" class="rounded-md bg-white px-3 py-2 shadow-sm">
+              <div class="text-lg font-black leading-none text-slate-900">{{ item.value }}</div>
+              <div class="mt-1 text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+                {{ item.label }}
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
 
-    <!-- Featured products (Carousel) -->
-    <section class="mb-8">
+        <div v-if="loadingBigSale" class="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+          <div v-for="i in 5" :key="i" class="h-[270px] rounded-lg bg-white/90 animate-pulse"></div>
+        </div>
+
+        <div v-else-if="bigSaleProducts.length === 0" class="rounded-xl bg-white/95 py-10 text-center text-sm font-medium text-slate-500">
+          Chưa có sản phẩm khuyến mãi.
+        </div>
+
+        <div v-else class="grid grid-cols-2 gap-2 md:grid-cols-3 xl:grid-cols-5">
+          <article
+            v-for="p in bigSaleProducts"
+            :key="p.id"
+            class="group overflow-hidden rounded-lg bg-white shadow-sm transition-transform duration-300 hover:-translate-y-1"
+            @click="goDetail(p.slug)"
+          >
+            <div class="relative aspect-square bg-white p-2">
+              <span
+                v-if="p.discountPercent"
+                class="absolute left-0 top-0 z-10 rounded-br-md bg-red-600 px-2 py-1 text-[10px] font-black text-white"
+              >
+                -{{ p.discountPercent }}%
+              </span>
+              <span class="absolute right-0 top-0 z-10 rounded-bl-md bg-emerald-600 px-2 py-1 text-[10px] font-black text-white">
+                NEW
+              </span>
+
+              <img
+                :src="p.image"
+                :alt="p.name"
+                class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105"
+              />
+            </div>
+
+            <div class="border-t border-slate-100 p-3">
+              <p class="truncate text-[10px] font-bold uppercase tracking-[0.16em] text-slate-400">
+                {{ p.brand }}
+              </p>
+              <h3 class="mt-1 line-clamp-2 min-h-[2.75rem] text-xs font-semibold leading-5 text-slate-900">
+                {{ p.name }}
+              </h3>
+
+              <div class="mt-2 flex items-center gap-2">
+                <p class="text-sm font-black text-red-600">{{ moneyVND(p.price) }}</p>
+                <p v-if="p.compareAt" class="text-[11px] text-slate-400 line-through">
+                  {{ moneyVND(p.compareAt) }}
+                </p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="mt-4 flex items-center justify-center gap-1.5">
+          <span
+            v-for="dot in 4"
+            :key="dot"
+            class="h-1.5 w-1.5 rounded-full bg-white/70"
+            :class="dot === 2 ? 'w-4 bg-white' : ''"
+          />
+        </div>
+
+        <div class="mt-4 flex justify-center">
+          <button
+            type="button"
+            class="rounded-lg bg-white px-8 py-2.5 text-sm font-bold text-slate-900 shadow-sm transition-transform hover:-translate-y-0.5"
+            @click="goProducts"
+          >
+            Xem tất cả »
+          </button>
+        </div>
+      </section>
+
+      <!-- Featured products -->
+      <section class="mb-8">
       <div class="flex items-center justify-between mb-4">
         <div>
           <h3 class="text-xl md:text-3xl font-black tracking-tight text-slate-950 dark:text-white">
@@ -350,8 +245,8 @@
           >
             <div class="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <span
-                v-if="p.badge && p.discountPercent"
-                class="absolute top-0 left-0 bg-red-600 text-white text-[9px] font-black px-2 py-1 uppercase z-10 tracking-wider rounded-bl-md"
+                v-if="p.discountPercent"
+                class="absolute left-0 top-0 z-10 rounded-br-md bg-red-600 px-2 py-1 text-[10px] font-black text-white"
               >
                 -{{ p.discountPercent }}%
               </span>
@@ -429,30 +324,45 @@
       </button>
     </section>
     </main>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from "vue";
+import { onMounted, onBeforeUnmount, ref, computed } from "vue";
 import { useRouter } from "vue-router";
 
 import Banner from "../../components/shop/Banner.vue";
-import categoryService from "../../services/public/categoryService";
+import BaseAlert from "../../components/BaseAlert.vue";
+import couponPublicService from "../../services/public/couponService";
 import productPublicService from "../../services/public/productService";
 
 const router = useRouter();
 
 const API_BASE = import.meta.env.VITE_API_URL || "";
 
-const categories = ref([]);
 const featured = ref([]);
 const bigSaleProducts = ref([]);
-
-const loadingCategories = ref(false);
+const coupons = ref([]);
 const loadingFeatured = ref(false);
 const loadingBigSale = ref(false);
-
+const loadingCoupons = ref(false);
+const claimingCouponCode = ref("");
 const currentSlide = ref(0);
 const visibleSlides = ref(4);
+const alert = ref({
+  visible: false,
+  type: "info",
+  title: "",
+  message: "",
+});
+let alertTimer = null;
+
+const countdownItems = [
+  { value: "01", label: "Ngày" },
+  { value: "02", label: "Giờ" },
+  { value: "22", label: "Phút" },
+  { value: "04", label: "Giây" },
+];
 
 const maxSlide = computed(() => {
   return Math.max(0, featured.value.length - visibleSlides.value);
@@ -461,17 +371,6 @@ const maxSlide = computed(() => {
 const visibleProducts = computed(() => {
   return featured.value.slice(currentSlide.value, currentSlide.value + visibleSlides.value);
 });
-
-function updateVisibleSlides() {
-  if (window.innerWidth < 640) {
-    visibleSlides.value = 2;
-  } else if (window.innerWidth < 1024) {
-    visibleSlides.value = 3;
-  } else {
-    visibleSlides.value = 4;
-  }
-  currentSlide.value = 0;
-}
 
 function prevSlide() {
   if (currentSlide.value > 0) {
@@ -508,7 +407,6 @@ function getPrice(p) {
     p.base_sale_price !== null && p.base_sale_price !== undefined
       ? Number(p.base_sale_price)
       : null;
-
   const base =
     p.base_price !== null && p.base_price !== undefined ? Number(p.base_price) : 0;
 
@@ -523,17 +421,14 @@ function getCompareAt(p) {
 function getDiscountPercent(basePrice, salePrice) {
   const base = Number(basePrice || 0);
   const sale = Number(salePrice || 0);
-
   if (!base || !sale || sale >= base) return 0;
-
   return Math.round(((base - sale) / base) * 100);
 }
 
 function mapProduct(p) {
   const price = getPrice(p);
   const compareAt = getCompareAt(p);
-  const discountPercent =
-    compareAt && compareAt > price ? getDiscountPercent(compareAt, price) : 0;
+  const discountPercent = compareAt && compareAt > price ? getDiscountPercent(compareAt, price) : 0;
 
   return {
     id: p.id,
@@ -544,7 +439,6 @@ function mapProduct(p) {
     price,
     compareAt: compareAt && compareAt > price ? compareAt : null,
     discountPercent,
-    badge: compareAt && compareAt > price ? "Sale" : null,
   };
 }
 
@@ -555,15 +449,16 @@ function moneyVND(v) {
   }).format(Number(v || 0));
 }
 
-async function fetchCategories() {
-  loadingCategories.value = true;
+async function fetchCoupons() {
+  loadingCoupons.value = true;
+
   try {
-    const res = await categoryService.list({ with_children: 0 });
-    categories.value = res?.data?.data ?? [];
-  } catch (e) {
-    categories.value = [];
+    const res = await couponPublicService.getAvailableCoupons();
+    coupons.value = res?.data?.data ?? [];
+  } catch {
+    coupons.value = [];
   } finally {
-    loadingCategories.value = false;
+    loadingCoupons.value = false;
   }
 }
 
@@ -578,7 +473,7 @@ async function fetchFeatured() {
     });
 
     featured.value = (res?.data?.data ?? []).map(mapProduct);
-  } catch (e) {
+  } catch {
     featured.value = [];
   } finally {
     loadingFeatured.value = false;
@@ -587,7 +482,6 @@ async function fetchFeatured() {
 
 async function fetchBigSaleProducts() {
   loadingBigSale.value = true;
-
   try {
     const res = await productPublicService.list({
       per_page: 12,
@@ -599,13 +493,81 @@ async function fetchBigSaleProducts() {
     const items = (res?.data?.data ?? []).map(mapProduct);
 
     bigSaleProducts.value = items
-      .filter((p) => p.compareAt && p.discountPercent >= 25)
+      .filter((p) => p.compareAt && p.discountPercent >= 15)
       .sort((a, b) => b.discountPercent - a.discountPercent)
-      .slice(0, 4);
-  } catch (e) {
+      .slice(0, 5);
+  } catch {
     bigSaleProducts.value = [];
   } finally {
     loadingBigSale.value = false;
+  }
+}
+
+function clearAlertTimer() {
+  if (alertTimer) {
+    clearTimeout(alertTimer);
+    alertTimer = null;
+  }
+}
+
+function hideAlert() {
+  clearAlertTimer();
+  alert.value.visible = false;
+}
+
+function showAlert({ type = "info", title = "", message = "" }, duration = 3500) {
+  clearAlertTimer();
+
+  alert.value = {
+    visible: true,
+    type,
+    title,
+    message,
+  };
+
+  if (duration > 0) {
+    alertTimer = setTimeout(() => {
+      alert.value.visible = false;
+      alertTimer = null;
+    }, duration);
+  }
+}
+
+async function claimCoupon(code) {
+  if (!code || claimingCouponCode.value) return;
+
+  claimingCouponCode.value = code;
+
+  try {
+    await couponPublicService.claimCoupon(code);
+    showAlert({
+      type: "success",
+      title: "Thành công",
+      message: "Đã nhận voucher thành công!",
+    });
+  } catch (error) {
+    const status = error?.response?.status;
+    const message =
+      error?.response?.data?.message ||
+      error?.response?.data?.error ||
+      "Không thể nhận voucher. Vui lòng thử lại sau.";
+
+    if (status === 401) {
+      showAlert({
+        type: "warning",
+        title: "Cần đăng nhập",
+        message: "Bạn cần đăng nhập để nhận voucher.",
+      });
+      return;
+    }
+
+    showAlert({
+      type: "error",
+      title: "Không thể nhận voucher",
+      message,
+    });
+  } finally {
+    claimingCouponCode.value = "";
   }
 }
 
@@ -613,37 +575,17 @@ function goProducts() {
   router.push("/shop/products");
 }
 
-function goSale() {
-  router.push({
-    path: "/shop/products",
-    query: { sale: 1, page: 1 },
-  });
-}
-
-function goBigSale() {
-  router.push({
-    path: "/shop/products",
-    query: {
-      sale: 1,
-      min_discount: 25,
-      page: 1,
-    },
-  });
-}
-
 function goDetail(slug) {
   router.push(`/shop/products/${slug}`);
 }
 
 onMounted(() => {
-  fetchCategories();
+  fetchCoupons();
   fetchFeatured();
   fetchBigSaleProducts();
+});
 
-  updateVisibleSlides();
-  window.addEventListener("resize", updateVisibleSlides);
+onBeforeUnmount(() => {
+  clearAlertTimer();
 });
 </script>
-
-<style scoped>
-</style>

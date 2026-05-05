@@ -1,37 +1,37 @@
 <template>
   <section v-if="banners.length > 0">
-    <div
-      class="relative w-full aspect-[16/7] overflow-hidden group"
-    >
-      <div class="relative w-full h-full">
+    <div class="group relative aspect-[16/7] w-full overflow-hidden">
       <transition name="fade" mode="out-in">
-        <div
-          class="absolute inset-0 cursor-pointer"
+        <button
+          :key="banners[currentIndex]?.id || currentIndex"
+          type="button"
+          class="absolute inset-0 block h-full w-full cursor-pointer"
           @click="handleAction"
         >
           <img
-            :key="banners[currentIndex]?.id || currentIndex"
             :src="banners[currentIndex]?.image"
-            class="absolute inset-0 w-full h-full object-contain"
+            :alt="getPlainTitle(banners[currentIndex]) || 'Banner image'"
+            :style="getImageStyle(banners[currentIndex])"
+            class="h-full w-full object-cover bg-white"
+            @load="handleImageLoad(banners[currentIndex], $event)"
           />
-        </div>
+        </button>
       </transition>
-      </div>
 
       <div
         v-if="banners.length > 1"
-        class="absolute inset-0 flex items-center justify-between px-4 z-10"
+        class="absolute inset-0 z-10 flex items-center justify-between px-4"
       >
         <button
           @click="previousBanner"
-          class="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110"
+          class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/40"
         >
           ‹
         </button>
 
         <button
           @click="nextBanner"
-          class="bg-white/20 hover:bg-white/40 backdrop-blur-sm text-white rounded-full p-2 transition-all duration-300 hover:scale-110"
+          class="rounded-full bg-white/20 p-2 text-white backdrop-blur-sm transition-all duration-300 hover:scale-110 hover:bg-white/40"
         >
           ›
         </button>
@@ -40,17 +40,17 @@
       <!-- Dots -->
       <div
         v-if="banners.length > 1"
-        class="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2 z-10"
+        class="absolute bottom-4 left-1/2 z-10 flex -translate-x-1/2 gap-2"
       >
         <button
           v-for="(_, idx) in banners"
           :key="idx"
           @click="goToBanner(idx)"
           :class="[
-            'rounded-full transition-all duration-300',
+            'h-2 rounded-full transition-all duration-300',
             idx === currentIndex
-              ? 'bg-white w-8 h-2'
-              : 'bg-white/50 hover:bg-white/75 w-2 h-2',
+              ? 'w-8 bg-white'
+              : 'w-2 bg-white/50 hover:bg-white/75',
           ]"
         />
       </div>
@@ -75,6 +75,7 @@ const props = defineProps({
 const router = useRouter();
 const banners = ref([]);
 const currentIndex = ref(0);
+const imageStyles = ref({});
 let timer = null;
 
 // Clean title
@@ -96,6 +97,32 @@ async function fetchBanners() {
   } catch {
     banners.value = [];
   }
+}
+
+function handleImageLoad(banner, event) {
+  const img = event?.target;
+  if (!banner?.id || !img) return;
+
+  const naturalWidth = img.naturalWidth || 0;
+  const naturalHeight = img.naturalHeight || 0;
+  if (!naturalWidth || !naturalHeight) return;
+
+  const bannerRatio = 16 / 7;
+  const imageRatio = naturalWidth / naturalHeight;
+
+  const objectPosition =
+    imageRatio < bannerRatio ? "center top" : "center center";
+
+  imageStyles.value = {
+    ...imageStyles.value,
+    [banner.id]: {
+      objectPosition,
+    },
+  };
+}
+
+function getImageStyle(banner) {
+  return banner?.id ? imageStyles.value[banner.id] || {} : {};
 }
 
 function nextBanner() {
