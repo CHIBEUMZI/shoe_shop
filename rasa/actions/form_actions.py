@@ -30,6 +30,9 @@ class ValidateShoeRecommendationForm(FormValidationAction):
             dispatcher.utter_message(text="Để mình gợi ý nhé! Bạn dự định mua giày để đi làm, đi học, chơi thể thao hay đi dạo phố?")
             return {"purpose": None}
 
+        if len(v_lower.split()) <= 3 and any(k in v_lower for k in ["đá bóng", "chạy bộ", "đi làm", "đi học", "đi chơi", "du lịch", "gym"]):
+            return {"purpose": value.strip()}
+
         cleaned = _clean_search_query(value) or value.strip()
         return {"purpose": cleaned}
 
@@ -45,11 +48,16 @@ class ValidateShoeRecommendationForm(FormValidationAction):
             v_lower = value.lower() if value else ""
             if any(w in v_lower for w in ["không biết", "chưa rõ", "không rõ", "không biết size", "tư vấn", "hướng dẫn", "cách chọn", "đo chân", "chọn size"]):
                 dispatcher.utter_message(
-                    text="Không sao, mình hướng dẫn nhanh nhé: hãy đo chiều dài bàn chân bằng cm rồi gửi cho mình. Ví dụ 24.5cm thường tương ứng size 39-40; 25cm thường khoảng size 40; 25.5cm thường khoảng size 41."
+                    text="Không sao, mình hướng dẫn nhanh nhé: hãy đo chiều dài bàn chân bằng cm rồi gửi cho mình. Ví dụ 24.5cm thường tương ứng size 39; 25cm thường khoảng size 40; 25.5cm thường khoảng size 41."
                 )
                 return {"shoe_size": None}
             dispatcher.utter_message(text="Bạn cho mình xin size dạng số nhé (ví dụ: 38, 39, 40, 41, 42). Nếu chưa biết size, bạn chỉ cần gửi chiều dài bàn chân theo cm.")
             return {"shoe_size": None}
+
+        # If the user sends a cm measurement, keep the parsed EU size.
+        if value and "cm" in value.lower():
+            dispatcher.utter_message(text=f"Mình quy đổi chiều dài chân của bạn sang size khoảng {parsed}. Mình sẽ tìm theo size này nhé.")
+
         return {"shoe_size": parsed}
 
     def validate_price_range(
@@ -59,8 +67,19 @@ class ValidateShoeRecommendationForm(FormValidationAction):
         tracker: Tracker,
         domain: DomainDict,
     ) -> Dict[Text, Any]:
+        from .utils import _parse_budget_text_to_range
+
         v_lower = value.lower() if value else ""
         if any(w in v_lower for w in ["không biết", "sao cũng được", "tư vấn"]):
             return {"price_range": "không giới hạn"}
 
-        return {"price_range": value.strip() if value else value}
+        min_vnd, max_vnd = _parse_budget_text_to_range(value)
+        if min_vnd is not None and max_vnd is not None:
+            return {"price_range": f"{min_vnd}-{max_vnd}"}
+        if min_vnd is not None:
+            return {"price_range": f">={min_vnd}"}
+        if max_vnd is not None:
+            return {"price_range": f"<={max_vnd}"}
+
+        dispatcher.utter_message(text="Bạn gửi giúp mình tầm giá rõ hơn nhé, ví dụ: dưới 1 triệu, 1-2 triệu, hoặc 2-3 triệu.")
+        return {"price_range": None}

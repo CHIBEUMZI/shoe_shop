@@ -11,6 +11,12 @@ intents:
   - provide_size
   - provide_gift_occasion
   - provide_gender
+  - ask_fit_advice
+  - ask_wide_feet
+  - ask_work_shoes
+  - ask_school_shoes
+  - ask_running_shoes
+  - ask_style_advice
   - ask_promotion
   - ask_shipping
   - ask_payment
@@ -42,6 +48,7 @@ entities:
   - brand
   - occasion
   - color
+  - style
   - shoe_feature
   - material
   - gift_occasion
@@ -201,6 +208,33 @@ slots:
         conditions:
           - active_loop: gift_recommendation_form
             requested_slot: gift_price_range
+  color:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: color
+      - type: from_text
+        conditions:
+          - active_loop: null
+  material:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: material
+      - type: from_text
+        conditions:
+          - active_loop: null
+  style:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: from_entity
+        entity: style
+      - type: from_text
+        conditions:
+          - active_loop: null
 
 forms:
   shoe_recommendation_form:
@@ -222,6 +256,22 @@ responses:
     - text: "Để mình tìm giày phù hợp cho bạn nhé! Trước tiên, bạn cần giày để làm gì?"
   utter_ask_purpose:
     - text: "Bạn muốn tìm giày để làm gì? Ví dụ: chạy bộ, đá bóng, đi làm, đi học, đi chơi, du lịch, tập gym, hay đi tiệc..."
+  utter_ask_style_pref:
+    - text: "Bạn thích màu sắc, chất liệu hay phong cách nào không? Ví dụ: trắng/đen, da/vải, basic/retro/streetwear..."
+  utter_ask_wide_feet_hint:
+    - text: "Nếu bạn chân bè, mình thường ưu tiên form rộng hơn, mũi giày thoáng và chất liệu mềm để mang êm hơn."
+  utter_ask_work_shoes_hint:
+    - text: "Giày đi làm nên ưu tiên form lịch sự, dễ phối đồ và mang thoải mái cả ngày."
+  utter_ask_school_shoes_hint:
+    - text: "Giày đi học nên ưu tiên bền, dễ phối đồ và thoải mái khi di chuyển nhiều."
+  utter_ask_running_shoes_hint:
+    - text: "Giày chạy bộ nên ưu tiên nhẹ, êm và thoáng khí để hỗ trợ chạy lâu không mỏi chân."
+  utter_ask_color_hint:
+    - text: "Bạn thích màu nào: trắng, đen, be, nâu, xanh navy hay màu nổi?"
+  utter_ask_material_hint:
+    - text: "Bạn ưu tiên chất liệu nào: da, vải, canvas, suede hay mesh?"
+  utter_ask_style_hint:
+    - text: "Bạn thích phong cách nào: basic, retro, streetwear, minimal, sporty hay casual?"
   utter_ask_shoe_size:
     - text: "Bạn thường mang size giày bao nhiêu? Nếu chưa biết size, bạn chỉ cần gửi chiều dài bàn chân theo cm, mình sẽ quy đổi size cho bạn nhé!"
   utter_ask_price_range:
@@ -256,6 +306,8 @@ responses:
     - text: "Mình có thể hỗ trợ size, sale, chất liệu, thương hiệu, bảo quản và cách chọn giày phù hợp. Bạn cứ hỏi cụ thể hơn nhé!"
   utter_ask_clarify:
     - text: "Mình chưa chắc bạn đang hỏi về size, giá, brand, chất liệu hay mục đích sử dụng. Bạn nói rõ hơn một chút nhé, ví dụ: 'giày này có size 42 không?' hoặc 'giày này hợp đi làm không?'"
+  utter_ask_fit_advice:
+    - text: "Bạn đang quan tâm form chân hay kiểu fit nào không? Ví dụ: chân bè, chân thon, form rộng hay ôm chân."
   utter_ask_clarify_size_price_comfort:
     - text: "Bạn đang quan tâm điều nào nhất ở đôi này: size, giá hay độ êm? Chỉ cần trả lời 1 từ thôi, mình sẽ tư vấn tiếp đúng ý bạn."
   utter_ask_clarify_general:
@@ -284,6 +336,11 @@ actions:
   - action_search_men
   - action_search_by_event
   - action_compare_products
+  - action_search_wide_feet
+  - action_search_work_shoes
+  - action_search_school_shoes
+  - action_search_running_shoes
+  - action_search_style_advice
   - action_guide_size
   - action_care_guide
   - action_faq

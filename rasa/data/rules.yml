@@ -36,7 +36,7 @@ rules:
       - intent: search_products
       - action: action_search_products
 
-  - rule: provide purpose -> ask for size or search
+  - rule: provide purpose -> search
     steps:
       - intent: provide_purpose
       - action: action_search_by_occasion
@@ -55,6 +55,12 @@ rules:
     steps:
       - intent: provide_size
       - action: action_search_by_size
+
+  - rule: ask product then fill purpose
+    steps:
+      - intent: ask_product
+      - action: shoe_recommendation_form
+      - active_loop: shoe_recommendation_form
 
   - rule: promotion -> search promo
     steps:
@@ -101,6 +107,31 @@ rules:
     steps:
       - intent: ask_gender
       - action: action_search_men
+
+  - rule: wide feet advice
+    steps:
+      - intent: ask_wide_feet
+      - action: action_search_wide_feet
+
+  - rule: work shoes advice
+    steps:
+      - intent: ask_work_shoes
+      - action: action_search_work_shoes
+
+  - rule: school shoes advice
+    steps:
+      - intent: ask_school_shoes
+      - action: action_search_school_shoes
+
+  - rule: running shoes advice
+    steps:
+      - intent: ask_running_shoes
+      - action: action_search_running_shoes
+
+  - rule: style advice
+    steps:
+      - intent: ask_style_advice
+      - action: action_search_style_advice
 
   - rule: occasion gift
     condition:

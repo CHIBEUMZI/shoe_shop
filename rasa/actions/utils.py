@@ -74,12 +74,39 @@ def _parse_budget_text_to_range(text: Optional[str]) -> Tuple[Optional[int], Opt
 def _parse_size(text: Optional[str]) -> Optional[str]:
     if not text:
         return None
-    m = re.search(r"\bsize\s*([0-9]{2})\b", text.lower())
+
+    raw = text.lower().replace(",", ".")
+
+    # Foot length in cm should be prioritized over bare numeric matches.
+    cm_match = re.search(r"([0-9]{2}(?:\.[0-9])?)\s*cm\b", raw)
+    if cm_match:
+        cm = float(cm_match.group(1))
+        size_map = [
+            (23.0, 36),
+            (23.5, 37),
+            (24.0, 38),
+            (24.5, 39),
+            (25.0, 40),
+            (25.5, 41),
+            (26.0, 42),
+            (26.5, 43),
+            (27.0, 44),
+            (27.5, 45),
+        ]
+        for threshold, size in size_map:
+            if cm <= threshold:
+                return str(size)
+        return "46"
+
+    # Direct shoe size mention: "size 41" or "41"
+    m = re.search(r"\bsize\s*([0-9]{2})\b", raw)
     if m:
         return m.group(1)
-    m = re.search(r"\b([0-9]{2})\b", text)
+
+    m = re.search(r"\b([0-9]{2})\b", raw)
     if m:
         return m.group(1)
+
     return None
 
 
@@ -104,6 +131,32 @@ def _clean_search_query(text: str) -> Optional[str]:
 
     t = re.sub(r"\s+", " ", t).strip()
     return t or None
+
+
+def _infer_color_from_text(text: Optional[str]) -> Optional[str]:
+    t = (text or "").lower().strip()
+    if not t:
+        return None
+
+    # DB stores colors in English, so return normalized English values.
+    color_map = {
+        "black": ["đen", "black"],
+        "white": ["trắng", "trang", "white"],
+        "brown": ["nâu", "brown"],
+        "gray": ["xám", "gray", "grey"],
+        "beige": ["be", "cream", "nude", "kem", "beige"],
+        "red": ["đỏ", "do", "red"],
+        "navy": ["xanh navy", "navy"],
+        "blue": ["xanh dương", "xanh blue", "blue"],
+        "green": ["xanh lá", "xanh mint", "mint", "green"],
+        "pink": ["hồng", "pink"],
+        "yellow": ["vàng", "yellow"],
+    }
+
+    for color, keywords in color_map.items():
+        if any(k in t for k in keywords):
+            return color
+    return None
 
 
 def _get_entity(entities: List[dict], name: str) -> Optional[str]:

@@ -1,6 +1,6 @@
 """Search-related actions."""
 import os
-from typing import Any, Dict, List, Text
+from typing import Any, Dict, List, Optional, Text
 
 from rasa_sdk import Action, Tracker
 from rasa_sdk.events import SlotSet
@@ -9,6 +9,7 @@ from rasa_sdk.executor import CollectingDispatcher
 from .api_client import (
     _fetch_products,
     _fetch_products_by_occasion,
+    _fetch_products_with_attributes,
     _fetch_facets,
     _infer_brand_from_text,
     _infer_category_ids_from_text,
@@ -17,7 +18,22 @@ from .api_client import (
     _shop_products_list_url,
 )
 from .constants import OCCASION_SCENE_MAP, _get_advice_for_purpose
-from .utils import _clean_search_query, _get_entity, _parse_size, _parse_budget_text_to_range
+from .utils import _clean_search_query, _get_entity, _infer_color_from_text, _parse_size, _parse_budget_text_to_range
+
+
+_SHOE_STYLE_TERMS = {
+    "màu": ["màu", "color", "trắng", "đen", "nâu", "xanh", "đỏ", "hồng", "be", "xám", "vàng", "xanh navy"],
+    "material": ["da", "da lộn", "suede", "vải", "canvas", "mesh", "lưới", "nỉ", "cao su"],
+    "style": ["basic", "tối giản", "retro", "streetwear", "sporty", "formal", "casual", "trendy", "classic", "năng động"],
+}
+
+
+def _normalize_text(value: Optional[str]) -> str:
+    return (value or "").strip().lower()
+
+
+def _match_any(text: str, keywords: List[str]) -> bool:
+    return any(k in text for k in keywords)
 
 
 class ActionSuggestShoes(Action):
@@ -39,19 +55,40 @@ class ActionSuggestShoes(Action):
         data = []
         fallback_called = False
 
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material")
+        style = tracker.get_slot("style")
+
         try:
             if occasion:
                 data = _fetch_products_by_occasion(occasion, limit=5, price_range=price)
             else:
                 cat_ids = _infer_category_ids_from_text(purpose)
                 search_query = None if cat_ids else purpose
-                data = _fetch_products(search=search_query, size=size, price_range=price, category_ids=cat_ids or None, limit=5)
-                if not data and size:
-                    data = _fetch_products(search=search_query, size=None, price_range=price, category_ids=cat_ids or None, limit=5)
-                if not data and price:
-                    data = _fetch_products(search=search_query, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
+                data = _fetch_products_with_attributes(
+                    search=search_query,
+                    size=size,
+                    price_range=price,
+                    category_ids=cat_ids or None,
+                    color=color,
+                    material=material,
+                    style=style,
+                    limit=5,
+                )
         except Exception:
             data = []
+
+        if not data:
+            from .api_client import _fallback_near_match
+            data = _fallback_near_match(
+                search=purpose,
+                size=size,
+                price_range=price,
+                color=color,
+                material=material,
+                style=style,
+                limit=5,
+            )
 
         if not data:
             dispatcher.utter_message(
@@ -64,6 +101,18 @@ class ActionSuggestShoes(Action):
             advice_text = scene.get("advice", _get_advice_for_purpose(purpose))
         else:
             advice_text = _get_advice_for_purpose(purpose)
+            if not purpose and (tracker.latest_message or {}).get("text"):
+                advice_text = "⚽ **Tư vấn:** Với giày đá bóng, việc chọn loại đinh phù hợp với mặt sân (như đinh TF cho sân cỏ nhân tạo, đinh FG cho cỏ tự nhiên) và form giày ôm chân là rất quan trọng. Mời bạn tham khảo:"
+
+        if color or material or style:
+            extras = []
+            if color:
+                extras.append(f"màu {color}")
+            if material:
+                extras.append(f"chất liệu {material}")
+            if style:
+                extras.append(f"style {style}")
+            advice_text = f"{advice_text} (lọc theo {' / '.join(extras)})"
 
         dispatcher.utter_message(
             json_message={
@@ -95,12 +144,16 @@ class ActionSearchProducts(Action):
         ent_size = _get_entity(entities, "shoe_size")
         ent_purpose = _get_entity(entities, "purpose")
         ent_price_range = _get_entity(entities, "price_range")
+        ent_color = _get_entity(entities, "color") or tracker.get_slot("color")
+        ent_material = _get_entity(entities, "material") or tracker.get_slot("material")
+        ent_style = _get_entity(entities, "style") or tracker.get_slot("style")
 
         size = ent_size or _parse_size(text)
         price_range = ent_price_range or text
         parsed_price = _parse_budget_text_to_range(price_range)
 
         brand = ent_brand or _infer_brand_from_text(text)
+        inferred_color = ent_color or _infer_color_from_text(text)
         search = brand or _clean_search_query(text)
         cat_ids = _infer_category_ids_from_text(ent_purpose or text)
 
@@ -110,28 +163,61 @@ class ActionSearchProducts(Action):
         occasion = _infer_occasion_from_text(text)
         items = []
 
+        # Prefer explicit price range if the text actually looks like budget input.
+        has_price_text = parsed_price != (None, None)
+        if has_price_text and not brand and not ent_purpose:
+            # When the user is mainly giving a budget, avoid treating the full sentence
+            # as a keyword search because it can drown out the actual price filter.
+            search = None
+
         try:
             if occasion:
                 items = _fetch_products_by_occasion(occasion, limit=5, price_range=price_range)
             else:
-                if parsed_price != (None, None):
-                    items = _fetch_products(search=search, size=size, price_range=price_range, category_ids=cat_ids or None, limit=5)
-                    if not items and size:
-                        items = _fetch_products(search=search, size=None, price_range=price_range, category_ids=cat_ids or None, limit=5)
-                    if not items and cat_ids:
-                        items = _fetch_products(search=None, size=size, price_range=price_range, category_ids=cat_ids, limit=5)
-                else:
-                    items = _fetch_products(search=search, size=size, price_range=None, category_ids=cat_ids or None, limit=5)
-                    if not items and size:
-                        items = _fetch_products(search=search, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
-                    if not items and cat_ids:
-                        items = _fetch_products(search=None, size=size, price_range=None, category_ids=cat_ids, limit=5)
+                items = _fetch_products_with_attributes(
+                    search=search,
+                    size=size,
+                    price_range=price_range if has_price_text else None,
+                    category_ids=cat_ids or None,
+                    color=inferred_color,
+                    material=ent_material,
+                    style=ent_style,
+                    limit=5,
+                )
         except Exception:
             items = []
+
+        if not items:
+            from .api_client import _fallback_near_match
+            items = _fallback_near_match(
+                search=search,
+                size=size,
+                price_range=price_range if has_price_text else None,
+                category_ids=cat_ids or None,
+                color=inferred_color,
+                material=ent_material,
+                style=ent_style,
+                limit=5,
+            )
 
         if not items and not occasion and parsed_price == (None, None) and size:
             try:
                 items = _fetch_products(search=search, size=None, price_range=None, category_ids=cat_ids or None, limit=5)
+            except Exception:
+                items = []
+
+        if not items and brand and inferred_color:
+            try:
+                items = _fetch_products_with_attributes(
+                    search=brand,
+                    size=size,
+                    price_range=price_range if has_price_text else None,
+                    category_ids=cat_ids or None,
+                    color=inferred_color,
+                    material=ent_material,
+                    style=ent_style,
+                    limit=5,
+                )
             except Exception:
                 items = []
 
@@ -145,37 +231,16 @@ class ActionSearchProducts(Action):
 
                 if available and all(str(b.get("name") or "").strip().lower() != brand.strip().lower() for b in available):
                     try:
-                        similar = _fetch_products(
+                        similar = _fetch_products_with_attributes(
                             search=None,
                             size=size,
                             price_range=price_range,
                             category_ids=cat_ids or None,
+                            color=inferred_color,
+                            material=ent_material,
+                            style=ent_style,
                             limit=5,
                         )
-                        if not similar and size:
-                            similar = _fetch_products(
-                                search=None,
-                                size=None,
-                                price_range=price_range,
-                                category_ids=cat_ids or None,
-                                limit=5,
-                            )
-                        if not similar and (price_range or cat_ids):
-                            similar = _fetch_products(
-                                search=None,
-                                size=None,
-                                price_range=price_range,
-                                category_ids=None,
-                                limit=5,
-                            )
-                        if not similar and price_range:
-                            similar = _fetch_products(
-                                search=None,
-                                size=None,
-                                price_range=None,
-                                category_ids=cat_ids or None,
-                                limit=5,
-                            )
                     except Exception:
                         similar = []
 
@@ -185,7 +250,7 @@ class ActionSearchProducts(Action):
                         dispatcher.utter_message(
                             json_message={
                                 "type": "products",
-                                "title": "Mình gợi ý một số mẫu tương tự theo size/tầm giá bạn chọn:",
+                                "title": "Mình gợi ý một số mẫu tương tự theo size/tầm giá và phong cách bạn chọn:",
                                 "items": [_product_to_card(p) for p in similar[:5]],
                             }
                         )
@@ -208,7 +273,7 @@ class ActionSearchProducts(Action):
                     return []
 
             dispatcher.utter_message(
-                text="Mình chưa tìm được sản phẩm phù hợp theo yêu cầu này 😢 Bạn thử nói rõ hơn (brand/mục đích/size/tầm giá) nhé."
+                text="Mình chưa tìm được sản phẩm phù hợp theo yêu cầu này 😢 Bạn thử nói rõ hơn (brand/mục đích/size/tầm giá/màu/chất liệu/style) nhé."
             )
             return []
 
@@ -230,6 +295,18 @@ class ActionSearchProducts(Action):
                 extra.append(f"màu {'/'.join(c['colors'][:3])}")
             if extra:
                 enriched_lines.append(f"- {c['name']}: " + ", ".join(extra))
+
+        filter_bits = []
+        if ent_color:
+            filter_bits.append(f"màu {ent_color}")
+        elif inferred_color:
+            filter_bits.append(f"màu {inferred_color}")
+        if ent_material:
+            filter_bits.append(f"chất liệu {ent_material}")
+        if ent_style:
+            filter_bits.append(f"style {ent_style}")
+        if filter_bits:
+            advice_text = f"{advice_text} — lọc theo {', '.join(filter_bits)}"
 
         dispatcher.utter_message(
             json_message={
@@ -313,8 +390,11 @@ class ActionSearchByOccasion(Action):
         occasion = ent_occasion or _infer_occasion_from_text(text)
 
         if not occasion:
-            dispatcher.utter_message(text=self._clarify_prompt("general"))
-            return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", self._clarify_prompt("general"))]
+            if _infer_category_ids_from_text(text) or _infer_brand_from_text(text):
+                occasion = _infer_occasion_from_text(text) or "sports"
+            else:
+                dispatcher.utter_message(text=self._clarify_prompt("general"))
+                return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", self._clarify_prompt("general"))]
 
         scene = OCCASION_SCENE_MAP.get(occasion, {})
         advice = scene.get("advice", "Mình đã tìm được một số mẫu giày phù hợp cho bạn:")
@@ -510,18 +590,21 @@ class ActionSearchWomen(Action):
     ) -> List[Dict[Text, Any]]:
         text = (tracker.latest_message or {}).get("text") or ""
         size = _parse_size(text)
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material")
+        style = tracker.get_slot("style")
 
         try:
             cat_ids = _infer_category_ids_from_text("nữ nữ tính thời trang")
-            items = _fetch_products(search="nữ", size=size, price_range=None, category_ids=cat_ids or None, limit=8)
+            items = _fetch_products_with_attributes(search="nữ", size=size, category_ids=cat_ids or None, color=color, material=material, style=style, limit=8)
             if not items:
-                items = _fetch_products(search=None, size=size, price_range=None, limit=8)
+                items = _fallback_near_match(search="nữ", size=size, category_ids=cat_ids or None, color=color, material=material, style=style, limit=8)
         except Exception:
             items = []
 
         if not items:
             dispatcher.utter_message(
-                text="Mình chưa tìm được giày nữ phù hợp 😢 Bạn thử mô tả cụ thể hơn (loại giày, thương hiệu, tầm giá) nhé."
+                text="Mình chưa tìm được giày nữ phù hợp 😢 Bạn thử mô tả cụ thể hơn (loại giày, màu sắc, chất liệu, thương hiệu, tầm giá) nhé."
             )
             return []
 
@@ -551,17 +634,20 @@ class ActionSearchMen(Action):
     ) -> List[Dict[Text, Any]]:
         text = (tracker.latest_message or {}).get("text") or ""
         size = _parse_size(text)
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material")
+        style = tracker.get_slot("style")
 
         try:
-            items = _fetch_products(search="nam", size=size, price_range=None, limit=8)
+            items = _fetch_products_with_attributes(search="nam", size=size, color=color, material=material, style=style, limit=8)
             if not items:
-                items = _fetch_products(search=None, size=size, price_range=None, limit=8)
+                items = _fallback_near_match(search="nam", size=size, color=color, material=material, style=style, limit=8)
         except Exception:
             items = []
 
         if not items:
             dispatcher.utter_message(
-                text="Mình chưa tìm được giày nam phù hợp 😢 Bạn thử mô tả cụ thể hơn (loại giày, thương hiệu, tầm giá) nhé."
+                text="Mình chưa tìm được giày nam phù hợp 😢 Bạn thử mô tả cụ thể hơn (loại giày, màu sắc, chất liệu, thương hiệu, tầm giá) nhé."
             )
             return []
 
@@ -629,4 +715,131 @@ class ActionSearchByEvent(Action):
         dispatcher.utter_message(
             text="Bạn đang tìm giày cho dịp đặc biệt nào? Ví dụ: sinh nhật, kỷ niệm, tốt nghiệp, Noel, Tết... Mình sẽ gợi ý phù hợp nhé!"
         )
+        return []
+
+
+class ActionSearchWideFeet(Action):
+
+    def name(self) -> Text:
+        return "action_search_wide_feet"
+
+    def run(self, dispatcher, tracker, domain):
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material")
+        style = tracker.get_slot("style")
+        try:
+            items = _fetch_products_with_attributes(search="chân bè", size=None, price_range=None, color=color, material=material, style=style, limit=6)
+            if not items:
+                items = _fallback_near_match(search="chân bè", size=None, price_range=None, color=color, material=material, style=style, limit=6)
+        except Exception:
+            items = []
+
+        if not items:
+            dispatcher.utter_message(text="Mình chưa tìm được mẫu tối ưu cho chân bè. Bạn có thể cho mình biết size, màu hoặc chất liệu để mình lọc sát hơn nhé.")
+            return []
+
+        dispatcher.utter_message(json_message={"type": "products", "title": "👣 Gợi ý cho chân bè / chân rộng", "items": [_product_to_card(p) for p in items]})
+        dispatcher.utter_message(text="Nếu bạn muốn, mình có thể ưu tiên thêm form rộng, upper mềm hoặc mũi giày thoáng hơn.")
+        return []
+
+
+class ActionSearchWorkShoes(Action):
+
+    def name(self) -> Text:
+        return "action_search_work_shoes"
+
+    def run(self, dispatcher, tracker, domain):
+        color = tracker.get_slot("color") or "đen"
+        material = tracker.get_slot("material") or "da"
+        style = tracker.get_slot("style") or "basic"
+        try:
+            items = _fetch_products_with_attributes(search="công sở", size=None, price_range="1-3m", category_ids=_infer_category_ids_from_text("công sở văn phòng đi làm"), color=color, material=material, style=style, limit=6)
+            if not items:
+                items = _fallback_near_match(search="công sở", size=None, price_range="1-3m", category_ids=_infer_category_ids_from_text("công sở văn phòng đi làm"), color=color, material=material, style=style, limit=6)
+        except Exception:
+            items = []
+        if not items:
+            dispatcher.utter_message(text="Mình chưa tìm được mẫu phù hợp cho đi làm. Bạn cho mình biết phong cách bạn thích: lịch sự, tối giản hay sneaker công sở nhé.")
+            return []
+        dispatcher.utter_message(json_message={"type": "products", "title": "💼 Gợi ý giày đi làm / công sở", "items": [_product_to_card(p) for p in items]})
+        dispatcher.utter_message(text="Bạn muốn mình ưu tiên màu đen, nâu hay form tối giản dễ phối đồ không?")
+        return []
+
+
+class ActionSearchSchoolShoes(Action):
+
+    def name(self) -> Text:
+        return "action_search_school_shoes"
+
+    def run(self, dispatcher, tracker, domain):
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material") or "canvas"
+        style = tracker.get_slot("style") or "basic"
+        try:
+            items = _fetch_products_with_attributes(search="học sinh sinh viên", size=None, price_range="<5000000", color=color, material=material, style=style, limit=6)
+            if not items:
+                items = _fallback_near_match(search="học sinh sinh viên", size=None, price_range="<5000000", color=color, material=material, style=style, limit=6)
+        except Exception:
+            items = []
+        if not items:
+            dispatcher.utter_message(text="Mình chưa tìm được mẫu phù hợp cho đi học. Nếu bạn cho mình size, màu hoặc chất liệu yêu thích, mình sẽ lọc chính xác hơn nhé.")
+            return []
+        dispatcher.utter_message(json_message={"type": "products", "title": "🎒 Gợi ý giày đi học / sinh viên", "items": [_product_to_card(p) for p in items]})
+        dispatcher.utter_message(text="Bạn muốn kiểu dễ phối, bền, hay êm để đi cả ngày? Mình sẽ lọc tiếp cho bạn.")
+        return []
+
+
+class ActionSearchRunningShoes(Action):
+
+    def name(self) -> Text:
+        return "action_search_running_shoes"
+
+    def run(self, dispatcher, tracker, domain):
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material") or "mesh"
+        style = tracker.get_slot("style") or "sporty"
+        try:
+            items = _fetch_products_with_attributes(search="chạy bộ", size=None, price_range=None, color=color, material=material, style=style, limit=6)
+            if not items:
+                items = _fetch_products_by_occasion("running", limit=6)
+            if not items:
+                items = _fallback_near_match(search="chạy bộ", size=None, price_range=None, color=color, material=material, style=style, limit=6)
+        except Exception:
+            items = []
+        if not items:
+            dispatcher.utter_message(text="Mình chưa tìm được mẫu chạy bộ phù hợp. Bạn cho mình biết bạn cần êm hơn, nhẹ hơn hay thoáng hơn nhé.")
+            return []
+        dispatcher.utter_message(json_message={"type": "products", "title": "🏃 Gợi ý giày chạy bộ", "items": [_product_to_card(p) for p in items]})
+        dispatcher.utter_message(text="Nếu bạn muốn, mình có thể ưu tiên giày chạy bộ êm, nhẹ hoặc cho chân bè.")
+        return []
+
+
+class ActionSearchStyleAdvice(Action):
+
+    def name(self) -> Text:
+        return "action_search_style_advice"
+
+    def run(self, dispatcher, tracker, domain):
+        text = (tracker.latest_message or {}).get("text") or ""
+        color = tracker.get_slot("color")
+        material = tracker.get_slot("material")
+        style = tracker.get_slot("style")
+        t = text.lower()
+        if _match_any(t, _SHOE_STYLE_TERMS["màu"]):
+            dispatcher.utter_message(text="Mình sẽ ưu tiên màu trung tính như trắng, đen, be nếu bạn muốn dễ phối đồ; còn nếu muốn nổi bật, có thể chọn đỏ, xanh hoặc hồng.")
+        elif _match_any(t, _SHOE_STYLE_TERMS["material"]):
+            dispatcher.utter_message(text="Nếu bạn thích thoáng và nhẹ thì chọn vải/lưới; nếu muốn bền và lịch sự thì da hoặc da lộn sẽ hợp hơn.")
+        elif _match_any(t, _SHOE_STYLE_TERMS["style"]):
+            dispatcher.utter_message(text="Với style tối giản/basic, hãy ưu tiên form gọn, màu trung tính. Nếu thích retro/streetwear, có thể chọn đế dày và phối màu nổi hơn.")
+        else:
+            dispatcher.utter_message(text="Bạn muốn mình tư vấn theo màu sắc, chất liệu hay phong cách để lọc giày đúng gu hơn không?")
+            return []
+
+        try:
+            items = _fallback_near_match(search=_clean_search_query(text), color=color, material=material, style=style, limit=6)
+        except Exception:
+            items = []
+
+        if items:
+            dispatcher.utter_message(json_message={"type": "products", "title": "✨ Mình gợi ý thêm vài mẫu gần gu bạn", "items": [_product_to_card(p) for p in items]})
         return []

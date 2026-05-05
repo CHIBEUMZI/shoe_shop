@@ -65,6 +65,9 @@ nlu:
       - giày nữ có không
       - shop có giày cho nam không
       - bán giày không shop
+      - mình muốn giày
+      - cần mua giày
+      - tìm giày cho mình
 
   - intent: ask_advice
     examples: |
@@ -109,6 +112,12 @@ nlu:
       - mình cần giày để [chạy bộ](purpose)
       - giày [đi làm](purpose) hàng ngày
       - mình cần giày [đá bóng](purpose)
+      - giày [đá bóng](purpose)
+      - giày đá bóng
+      - mình muốn mua giày đá bóng
+      - mình cần mua giày đá bóng
+      - cho mình giày đá bóng
+      - giày để [đá bóng](purpose)
       - giày [du lịch](purpose)
       - giày [dạo phố](purpose)
       - giày [công sở](purpose)
@@ -134,6 +143,18 @@ nlu:
       - giày [dã ngoại](purpose)
       - giày [dancing](purpose)
       - giày [khiêu vũ](purpose)
+      - giày [màu trắng](color) đi làm
+      - giày [màu đen](color) đi học
+      - giày [da](material) đi làm
+      - giày [vải](material) đi học
+      - giày [canvas](material) đi chơi
+      - giày [suede](material) đi tiệc
+      - giày kiểu [basic](style)
+      - giày kiểu [retro](style)
+      - giày style [streetwear](style)
+      - giày style [minimal](style)
+      - giày [sporty](style)
+      - giày [casual](style)
 
   - intent: provide_size
     examples: |
@@ -157,6 +178,9 @@ nlu:
       - mình đo chân được 24cm
       - bàn chân mình 23.5cm
       - chiều dài chân mình 26cm
+      - chiều dài chân của tôi là 25cm
+      - chân tôi 25.5cm
+      - chân mình 24.5cm
       - mình đi size 39 rưỡi
       - size EU 42
       - size US 9
@@ -541,6 +565,10 @@ nlu:
       - tặng giày cho người yêu
       - giày tặng bạn gái
       - giày tặng bạn trai
+      - mua giày tặng crush
+      - giày làm quà cho người yêu
+      - quà tặng người yêu là giày
+      - gợi ý giày quà tặng
 
   - intent: ask_size_guide
     examples: |
@@ -642,44 +670,6 @@ nlu:
       - giày này có êm không
       - màu này đẹp không
 
-  - intent: ask_clarify
-    examples: |
-      - đôi này thế nào
-      - mẫu này có ổn không
-      - cái này có được không
-      - hàng này sao vậy
-      - có đáng mua không
-      - cho mình hỏi thêm
-      - nói rõ hơn về đôi này
-      - đôi này phù hợp ai
-      - mẫu này hợp đi đâu
-      - giày này có tốt không
-      - giày này có êm không
-      - màu này đẹp không
-      - size này vừa không
-      - cái này sao
-      - đôi này thế nào nhỉ
-      - mình hỏi thêm về mẫu này
-      - còn gì nữa không
-      - có phù hợp không
-      - hợp với mình không
-      - nên lấy đôi này không
-      - có nên mua không
-      - nói kỹ hơn đi
-      - giày này thế nào vậy
-      - mẫu này có gì đặc biệt
-      - đôi này hợp không
-      - cái này ổn không
-      - nghe thế nào
-      - tư vấn thêm đi
-      - nói rõ thêm được không
-      - giày này thế nào vậy
-      - mẫu này có gì đặc biệt
-      - đôi này hợp không
-      - cái này ổn không
-      - nghe thế nào
-      - tư vấn thêm đi
-      - nói rõ thêm được không
 
   - intent: ask_clarify
     examples: |
@@ -705,6 +695,13 @@ nlu:
       - nên lấy đôi này không
       - có nên mua không
       - nói kỹ hơn đi
+      - giày này thế nào vậy
+      - mẫu này có gì đặc biệt
+      - đôi này hợp không
+      - cái này ổn không
+      - nghe thế nào
+      - tư vấn thêm đi
+      - nói rõ thêm được không
 
   - intent: ask_gender
     examples: |
@@ -731,6 +728,123 @@ nlu:
       - giày chạy bộ nam
       - giày chạy bộ nữ
 
+  - intent: ask_wide_feet
+    examples: |
+      - chân bè nên đi giày nào
+      - mình chân bè
+      - chân mình hơi rộng
+      - form rộng cho chân bè
+      - giày nào cho người chân bè
+      - chân bè đi size nào
+      - chân rộng nên chọn giày gì
+      - mình có bàn chân rộng
+      - mũi chân rộng
+      - chân bè nên mua gì
+
+  - intent: ask_work_shoes
+    examples: |
+      - giày đi làm
+      - giày công sở
+      - giày văn phòng
+      - giày phỏng vấn
+      - giày đi họp
+      - giày lịch sự đi làm
+      - giày cho dân văn phòng
+      - giày đi làm cả ngày
+      - giày đi làm không đau chân
+      - giày công sở dễ phối
+      - giày [màu đen](color) đi làm
+      - giày [màu nâu](color) đi làm
+      - giày [da](material) đi làm
+      - giày [basic](style) đi làm
+      - giày [minimal](style) đi làm
+      - giày [retro](style) đi làm
+      - form [thoải mái](style) đi làm
+      - giày [casual](style) cho công sở
+
+  - intent: ask_school_shoes
+    examples: |
+      - giày đi học
+      - giày cho học sinh
+      - giày cho sinh viên
+      - sneaker đi học
+      - giày đi học êm
+      - giày bền cho đi học
+      - giày dễ phối đồ đi học
+      - giày đi học cả ngày
+      - giày giá rẻ cho học sinh
+      - giày sinh viên năng động
+      - giày [màu trắng](color) đi học
+      - giày [màu đen](color) đi học
+      - giày [canvas](material) đi học
+      - giày [vải](material) đi học
+      - giày [basic](style) đi học
+      - giày [casual](style) đi học
+      - giày [sporty](style) đi học
+      - form [thoải mái](style) cho sinh viên
+
+  - intent: ask_running_shoes
+    examples: |
+      - giày chạy bộ
+      - giày chạy bộ êm
+      - giày chạy bộ nhẹ
+      - giày running
+      - giày jogginh
+      - giày để chạy mỗi sáng
+      - giày marathon
+      - giày chạy cho người mới
+      - giày thể thao để chạy
+      - giày chạy bộ cho chân bè
+      - giày [màu xanh](color) chạy bộ
+      - giày [màu trắng](color) chạy bộ
+      - giày [mesh](material) chạy bộ
+      - giày [vải](material) chạy bộ
+      - giày [sporty](style) chạy bộ
+      - giày [running](style) nhẹ
+      - giày [minimal](style) chạy bộ
+      - form [êm](style) cho chạy bộ
+
+  - intent: ask_style_advice
+    examples: |
+      - mình thích màu [trắng](color)
+      - mình thích màu [đen](color)
+      - mình thích màu [be](color)
+      - giày màu gì dễ phối đồ
+      - màu nào hợp đi làm
+      - màu [trắng](color) có dễ đi không
+      - màu [đen](color) có dễ đi không
+      - màu [be](color) có hợp không
+      - giày [màu trắng](color) có dễ phối không
+      - giày [màu đen](color) có dễ phối không
+      - giày [màu be](color) có dễ phối không
+      - chất liệu [da](material) hay [vải](material) tốt hơn
+      - giày [da](material) có bền không
+      - giày [canvas](material) có thoáng không
+      - giày [suede](material) chăm sóc thế nào
+      - nên chọn chất liệu nào
+      - style [basic](style) là gì
+      - mình thích kiểu [retro](style)
+      - mình thích style [streetwear](style)
+      - mình thích style [minimal](style)
+      - form [tối giản](style)
+      - style [sporty](style) có hợp đi học không
+      - style [casual](style) nào dễ phối
+      - giày [basic](style) có dễ đi không
+      - giày [retro](style) có hợp với quần jeans không
+      - giày [streetwear](style) có nổi bật không
+      - màu [xám](color) có hợp không
+      - màu [nâu](color) có hợp không
+      - màu [xanh navy](color) có dễ đi không
+      - giày [màu đỏ](color) có hợp đi tiệc không
+      - giày [màu xanh](color) có hợp đi học không
+      - mình thích màu [đen](color) form [basic](style)
+      - mình thích màu [trắng](color) chất liệu [da](material)
+      - mình thích kiểu [retro](style) chất liệu [vải](material)
+      - mình thích [streetwear](style) màu [be](color)
+      - giày [màu đen](color) chất liệu [da](material) kiểu [basic](style)
+      - giày [màu trắng](color) chất liệu [canvas](material) kiểu [minimal](style)
+      - giày [màu nâu](color) chất liệu [suede](material) kiểu [retro](style)
+
   - intent: ask_occasion_gift
     examples: |
       - giày tặng valentine
@@ -754,30 +868,6 @@ nlu:
       - giày làm quà noel
       - giày tặng dịp lễ
 
-  - intent: ask_gift_for_lover
-    examples: |
-      - tặng giày cho người yêu
-      - mình muốn mua giày tặng người yêu
-      - giày làm quà tặng người yêu
-      - tư vấn giày tặng bạn trai
-      - tư vấn giày tặng bạn gái
-      - mua giày tặng người yêu
-      - giày quà tặng ngày valentine
-      - giày tặng nửa kia
-      - giày tặng crush
-      - mình cần giày làm quà cho người yêu
-      - giày tặng bạn trai sinh nhật
-      - giày tặng bạn gái kỷ niệm
-      - tặng giày cho người yêu nhân dịp sinh nhật
-      - mình muốn tìm giày tặng người yêu
-      - giày đẹp tặng người yêu
-      - gợi ý giày tặng người yêu
-      - giày nam tặng nữ
-      - giày nữ tặng nam
-      - giày cặp đôi tặng nhau
-      - quà giày cho người yêu
-      - giày làm quà cho bạn trai
-      - giày làm quà cho bạn gái
 
   - intent: provide_gift_occasion
     examples: |

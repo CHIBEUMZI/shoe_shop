@@ -143,6 +143,114 @@ def _fetch_products(
     return items[:limit]
 
 
+def _product_text_blob(p: dict) -> str:
+    parts = [
+        str(p.get("name") or ""),
+        str(p.get("slug") or ""),
+        str(p.get("short_description") or ""),
+        str(p.get("description") or ""),
+    ]
+    for v in p.get("variants") or []:
+        if isinstance(v, dict):
+            parts.extend([str(v.get("name") or ""), str(v.get("color") or ""), str(v.get("size") or ""), str(v.get("material") or "")])
+    return " ".join(parts).lower()
+
+
+def _fetch_products_with_attributes(
+    *,
+    search: Optional[str] = None,
+    size: Optional[str] = None,
+    price_range: Optional[str] = None,
+    category_ids: Optional[List[int]] = None,
+    color: Optional[str] = None,
+    material: Optional[str] = None,
+    style: Optional[str] = None,
+    limit: int = 5,
+) -> List[dict]:
+    query_terms = [search, color, material, style]
+    primary = " ".join([t.strip() for t in query_terms if t and str(t).strip()]) or None
+    items = _fetch_products(
+        search=primary,
+        size=size,
+        price_range=price_range,
+        category_ids=category_ids,
+        limit=20,
+    )
+
+    filters = {
+        "color": (color or "").strip().lower(),
+        "material": (material or "").strip().lower(),
+        "style": (style or "").strip().lower(),
+    }
+
+    def _matches(p: dict) -> bool:
+        blob = _product_text_blob(p)
+        if not blob:
+            return False
+        for key, val in filters.items():
+            if not val:
+                continue
+            if val not in blob:
+                return False
+        return True
+
+    filtered = [p for p in items if _matches(p)] if any(filters.values()) else items
+    if not filtered and any(filters.values()):
+        relaxed = _fetch_products(search=search, size=size, price_range=price_range, category_ids=category_ids, limit=20)
+        filtered = [p for p in relaxed if _matches(p)] or relaxed
+    return filtered[:limit]
+
+
+def _fallback_near_match(
+    *,
+    search: Optional[str] = None,
+    size: Optional[str] = None,
+    price_range: Optional[str] = None,
+    category_ids: Optional[List[int]] = None,
+    color: Optional[str] = None,
+    material: Optional[str] = None,
+    style: Optional[str] = None,
+    limit: int = 5,
+) -> List[dict]:
+    candidates: List[List[dict]] = []
+    seen = set()
+
+    def _push(items: List[dict]) -> None:
+        filtered = []
+        for p in items or []:
+            slug = str(p.get("slug") or "")
+            if slug and slug not in seen:
+                seen.add(slug)
+                filtered.append(p)
+        if filtered:
+            candidates.append(filtered)
+
+    _push(_fetch_products_with_attributes(search=search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+
+    relaxed_search = search
+    if not relaxed_search:
+        relaxed_search = None
+
+    if size:
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=None, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+    if price_range:
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=None, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+    if color:
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=None, material=material, style=style, limit=20))
+    if material:
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=None, style=style, limit=20))
+    if style:
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=None, limit=20))
+
+    for batch in candidates:
+        if batch:
+            return batch[:limit]
+
+    try:
+        return _fetch_products(search=None, size=None, price_range=price_range, category_ids=category_ids, limit=limit)
+    except Exception:
+        return []
+
 def _infer_brand_from_text(text: Optional[str]) -> Optional[str]:
     from typing import Dict, Text
 
@@ -285,6 +393,11 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
         params["price_min"] = min_vnd
     if max_vnd is not None:
         params["price_max"] = max_vnd
+
+    # If the provided range looks malformed or overly broad, still keep the request
+    # usable by avoiding a hard filter that would eliminate all matches.
+    if price_range and min_vnd is None and max_vnd is None:
+        effective_price_range = None
 
     def _get_items(p: dict) -> List[dict]:
         try:
