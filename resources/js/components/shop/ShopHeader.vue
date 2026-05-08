@@ -3,22 +3,22 @@
     class="sticky top-0 z-50 w-full bg-white/95 dark:bg-background-dark/95 backdrop-blur-xl shadow-sm border-b border-slate-200/50 dark:border-slate-700/50"
   >
     <!-- z-index above <nav> so search/account dropdowns paint over category row -->
-    <div class="relative z-30 max-w-7xl mx-auto px-4 lg:px-8">
-      <div class="flex items-center justify-between h-16 lg:h-[72px] gap-4">
+    <div class="relative z-30 max-w-7xl mx-auto px-3 sm:px-4 lg:px-8">
+      <div class="flex items-center justify-between h-14 sm:h-16 lg:h-[72px] gap-2 sm:gap-4">
         <!-- LEFT: Logo -->
-        <div class="flex items-center gap-3 flex-shrink-0 cursor-pointer group" @click="goHome">
+        <div class="flex items-center gap-2 sm:gap-3 flex-shrink-0 cursor-pointer group" @click="goHome">
           <img
             :src="`${apiBase}/storage/logo/logo.png`"
             alt="BMC Shoes Logo"
-            class="h-11 w-auto object-contain group-hover:opacity-80 transition-opacity duration-300"
+            class="h-9 w-auto object-contain sm:h-11 group-hover:opacity-80 transition-opacity duration-300"
           />
-          <div class="flex flex-col">
+          <div class="flex flex-col min-w-0">
             <h1
-              class="text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight"
+              class="text-base sm:text-xl font-bold tracking-tight text-slate-900 dark:text-white leading-tight truncate"
             >
               BMC Shoes
             </h1>
-            <span class="text-[10px] text-slate-400 font-medium tracking-wider hidden sm:block"
+            <span class="hidden text-[10px] text-slate-400 font-medium tracking-wider sm:block"
               >Premium Footwear</span
             >
           </div>
@@ -160,7 +160,7 @@
         </button>
 
         <!-- RIGHT: Action buttons -->
-        <div class="flex items-center gap-1.5 lg:gap-2">
+        <div class="flex items-center gap-1 sm:gap-1.5 lg:gap-2">
           <button
             v-if="!isLoggedIn"
             class="hidden lg:flex items-center justify-center px-5 py-2.5 text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
@@ -174,7 +174,7 @@
           <!-- Account dropdown -->
           <div class="relative" ref="accountWrap">
             <button
-              class="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
+              class="p-2 sm:p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
               type="button"
               @click="toggleAccountMenu"
               title="Tài khoản"
@@ -201,7 +201,7 @@
             >
               <div
                 v-if="showAccountMenu"
-                class="absolute right-0 top-full mt-2 w-72 rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-[#1e1e2e] shadow-2xl shadow-slate-900/10 overflow-hidden backdrop-blur-lg"
+                class="absolute right-0 top-full mt-2 w-72 max-w-[calc(100vw-1rem)] rounded-lg border border-slate-200/80 dark:border-slate-700/80 bg-white dark:bg-[#1e1e2e] shadow-2xl shadow-slate-900/10 overflow-hidden backdrop-blur-lg"
               >
                 <!-- Header -->
                 <div
@@ -322,7 +322,7 @@
 
           <!-- Wishlist button -->
           <button
-            class="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
+            class="p-2 sm:p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
             type="button"
             @click="$emit('wishlist')"
             title="Yêu thích"
@@ -347,7 +347,7 @@
 
           <!-- Cart button -->
           <button
-            class="p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
+            class="p-2 sm:p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
             type="button"
             @click="$emit('cart')"
             title="Giỏ hàng"

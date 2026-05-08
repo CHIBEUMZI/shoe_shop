@@ -56,6 +56,17 @@ const serverError = ref("");
 const errors = ref({});
 
 const localValues = reactive(clonePlain(props.values || {}));
+let syncScheduled = false;
+
+function scheduleSyncValues() {
+  if (syncScheduled) return;
+  syncScheduled = true;
+
+  requestAnimationFrame(() => {
+    syncScheduled = false;
+    emit("update:values", clonePlain(localValues));
+  });
+}
 
 watch(
   () => props.values,
@@ -65,14 +76,13 @@ watch(
 
 watch(
   localValues,
-  () => emit("update:values", clonePlain(localValues)),
+  () => scheduleSyncValues(),
   { deep: true }
 );
 
 const initialSnapshot = ref(JSON.stringify(clonePlain(localValues)));
-const isDirty = computed(
-  () => JSON.stringify(clonePlain(localValues)) !== initialSnapshot.value
-);
+const dirty = ref(false);
+const isDirty = computed(() => dirty.value);
 
 watch(isDirty, (v) => emit("dirty-change", v), { immediate: true });
 
@@ -141,6 +151,7 @@ function runValidate() {
 
   if (_form) serverError.value = _form;
   errors.value = fieldErrs;
+  dirty.value = JSON.stringify(clonePlain(localValues)) !== initialSnapshot.value;
 
   return Object.keys(fieldErrs).length === 0 && !_form;
 }
@@ -254,6 +265,7 @@ async function loadIfNeeded() {
     if (loaded && typeof loaded === "object") {
       Object.assign(localValues, loaded);
       initialSnapshot.value = JSON.stringify(clonePlain(localValues));
+      dirty.value = false;
     }
   } catch (e) {
     serverError.value = e?.response?.data?.message || e?.message || "Load failed";
@@ -282,6 +294,7 @@ async function submit() {
     });
 
     initialSnapshot.value = JSON.stringify(clonePlain(localValues));
+    dirty.value = false;
     emit("submitted", payload);
   } catch (e) {
     applyLaravelErrors(e);

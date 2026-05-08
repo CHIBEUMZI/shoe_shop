@@ -1,5 +1,5 @@
 <script setup>
-import { ref, computed, onMounted, watch } from "vue";
+import { ref, onMounted, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useAuthStore } from "../../stores/auth";
 import { useAlert } from "../../composables/useAlert";
@@ -36,6 +36,40 @@ const passwordErrors = ref({});
 const previewAvatar = ref("");
 const avatarInput = ref(null);
 
+function normalizeStoredPath(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+
+  const cleaned = raw.replace(/\\/g, "/");
+
+  if (/^https?:\/\//i.test(cleaned)) {
+    try {
+      const url = new URL(cleaned);
+      const pathname = url.pathname.replace(/^\/+/, "");
+      const storageIndex = pathname.indexOf("storage/");
+      return storageIndex >= 0
+        ? pathname.slice(storageIndex + "storage/".length)
+        : pathname;
+    } catch {
+      return cleaned;
+    }
+  }
+
+  return cleaned
+    .replace(/^\/storage\//i, "")
+    .replace(/^storage\//i, "")
+    .replace(/^\/+/, "");
+}
+
+function buildAvatarUrl(value) {
+  const path = normalizeStoredPath(value);
+  if (!path) return "";
+  if (/^https?:\/\//i.test(path)) return path;
+
+  const origin = window.location.origin.replace(/\/$/, "");
+  return `${origin}/storage/${path}`;
+}
+
 onMounted(() => {
   if (auth.user) {
     loadUserData(auth.user);
@@ -53,12 +87,12 @@ function loadUserData(user) {
   values.value = {
     name: user?.name || "",
     email: user?.email || "",
-    avatar: user?.avatar || "",
+    avatar: normalizeStoredPath(user?.avatar || ""),
     birth_date: user?.birth_date || "",
     address: user?.address || "",
     phone: user?.phone || "",
   };
-  previewAvatar.value = user?.avatar || "";
+  previewAvatar.value = buildAvatarUrl(user?.avatar || "");
 }
 
 function triggerAvatarUpload() {
@@ -73,10 +107,11 @@ async function handleAvatarChange(event) {
   try {
     const response = await uploadAvatar(file);
     const url = response?.data?.url || response?.url;
+    const path = response?.data?.path || response?.path || normalizeStoredPath(url);
 
-    if (url) {
-      values.value.avatar = url;
-      previewAvatar.value = url;
+    if (path) {
+      values.value.avatar = path;
+      previewAvatar.value = buildAvatarUrl(path);
 
       notify.success("Tải ảnh avatar thành công!", {
         title: "Thành công",
@@ -179,7 +214,7 @@ async function submitInfo() {
     await auth.saveProfile({
       name: String(values.value.name || "").trim(),
       birth_date: values.value.birth_date || null,
-      avatar: values.value.avatar || null,
+      avatar: normalizeStoredPath(values.value.avatar || null) || null,
       address: values.value.address || null,
       phone: values.value.phone || null,
     });
@@ -248,58 +283,60 @@ function goBack() {
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-50 dark:bg-background-dark py-8">
-    <div class="max-w-3xl mx-auto px-4">
+  <div class="min-h-screen bg-slate-50 dark:bg-background-dark py-4 sm:py-8">
+    <div class="max-w-3xl mx-auto px-3 sm:px-4">
       <!-- Header -->
-      <div class="flex items-center gap-4 mb-8">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 mb-6 sm:mb-8">
         <button
           @click="goBack"
-          class="p-2 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
+          class="inline-flex h-11 w-11 items-center justify-center rounded-xl self-start hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors"
         >
           <span class="material-symbols-outlined text-slate-600 dark:text-slate-300">
             arrow_back
           </span>
         </button>
-        <div>
-          <h1 class="text-2xl font-bold text-slate-900 dark:text-white">
+        <div class="space-y-1">
+          <h1 class="text-xl sm:text-2xl font-bold text-slate-900 dark:text-white">
             Tài khoản của tôi
           </h1>
-          <p class="text-sm text-slate-500 dark:text-slate-400 mt-0.5">
+          <p class="text-sm text-slate-500 dark:text-slate-400">
             Quản lý thông tin cá nhân của bạn
           </p>
         </div>
       </div>
 
       <!-- Tabs -->
-      <div class="flex gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg mb-6 w-fit">
-        <button
-          @click="activeTab = 'info'"
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-          :class="
-            activeTab === 'info'
-              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-          "
-        >
-          Thông tin cá nhân
-        </button>
-        <button
-          @click="activeTab = 'password'"
-          class="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
-          :class="
-            activeTab === 'password'
-              ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
-              : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
-          "
-        >
-          Đổi mật khẩu
-        </button>
+      <div class="mb-5 sm:mb-6 -mx-3 px-3 sm:mx-0 sm:px-0">
+        <div class="flex w-full gap-1 p-1 bg-slate-100 dark:bg-slate-800 rounded-lg overflow-x-auto scrollbar-none sm:w-fit">
+          <button
+            @click="activeTab = 'info'"
+            class="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="
+              activeTab === 'info'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            "
+          >
+            Thông tin cá nhân
+          </button>
+          <button
+            @click="activeTab = 'password'"
+            class="px-5 py-2.5 rounded-xl text-sm font-medium transition-all"
+            :class="
+              activeTab === 'password'
+                ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                : 'text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200'
+            "
+          >
+            Đổi mật khẩu
+          </button>
+        </div>
       </div>
 
       <!-- Tab: Info -->
       <div v-if="activeTab === 'info'" class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+        <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
             Thông tin cá nhân
           </h2>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -307,10 +344,10 @@ function goBack() {
           </p>
         </div>
 
-        <form @submit.prevent="submitInfo" class="p-6 space-y-6">
+        <form @submit.prevent="submitInfo" class="p-4 sm:p-6 space-y-6">
           <!-- Avatar -->
-          <div class="flex flex-col sm:flex-row gap-6 items-start">
-            <div class="flex-shrink-0 relative">
+          <div class="flex flex-col gap-4 sm:flex-row sm:gap-6 sm:items-start">
+            <div class="flex-shrink-0 relative self-center sm:self-start">
               <div class="size-24 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-800 ring-2 ring-slate-200 dark:ring-slate-700">
                 <img
                   v-if="previewAvatar"
@@ -336,7 +373,7 @@ function goBack() {
               </div>
 
               <!-- Upload/Remove buttons -->
-              <div class="flex gap-2 mt-3">
+              <div class="flex flex-wrap gap-2 mt-3 justify-center sm:justify-start">
                 <button
                   type="button"
                   @click="triggerAvatarUpload"
@@ -378,9 +415,6 @@ function goBack() {
               </p>
               <p class="text-xs text-slate-500 dark:text-slate-400">
                 PNG, JPG, JPEG, WEBP. Kích thước tối đa 2MB.
-              </p>
-              <p v-if="values.avatar" class="text-xs text-slate-400 mt-2 truncate">
-                URL: {{ values.avatar }}
               </p>
             </div>
           </div>
@@ -469,11 +503,11 @@ function goBack() {
           </div>
 
           <!-- Submit -->
-          <div class="flex justify-end pt-2">
+          <div class="flex justify-stretch sm:justify-end pt-2">
             <button
               type="submit"
               :disabled="loading"
-              class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               <span
                 v-if="loading"
@@ -492,8 +526,8 @@ function goBack() {
 
       <!-- Tab: Password -->
       <div v-if="activeTab === 'password'" class="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden">
-        <div class="p-6 border-b border-slate-100 dark:border-slate-800">
-          <h2 class="text-lg font-semibold text-slate-900 dark:text-white">
+        <div class="p-4 sm:p-6 border-b border-slate-100 dark:border-slate-800">
+          <h2 class="text-base sm:text-lg font-semibold text-slate-900 dark:text-white">
             Đổi mật khẩu
           </h2>
           <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">
@@ -501,7 +535,7 @@ function goBack() {
           </p>
         </div>
 
-        <form @submit.prevent="submitPassword" class="p-6 space-y-6">
+        <form @submit.prevent="submitPassword" class="p-4 sm:p-6 space-y-6">
           <!-- Current Password -->
           <div>
             <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
@@ -566,11 +600,11 @@ function goBack() {
           </div>
 
           <!-- Submit -->
-          <div class="flex justify-end pt-2">
+          <div class="flex justify-stretch sm:justify-end pt-2">
             <button
               type="submit"
               :disabled="passwordLoading"
-              class="px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
+              class="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-primary text-white text-sm font-medium hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               <span
                 v-if="passwordLoading"

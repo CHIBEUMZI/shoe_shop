@@ -1,15 +1,15 @@
 <template>
-  <main class="min-h-screen pb-28 lg:pb-10">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+  <main class="min-h-screen pb-32 lg:pb-10">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-6">
       <!-- Top title -->
-      <div class="mb-6 flex items-center justify-between gap-4">
-        <h1 class="text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+      <div class="mb-5 flex flex-col gap-3 sm:mb-6 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+        <h1 class="text-xl sm:text-2xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
           Giỏ hàng
         </h1>
 
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
+          class="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
           @click="goShop"
         >
           <span class="material-symbols-outlined text-sm">arrow_back</span>
@@ -41,13 +41,13 @@
         </button>
       </div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
         <!-- LEFT: Items -->
         <div class="lg:col-span-8 space-y-4">
           <!-- Shopee-style header -->
           <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden">
             <!-- Select all header -->
-            <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700 flex items-center justify-between">
+            <div class="px-4 py-3 bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-700 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <label class="flex items-center gap-3 cursor-pointer select-none">
                 <div
                   class="w-5 h-5 rounded border-2 flex items-center justify-center transition-all"
@@ -65,7 +65,7 @@
                 </span>
               </label>
 
-              <div class="flex items-center gap-4">
+              <div class="flex items-center justify-between gap-3 sm:gap-4">
                 <span class="text-sm text-slate-500 dark:text-slate-400">
                   {{ selectedCount }}/{{ items.length }} sản phẩm
                 </span>
@@ -84,7 +84,7 @@
             <div
               v-for="(it, idx) in items"
               :key="it.id"
-              class="px-4 py-4 flex items-start gap-4 transition-colors"
+              class="px-4 py-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-4 transition-colors"
               :class="[
                 idx !== 0 ? 'border-t border-slate-100 dark:border-slate-700' : '',
                 selectedItems.has(it.id) ? 'bg-primary/5' : 'bg-white dark:bg-slate-800'
@@ -92,7 +92,7 @@
             >
               <!-- checkbox -->
               <div
-                class="w-5 h-5 mt-8 flex-shrink-0 rounded border-2 flex items-center justify-center cursor-pointer transition-all"
+                class="w-5 h-5 sm:mt-8 flex-shrink-0 rounded border-2 flex items-center justify-center cursor-pointer transition-all"
                 :class="selectedItems.has(it.id)
                   ? 'bg-primary border-primary'
                   : 'border-slate-300 dark:border-slate-600 hover:border-primary'"
@@ -105,7 +105,7 @@
 
               <!-- image -->
               <div
-                class="w-20 h-20 flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-900 cursor-pointer"
+                class="w-20 h-20 self-center sm:self-auto flex-shrink-0 overflow-hidden rounded-lg bg-slate-100 dark:bg-slate-900 cursor-pointer"
                 @click="goProduct(it.product?.slug)"
               >
                 <img
@@ -117,7 +117,7 @@
 
               <!-- info -->
               <div class="flex-1 min-w-0">
-                <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                   <div class="flex-1 min-w-0">
                     <h3
                       class="text-sm font-medium text-slate-900 dark:text-slate-100 line-clamp-2 cursor-pointer hover:text-primary transition-colors"
@@ -148,9 +148,9 @@
                 </div>
 
                 <!-- qty + actions -->
-                <div class="flex items-center justify-between mt-3">
+                <div class="flex flex-col gap-3 mt-3 sm:flex-row sm:items-center sm:justify-between">
                   <!-- qty -->
-                  <div class="flex items-center">
+                  <div class="flex items-center self-start sm:self-auto">
                     <div class="flex items-center border border-slate-200 dark:border-slate-600 rounded-md overflow-hidden">
                       <button
                         type="button"
@@ -190,7 +190,7 @@
                   </div>
 
                   <!-- line total + remove -->
-                  <div class="flex items-center gap-4">
+                  <div class="flex items-center justify-between gap-4 sm:justify-end">
                     <p class="text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {{ moneyVND(it.line_total) }}
                     </p>
@@ -212,7 +212,7 @@
 
         <!-- RIGHT: summary -->
         <div class="lg:col-span-4">
-          <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-5 sticky top-20">
+          <div class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 p-4 sm:p-5 sticky top-20">
             <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-4">
               Tóm tắt đơn hàng
             </h2>

@@ -7,13 +7,17 @@ import requests
 from .utils import _parse_budget_text_to_range, _parse_size
 
 
+def _shop_base_url() -> str:
+    return os.getenv("SHOP_WEB_BASE_URL") or os.getenv("APP_URL") or "http://localhost:8080"
+
+
 def _shop_product_url(slug: str) -> str:
-    base = os.getenv("SHOP_WEB_BASE_URL", "http://localhost:8080").rstrip("/")
+    base = _shop_base_url().rstrip("/")
     return f"{base}/shop/products/{slug}"
 
 
 def _shop_products_list_url(*, search: Optional[str] = None, category_id: Optional[int] = None) -> str:
-    base = os.getenv("SHOP_WEB_BASE_URL", "http://localhost:8080").rstrip("/")
+    base = _shop_base_url().rstrip("/")
     url = f"{base}/shop/products"
     qs: List[str] = []
     if search:
@@ -86,7 +90,7 @@ def _product_to_card(p: dict) -> dict:
     return {
         "name": name,
         "slug": slug,
-        "url": _shop_product_url(slug) if slug else os.getenv("SHOP_WEB_BASE_URL", "http://localhost:8080"),
+        "url": _shop_product_url(slug) if slug else _shop_base_url(),
         "thumbnail": thumb,
         "price": display_price,
         "price_text": _format_vnd(display_price) if display_price is not None else "",
@@ -104,7 +108,7 @@ def _format_vnd(amount: Optional[int]) -> str:
 
 
 def _fetch_facets() -> dict:
-    api = os.getenv("SHOP_API_BASE_URL", "http://nginx").rstrip("/")
+    api = (os.getenv("SHOP_API_BASE_URL") or os.getenv("APP_URL") or "http://nginx").rstrip("/")
     res = requests.get(f"{api}/api/v1/products/facets", timeout=8)
     res.raise_for_status()
     payload = res.json()
@@ -119,7 +123,7 @@ def _fetch_products(
     category_ids: Optional[List[int]] = None,
     limit: int = 5,
 ) -> List[dict]:
-    api = os.getenv("SHOP_API_BASE_URL", "http://nginx").rstrip("/")
+    api = (os.getenv("SHOP_API_BASE_URL") or os.getenv("APP_URL") or "http://nginx").rstrip("/")
     min_vnd, max_vnd = _parse_budget_text_to_range(price_range)
 
     params: Dict[str, Any] = {"per_page": 12, "sort": "popular"}
@@ -277,6 +281,10 @@ def _infer_category_ids_from_text(text: Optional[str]) -> List[int]:
     t = (text or "").strip().lower()
     if not t:
         return []
+
+    football_keywords = ["đá bóng", "bóng đá", "football", "soccer", "giày đá bóng"]
+    football_mode = any(kw in t for kw in football_keywords)
+
     try:
         facets = _fetch_facets()
         cats = facets.get("categories") or []
@@ -293,6 +301,11 @@ def _infer_category_ids_from_text(text: Optional[str]) -> List[int]:
         except Exception:
             cid_int = None
         if cid_int is None:
+            continue
+
+        if football_mode:
+            if any(kw in name or kw in slug for kw in football_keywords):
+                out.append(cid_int)
             continue
 
         if t in name or t in slug or name in t or slug in t:
@@ -355,7 +368,7 @@ def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
                       "yoga", "cardio", "cầu lông", "tennis", "bóng rổ", "gym", "crossfit"]
     if any(kw in t for kw in sports_keywords):
         # Check specific sports first (more specific = higher priority)
-        if any(kw in t for kw in ["đá bóng", "bóng đá", "football"]):
+        if any(kw in t for kw in ["giày đá bóng", "đá bóng", "bóng đá", "football", "soccer"]):
             return "football"
         if any(kw in t for kw in ["chạy bộ", "running", "jogging", "marathon"]):
             return "running"
@@ -434,6 +447,28 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
         return any(k in blob for k in style_keywords)
 
     try:
+        # Fast path for football: keep the number of API calls low because this
+        # is the most frequent guided search flow and users feel delay quickly.
+        if occasion == "football":
+            fast_queries = [
+                {**params, "occasion": [occasion]},
+                {**params, "search": "giày đá bóng"},
+                {**params, "search": "football"},
+            ]
+            if min_vnd is not None or max_vnd is not None:
+                params_no_price = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
+                fast_queries.extend([
+                    {**params_no_price, "occasion": [occasion]},
+                    {**params_no_price, "search": "giày đá bóng"},
+                ])
+
+            for query in fast_queries:
+                items = _get_items(query)
+                filtered = [p for p in items if _is_relevant(p)]
+                if filtered:
+                    return filtered[:limit]
+            return []
+
         candidate_sets: List[List[dict]] = []
 
         items = _get_items({**params, "occasion": [occasion]})

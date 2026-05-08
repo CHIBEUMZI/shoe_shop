@@ -1,5 +1,5 @@
 <template>
-  <main class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100">
+  <main class="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 pb-20 lg:pb-0">
     <!-- Loading / Error -->
     <div
       v-if="loading"
@@ -24,8 +24,8 @@
     <!-- Content -->
     <template v-else-if="product">
       <!-- Breadcrumbs -->
-      <nav class="mx-auto max-w-6xl px-4 pt-6 sm:px-5 lg:px-6">
-        <div class="flex items-center gap-2 text-sm">
+      <nav class="mx-auto max-w-6xl px-4 pt-4 sm:px-5 lg:px-6 lg:pt-6">
+        <div class="flex flex-wrap items-center gap-2 text-[11px] sm:text-sm">
           <a
             class="group flex items-center gap-1 text-slate-500 transition hover:text-primary"
             href="#"
@@ -73,7 +73,7 @@
 
       <!-- Hero Section -->
       <section class="mx-auto max-w-6xl px-4 py-4 sm:px-5 lg:px-6 lg:py-6">
-        <div class="grid grid-cols-1 gap-6 lg:grid-cols-[80px_1fr] xl:grid-cols-[80px_1.2fr_1fr] xl:gap-8">
+        <div class="grid grid-cols-1 gap-5 lg:grid-cols-[80px_1fr] xl:grid-cols-[80px_1.2fr_1fr] xl:gap-8">
           <!-- LEFT: Thumbnails Vertical -->
           <div class="relative hidden lg:flex flex-col">
             <!-- Up Button -->
@@ -156,23 +156,23 @@
                 <img
                   :src="buildImageUrl(activeImage) || buildImageUrl(images[0]) || fallbackImage"
                   :alt="product.name"
-                  class="h-full w-full object-cover transition-transform duration-500"
+                  class="h-full w-full object-cover transition-transform duration-500 lg:cursor-zoom-in"
                   :class="isZooming ? 'scale-150' : 'group-hover:scale-105'"
                   :style="zoomStyle"
                 />
                 
                 <!-- Zoom hint -->
-                <div class="absolute bottom-3 left-1/2 -translate-x-1/2 opacity-0 transition-opacity group-hover:opacity-100">
-                  <div class="flex items-center gap-1.5 rounded-full bg-black/60 backdrop-blur px-2.5 py-1 text-xs text-white">
+                <div class="absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full bg-black/60 px-2.5 py-1 text-xs text-white opacity-100 backdrop-blur sm:opacity-0 sm:transition-opacity sm:group-hover:opacity-100">
+                  <div class="flex items-center gap-1.5">
                     <span class="material-symbols-outlined text-[14px]">zoom_in</span>
-                    <span>Di chuột để phóng to</span>
+                    <span>Chạm để xem ảnh</span>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- Trust Badges -->
-            <div class="grid grid-cols-3 gap-2">
+            <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
               <div class="flex items-center gap-2 rounded-lg border border-slate-200/80 bg-white p-2.5 shadow-sm transition-all duration-200 hover:shadow">
                 <div class="flex h-7 w-7 items-center justify-center rounded-full bg-gradient-to-br from-blue-500 to-blue-600 shadow">
                   <span class="material-symbols-outlined text-[14px] text-white">local_shipping</span>
@@ -203,7 +203,7 @@
 
           <!-- RIGHT: Product Info -->
           <div class="lg:sticky lg:top-4 lg:h-fit">
-            <div class="rounded-lg border border-slate-200/60 bg-white p-4 shadow-lg sm:p-5 lg:p-6">
+            <div class="rounded-lg border border-slate-200/60 bg-white p-4 shadow-lg sm:p-5 lg:p-6 space-y-4">
               <!-- Brand & Rating -->
               <div class="mb-3 flex flex-wrap items-center gap-2">
                 <span
@@ -230,7 +230,7 @@
               </div>
 
               <!-- Title -->
-              <h1 class="text-xl font-black leading-tight tracking-tight text-slate-900 sm:text-2xl lg:text-3xl">
+              <h1 class="text-lg font-black leading-tight tracking-tight text-slate-900 sm:text-2xl lg:text-3xl">
                 {{ product.name }}
               </h1>
 
@@ -241,10 +241,10 @@
               </div>
 
               <!-- Price -->
-              <div class="mt-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100/50 p-4 ring-1 ring-slate-200/50">
+              <div class="mt-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100/50 p-3 sm:p-4 ring-1 ring-slate-200/50">
                 <div class="flex flex-wrap items-end gap-2">
                   <div class="flex items-baseline gap-2">
-                    <span class="text-2xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 sm:text-3xl">
+                    <span class="text-xl font-black tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70 sm:text-3xl">
                       {{ moneyVND(displayPrice) }}
                     </span>
                     <span
@@ -256,7 +256,7 @@
                   </div>
                   
                   <div v-if="hasSale && discountPercent > 0"
-                    class="rounded-full bg-gradient-to-r from-red-500 to-red-600 px-2 py-0.5 text-xs font-bold text-white"
+                    class="rounded-full bg-gradient-to-r from-red-500 to-red-600 px-2 py-0.5 text-[11px] font-bold text-white"
                   >
                     -{{ discountPercent }}%
                   </div>
@@ -334,7 +334,7 @@
                     </a>
                   </div>
 
-                  <div class="grid grid-cols-5 gap-1.5 sm:grid-cols-7">
+                  <div class="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
                     <button
                       v-for="s in sizes"
                       :key="s"
@@ -358,7 +358,7 @@
                     Số lượng
                   </label>
 
-                  <div class="flex items-center gap-3">
+                  <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
                     <div class="inline-flex items-center overflow-hidden rounded-lg border-2 border-slate-200 bg-white shadow-sm">
                       <button
                         type="button"
@@ -415,7 +415,7 @@
                   <span class="text-sm">{{ addingToCart ? "Đang thêm..." : "Thêm vào giỏ hàng" }}</span>
                 </button>
 
-                <div class="grid grid-cols-2 gap-2">
+                <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                   <button
                     class="flex h-10 items-center justify-center gap-1.5 rounded-lg border-2 border-slate-200 bg-white text-xs font-bold text-slate-900 transition-all duration-200 hover:border-primary hover:text-primary active:scale-95"
                     type="button"
@@ -446,7 +446,7 @@
       <!-- Product Details Tabs -->
       <section class="mx-auto max-w-6xl px-4 pb-6 sm:px-5 lg:px-6">
         <div class="mb-4">
-          <div class="flex gap-2 overflow-x-auto pb-2">
+          <div class="flex gap-2 overflow-x-auto pb-2 scrollbar-none">
             <button
               v-for="tabItem in tabs"
               :key="tabItem.key"
@@ -475,7 +475,7 @@
           </template>
 
           <template v-else-if="tab === 'spec'">
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
               <div class="rounded-lg bg-slate-50 p-3 transition-all hover:shadow">
                 <div class="mb-1 flex items-center gap-1.5">
                   <span class="material-symbols-outlined text-[14px] text-primary">tag</span>
@@ -524,7 +524,7 @@
 
       <!-- Related Products -->
       <section class="mx-auto max-w-6xl px-4 pb-10 sm:px-5 lg:px-6">
-        <div class="mb-4 flex items-end justify-between">
+        <div class="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p class="inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-[0.15em] text-primary">
               Khám phá thêm
@@ -544,7 +544,7 @@
           </a>
         </div>
 
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div
             v-if="relatedLoading"
             class="col-span-full rounded-lg border border-slate-200/60 bg-white p-6 text-center shadow"

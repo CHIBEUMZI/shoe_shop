@@ -1,7 +1,11 @@
 import axios from "axios";
 
+const isLocalhost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
+const isFrontendDevServer = window.location.port === "5173";
+const baseURL = import.meta.env.VITE_API_URL || (isLocalhost || isFrontendDevServer ? "http://localhost:8080" : window.location.origin);
+
 const api = axios.create({
-  baseURL: "http://localhost:8080",
+  baseURL,
   withCredentials: true,
   headers: {
     "X-Requested-With": "XMLHttpRequest",
@@ -44,26 +48,6 @@ api.interceptors.request.use(async (config) => {
       }
       return config;
     });
-  }
-
-  if (["post", "put", "patch", "delete"].includes(config.method)) {
-    try {
-      isRefreshing = true;
-      // Use axios directly to avoid interceptor recursion
-      await axios.get("http://localhost:8080/sanctum/csrf-cookie", {
-        withCredentials: true,
-      });
-      const token = getCsrfToken();
-      if (token) {
-        config.headers["X-XSRF-TOKEN"] = token;
-      }
-    } catch (error) {
-      processQueue(error, null);
-      return Promise.reject(error);
-    } finally {
-      isRefreshing = false;
-      processQueue(null, getCsrfToken());
-    }
   }
 
   return config;

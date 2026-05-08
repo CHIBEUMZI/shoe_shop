@@ -85,6 +85,13 @@ OCCASION_SCENE_MAP = {
         "price_range": "1-3m",
         "advice": "⚽ Những mẫu giày thể thao đa dụng - phù hợp cho nhiều hoạt động thể chất!",
     },
+    "football_shoes": {
+        "description": "⚽ Chuyên dụng cho giày đá bóng",
+        "colors": ["đen", "trắng", "xám", "đỏ", "xanh", "vàng"],
+        "style_keywords": ["giày đá bóng", "đá bóng", "bóng đá", "football", "soccer", "sân cỏ", "fg", "tf", "sg", "mercurial", "predator", "copa"],
+        "price_range": "1-5m",
+        "advice": "⚽ Những mẫu giày đá bóng chuyên dụng - hỗ trợ tốt cho việc chơi bóng trên sân!",
+    },
 }
 
 
@@ -94,7 +101,7 @@ def _get_advice_for_purpose(purpose: str) -> str:
 
     if "chạy bộ" in purpose or "chạy" in purpose or "running" in purpose:
         return "🏃 **Tư vấn:** Đối với giày chạy bộ, bạn nên ưu tiên các mẫu có trọng lượng nhẹ, đế đệm êm (như bọt xốp) giúp giảm chấn và phần thân giày thoáng khí tốt. Dưới đây là các gợi ý tốt nhất cho bạn:"
-    elif "đá bóng" in purpose or "bóng đá" in purpose or "football" in purpose:
+    elif "giày đá bóng" in purpose or "đá bóng" in purpose or "bóng đá" in purpose or "football" in purpose or "soccer" in purpose:
         return "⚽ **Tư vấn:** Với giày đá bóng, việc chọn loại đinh phù hợp với mặt sân (như đinh TF cho sân cỏ nhân tạo, đinh FG cho cỏ tự nhiên) và form giày ôm chân là rất quan trọng để có cảm giác bóng tốt. Mời bạn tham khảo:"
     elif "đi làm" in purpose or "công sở" in purpose or "văn phòng" in purpose or "phỏng vấn" in purpose:
         return "💼 **Tư vấn:** Giày đi làm cần sự thoải mái để mang cả ngày, cộng thêm thiết kế thanh lịch và êm ái. Đây là một số mẫu rất phù hợp để kết hợp với trang phục công sở:"

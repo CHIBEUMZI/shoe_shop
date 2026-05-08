@@ -115,6 +115,20 @@ class ProductController extends Controller
                 $q->where('is_featured', (int) $request->query('featured') === 1);
             })
 
+            ->when($request->filled('sale'), function ($q) use ($request) {
+                $sale = (int) $request->query('sale') === 1;
+
+                if ($sale) {
+                    $q->whereNotNull('base_sale_price')
+                      ->whereColumn('base_sale_price', '<', 'base_price');
+                } else {
+                    $q->where(function ($qq) {
+                        $qq->whereNull('base_sale_price')
+                           ->orWhereColumn('base_sale_price', '>=', 'base_price');
+                    });
+                }
+            })
+
             // =============================================
             // STYLE FILTER - Hỗ trợ occasion-based search
             // =============================================

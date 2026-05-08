@@ -24,6 +24,19 @@ class ProductFacetController extends Controller
             ->when($request->filled('featured'), function ($q) use ($request) {
                 $q->where('is_featured', (int) $request->query('featured') === 1);
             })
+            ->when($request->filled('sale'), function ($q) use ($request) {
+                $sale = (int) $request->query('sale') === 1;
+
+                if ($sale) {
+                    $q->whereNotNull('base_sale_price')
+                      ->whereColumn('base_sale_price', '<', 'base_price');
+                } else {
+                    $q->where(function ($qq) {
+                        $qq->whereNull('base_sale_price')
+                           ->orWhereColumn('base_sale_price', '>=', 'base_price');
+                    });
+                }
+            })
             ->when($request->filled('brand'), function ($q) use ($request) {
                 $brands = (array) $request->query('brand');
                 $brands = array_values(array_filter(array_map('intval', $brands)));

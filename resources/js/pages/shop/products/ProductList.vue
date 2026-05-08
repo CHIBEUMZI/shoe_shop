@@ -1,18 +1,18 @@
 <template>
-  <main class="max-w-[1440px] mx-auto px-4 lg:px-8 py-8">
-    <section class="mb-8">
+  <main class="max-w-[1440px] mx-auto px-3 sm:px-4 lg:px-8 py-4 sm:py-8">
+    <section class="mb-6 sm:mb-8">
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-        <div>
-          <h1 class="text-2xl md:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
+        <div class="space-y-2">
+          <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
             Tất cả sản phẩm
           </h1>
-          <p class="text-slate-500 dark:text-slate-400 mt-1 text-sm">
+          <p class="text-slate-500 dark:text-slate-400 text-sm">
             Khám phá toàn bộ sản phẩm trong cửa hàng
           </p>
 
           <div
             v-if="routeMinDiscount !== null"
-            class="mt-3 inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide"
+            class="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1.5 text-xs font-bold uppercase tracking-wide rounded-full"
           >
             <span class="material-symbols-outlined text-[14px]">sell</span>
             Giảm từ {{ routeMinDiscount }}%
@@ -21,7 +21,7 @@
 
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
+          class="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors w-full sm:w-auto"
           @click="router.push('/shop')"
         >
           <span class="material-symbols-outlined text-sm">arrow_back</span>
@@ -30,23 +30,23 @@
       </div>
     </section>
 
-    <section ref="productsSection" class="flex flex-col lg:flex-row gap-8 xl:gap-10">
+    <section ref="productsSection" class="flex flex-col lg:flex-row gap-4 sm:gap-8 xl:gap-10">
       <!-- Sidebar -->
       <aside class="w-full lg:w-72 xl:w-80 flex-shrink-0">
         <div
-          class="bg-white dark:bg-slate-900 rounded-lg p-5 shadow-sm border border-slate-100 dark:border-slate-800 sticky top-24"
+          class="bg-white dark:bg-slate-900 rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-100 dark:border-slate-800 lg:sticky lg:top-24"
         >
           <div
-            class="flex items-center justify-between pb-4 mb-4 border-b border-slate-200 dark:border-slate-700"
+            class="flex items-center justify-between pb-3 mb-4 border-b border-slate-200 dark:border-slate-700"
           >
-            <div class="flex items-center gap-2 font-bold text-lg text-slate-900 dark:text-white uppercase tracking-wide">
+            <div class="flex items-center gap-2 font-bold text-base sm:text-lg text-slate-900 dark:text-white uppercase tracking-wide">
               <span class="material-symbols-outlined text-primary">tune</span>
               Bộ lọc
             </div>
 
             <button
               type="button"
-              class="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition"
+              class="text-xs font-bold px-3 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 transition whitespace-nowrap"
               @click="resetFilters"
             >
               Tải lại
@@ -57,13 +57,58 @@
             Đang tải bộ lọc...
           </div>
 
+          <div class="mb-4 lg:hidden">
+            <div class="flex flex-wrap gap-2">
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                :class="sections.price ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'"
+                @click="sections.price = !sections.price"
+              >
+                Giá
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                :class="sections.brand ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'"
+                @click="sections.brand = !sections.brand"
+              >
+                Brand
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                :class="sections.category ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'"
+                @click="sections.category = !sections.category"
+              >
+                Danh mục
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                :class="sections.size ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'"
+                @click="sections.size = !sections.size"
+              >
+                Size
+              </button>
+              <button
+                type="button"
+                class="inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                :class="sections.color ? 'border-primary bg-primary/10 text-primary' : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300'"
+                @click="sections.color = !sections.color"
+              >
+                Màu sắc
+              </button>
+            </div>
+          </div>
+
           <div class="mb-4">
             <div class="relative">
               <input
                 v-model="filterSearch"
                 type="text"
-                class="w-full rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
-                placeholder="Tìm brand/danh mục..."
+                class="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-4 py-3 pr-10 text-sm outline-none focus:ring-2 focus:ring-primary/30"
+                placeholder="Tìm brand / danh mục"
               />
               <span
                 class="material-symbols-outlined absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-[18px]"
@@ -80,9 +125,9 @@
                 <label
                   v-for="r in priceRangesUI"
                   :key="r.key"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2.5 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-start justify-between gap-3 text-sm cursor-pointer px-2 py-2.5 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                 >
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
                     <input
                       type="radio"
                       name="priceRange"
@@ -90,7 +135,7 @@
                       :value="r.key"
                       v-model="filters.priceRange"
                     />
-                    <span class="font-medium text-slate-700 dark:text-slate-200">
+                    <span class="font-medium text-slate-700 dark:text-slate-200 leading-5">
                       {{ r.label }}
                     </span>
                   </div>
@@ -117,10 +162,10 @@
                 <label
                   v-for="b in filteredBrands"
                   :key="b.id"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="b.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
-                  <div class="flex items-center gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
                     <input
                       type="checkbox"
                       class="accent-primary"
@@ -128,7 +173,7 @@
                       v-model="filters.brandIds"
                       :disabled="b.count === 0"
                     />
-                    <span class="font-medium text-slate-700 dark:text-slate-200">
+                    <span class="font-medium text-slate-700 dark:text-slate-200 leading-5">
                       {{ b.name }}
                     </span>
                   </div>
@@ -147,7 +192,7 @@
                 <label
                   v-for="c in filteredCategories"
                   :key="c.id"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="c.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
                   <div class="flex items-center gap-3">
@@ -158,7 +203,7 @@
                       v-model="filters.categoryIds"
                       :disabled="c.count === 0"
                     />
-                    <span class="font-medium text-slate-700 dark:text-slate-200">
+                    <span class="font-medium text-slate-700 dark:text-slate-200 leading-5">
                       {{ c.name }}
                     </span>
                   </div>
@@ -178,7 +223,7 @@
                   v-for="s in filteredSizes"
                   :key="String(s.value)"
                   type="button"
-                  class="px-3 py-2 border text-sm font-bold transition"
+                  class="px-3 py-2 border text-sm font-bold rounded-lg transition"
                   :class="[
                     filters.sizes.includes(String(s.value))
                       ? 'bg-slate-900 text-white border-slate-900 dark:bg-primary dark:border-primary'
@@ -203,10 +248,10 @@
                 <label
                   v-for="c in filteredColors"
                   :key="String(c.value)"
-                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 hover:bg-slate-50 dark:hover:bg-slate-800"
+                  class="flex items-center justify-between gap-3 text-sm cursor-pointer px-2 py-2 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
                   :class="c.count === 0 ? 'opacity-50 cursor-not-allowed' : ''"
                 >
-                  <div class="flex items-center gap-3">
+                  <div class="flex items-center gap-3 min-w-0">
                     <input
                       type="checkbox"
                       class="accent-primary"
@@ -214,7 +259,7 @@
                       v-model="filters.colors"
                       :disabled="c.count === 0"
                     />
-                    <span class="font-medium text-slate-700 dark:text-slate-200">
+                    <span class="font-medium text-slate-700 dark:text-slate-200 leading-5">
                       {{ c.value }}
                     </span>
                   </div>
@@ -232,8 +277,8 @@
 
       <!-- Products -->
       <div class="flex-1 min-w-0">
-        <div class="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div class="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+        <div class="mb-5 sm:mb-6 flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-3">
             <span class="text-sm font-semibold text-slate-600 dark:text-slate-300 uppercase tracking-wide">
               Sắp xếp:
             </span>
@@ -247,8 +292,14 @@
             />
           </div>
 
-          <div class="text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide">
-            {{ filteredClient.length }} / {{ meta.total }} sản phẩm
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="rounded-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 px-3 py-2 text-[11px] sm:text-sm text-slate-500 dark:text-slate-400 font-medium uppercase tracking-wide whitespace-nowrap">
+              {{ filteredClient.length }} / {{ meta.total }} sản phẩm
+            </div>
+            <div v-if="routeMinDiscount !== null" class="inline-flex items-center gap-1.5 rounded-full bg-red-50 text-red-600 px-3 py-2 text-[11px] sm:text-xs font-bold uppercase tracking-wide">
+              <span class="material-symbols-outlined text-[14px]">sell</span>
+              Giảm từ {{ routeMinDiscount }}%
+            </div>
           </div>
         </div>
 
@@ -269,18 +320,18 @@
 
         <div
           v-else
-          class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
         >
           <article
             v-for="p in filteredClient"
             :key="p.id"
-            class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden hover:border-primary transition-colors cursor-pointer flex flex-col"
+            class="group bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden hover:border-primary transition-colors cursor-pointer flex flex-col"
             @click="goDetail(p.slug)"
           >
             <div class="relative aspect-square bg-slate-100 dark:bg-slate-800 overflow-hidden">
               <span
                 v-if="p.salePercent"
-                class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-3 py-1.5 uppercase z-10 tracking-wider rounded-bl-md"
+                class="absolute top-0 left-0 bg-red-600 text-white text-[10px] font-black px-2.5 py-1 uppercase z-10 tracking-wider rounded-br-md"
               >
                 -{{ p.salePercent }}%
               </span>
@@ -292,34 +343,36 @@
               />
             </div>
 
-            <div class="p-4 flex flex-col flex-1">
+            <div class="p-3 sm:p-4 flex flex-col flex-1">
               <p
-                class="text-[10px] tracking-[0.2em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
+                class="text-[10px] tracking-[0.16em] text-slate-500 dark:text-slate-400 uppercase font-bold truncate"
               >
                 {{ p.brand }}
               </p>
 
               <h4
-                class="mt-2 font-bold text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug"
+                class="mt-2 font-bold text-[13px] sm:text-sm text-slate-900 dark:text-white line-clamp-2 leading-snug min-h-[2.4rem]"
               >
                 {{ p.name }}
               </h4>
 
-              <div class="flex items-center gap-3 mt-auto pt-3">
-                <p class="text-primary font-black text-base">
-                  {{ moneyVND(p.price) }}
-                </p>
+              <div class="flex items-start justify-between gap-2 mt-auto pt-3">
+                <div class="min-w-0">
+                  <p class="text-primary font-black text-sm sm:text-base">
+                    {{ moneyVND(p.price) }}
+                  </p>
 
-                <p
-                  v-if="p.compareAt"
-                  class="text-xs text-slate-400 line-through"
-                >
-                  {{ moneyVND(p.compareAt) }}
-                </p>
+                  <p
+                    v-if="p.compareAt"
+                    class="text-[11px] text-slate-400 line-through"
+                  >
+                    {{ moneyVND(p.compareAt) }}
+                  </p>
+                </div>
               </div>
 
               <button
-                class="mt-3 w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-xs font-bold uppercase tracking-wider rounded-md hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
+                class="mt-3 w-full py-2.5 bg-slate-900 dark:bg-white text-white dark:text-slate-900 text-[11px] sm:text-xs font-bold uppercase tracking-wider rounded-lg hover:bg-primary hover:text-white dark:hover:bg-primary dark:hover:text-white transition-colors"
               >
                 Xem chi tiết
               </button>
@@ -328,7 +381,7 @@
         </div>
 
         <div class="mt-10 flex flex-col items-center gap-4">
-          <div v-if="meta.total > 0" class="flex items-center gap-2">
+          <div v-if="meta.total > 0" class="flex flex-wrap items-center justify-center gap-2 max-w-full">
             <button
               type="button"
               class="h-10 px-4 border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 text-sm font-semibold flex items-center justify-center hover:bg-slate-100 dark:hover:bg-slate-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors rounded-lg"

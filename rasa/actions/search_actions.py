@@ -148,6 +148,7 @@ class ActionSearchProducts(Action):
         ent_material = _get_entity(entities, "material") or tracker.get_slot("material")
         ent_style = _get_entity(entities, "style") or tracker.get_slot("style")
 
+        purpose_slot = tracker.get_slot("purpose")
         size = ent_size or _parse_size(text)
         price_range = ent_price_range or text
         parsed_price = _parse_budget_text_to_range(price_range)
@@ -155,12 +156,13 @@ class ActionSearchProducts(Action):
         brand = ent_brand or _infer_brand_from_text(text)
         inferred_color = ent_color or _infer_color_from_text(text)
         search = brand or _clean_search_query(text)
-        cat_ids = _infer_category_ids_from_text(ent_purpose or text)
+        active_purpose = ent_purpose or purpose_slot or tracker.get_slot("last_product_query")
+        cat_ids = _infer_category_ids_from_text(active_purpose or text)
 
         if ent_purpose:
             search = None
 
-        occasion = _infer_occasion_from_text(text)
+        occasion = _infer_occasion_from_text(active_purpose or text)
         items = []
 
         # Prefer explicit price range if the text actually looks like budget input.
@@ -171,7 +173,20 @@ class ActionSearchProducts(Action):
             search = None
 
         try:
-            if occasion:
+            if occasion == "football":
+                items = _fetch_products_with_attributes(
+                    search="giày đá bóng",
+                    size=size,
+                    price_range=price_range if has_price_text else None,
+                    category_ids=cat_ids or _infer_category_ids_from_text("giày đá bóng") or None,
+                    color=inferred_color,
+                    material=ent_material,
+                    style=ent_style,
+                    limit=5,
+                )
+                if not items:
+                    items = _fetch_products_by_occasion("football", limit=5, price_range=price_range if has_price_text else None)
+            elif occasion:
                 items = _fetch_products_by_occasion(occasion, limit=5, price_range=price_range)
             else:
                 items = _fetch_products_with_attributes(
@@ -189,11 +204,12 @@ class ActionSearchProducts(Action):
 
         if not items:
             from .api_client import _fallback_near_match
+            fallback_search = "giày đá bóng" if occasion == "football" else search
             items = _fallback_near_match(
-                search=search,
+                search=fallback_search,
                 size=size,
                 price_range=price_range if has_price_text else None,
-                category_ids=cat_ids or None,
+                category_ids=(cat_ids or _infer_category_ids_from_text("giày đá bóng") or None) if occasion == "football" else cat_ids or None,
                 color=inferred_color,
                 material=ent_material,
                 style=ent_style,
@@ -279,9 +295,9 @@ class ActionSearchProducts(Action):
 
         if occasion:
             scene = OCCASION_SCENE_MAP.get(occasion, {})
-            advice_text = scene.get("advice", _get_advice_for_purpose(ent_purpose or text))
+            advice_text = scene.get("advice", _get_advice_for_purpose(active_purpose or text))
         else:
-            advice_text = _get_advice_for_purpose(ent_purpose or text)
+            advice_text = _get_advice_for_purpose(active_purpose or text)
 
         cards = [_product_to_card(p) for p in items[:5]]
         enriched_lines = []
@@ -305,6 +321,8 @@ class ActionSearchProducts(Action):
             filter_bits.append(f"chất liệu {ent_material}")
         if ent_style:
             filter_bits.append(f"style {ent_style}")
+        if occasion == "football":
+            filter_bits = ["giày đá bóng chuyên dụng", "TF/FG/SG hoặc sân cỏ"] + filter_bits
         if filter_bits:
             advice_text = f"{advice_text} — lọc theo {', '.join(filter_bits)}"
 
@@ -344,6 +362,8 @@ class ActionSearchByOccasion(Action):
         text = (tracker.latest_message or {}).get("text") or ""
         entities = (tracker.latest_message or {}).get("entities") or []
         expected = tracker.get_slot("clarify_expected")
+        active_purpose = tracker.get_slot("purpose") or tracker.get_slot("last_product_query") or text
+        active_occasion = _infer_occasion_from_text(active_purpose)
 
         if expected:
             if expected == "size":
@@ -354,15 +374,18 @@ class ActionSearchByOccasion(Action):
                     dispatcher.utter_message(text="Bạn gửi giúp mình size hoặc số cm bàn chân nhé, mình sẽ tiếp tục lọc đúng mẫu cho bạn.")
                     return []
                 try:
-                    items = _fetch_products(search=None, size=size, price_range=tracker.get_slot("price_range"), limit=5)
+                    if active_occasion == "football":
+                        items = _fetch_products_with_attributes(search="giày đá bóng", size=size, price_range=tracker.get_slot("price_range"), category_ids=_infer_category_ids_from_text("giày đá bóng"), limit=5)
+                    else:
+                        items = _fetch_products(search=None, size=size, price_range=tracker.get_slot("price_range"), limit=5)
                 except Exception:
                     items = []
                 if items:
                     dispatcher.utter_message(text=f"Mình đã lọc theo size {size} cho bạn đây:")
                     dispatcher.utter_message(json_message={"type": "products", "title": f"👟 Gợi ý theo size {size}", "items": [_product_to_card(p) for p in items[:5]]})
-                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None), SlotSet("purpose", active_purpose if active_occasion == "football" else None)]
                 dispatcher.utter_message(text=f"Mình chưa tìm được mẫu phù hợp theo size {size}. Bạn có muốn nới tầm giá hoặc đổi brand không?")
-                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None), SlotSet("purpose", active_purpose if active_occasion == "football" else None)]
 
             if expected == "price":
                 price_text = text or tracker.get_slot("last_product_query")
@@ -371,20 +394,23 @@ class ActionSearchByOccasion(Action):
                     dispatcher.utter_message(text="Bạn gửi giúp mình tầm giá nhé, ví dụ: dưới 1 triệu, 1-2 triệu, hoặc 2-3 triệu.")
                     return []
                 try:
-                    items = _fetch_products(search=None, size=None, price_range=price_text, limit=5)
+                    if active_occasion == "football":
+                        items = _fetch_products_with_attributes(search="giày đá bóng", size=None, price_range=price_text, category_ids=_infer_category_ids_from_text("giày đá bóng"), limit=5)
+                    else:
+                        items = _fetch_products(search=None, size=None, price_range=price_text, limit=5)
                 except Exception:
                     items = []
                 if items:
                     dispatcher.utter_message(text="Mình đã lọc theo tầm giá bạn vừa chọn:")
                     dispatcher.utter_message(json_message={"type": "products", "title": "💰 Gợi ý theo ngân sách", "items": [_product_to_card(p) for p in items[:5]]})
-                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                    return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None), SlotSet("purpose", active_purpose if active_occasion == "football" else None)]
                 dispatcher.utter_message(text="Mình chưa tìm được sản phẩm trong tầm giá này. Bạn muốn mình nới ngân sách hay đổi sang dòng khác không?")
-                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None), SlotSet("purpose", active_purpose if active_occasion == "football" else None)]
 
             if expected == "comfort":
                 query = tracker.get_slot("last_product_query") or text
                 dispatcher.utter_message(text=f"Về độ êm của mẫu này, mình sẽ ưu tiên giày có đệm tốt, form vừa chân và đế hỗ trợ ổn định. Nếu bạn muốn, mình có thể lọc luôn các mẫu êm hơn theo nhu cầu '{query}'.")
-                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
+                return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None), SlotSet("purpose", active_purpose if active_occasion == "football" else None)]
 
         ent_occasion = _get_entity(entities, "occasion")
         occasion = ent_occasion or _infer_occasion_from_text(text)
@@ -843,3 +869,62 @@ class ActionSearchStyleAdvice(Action):
         if items:
             dispatcher.utter_message(json_message={"type": "products", "title": "✨ Mình gợi ý thêm vài mẫu gần gu bạn", "items": [_product_to_card(p) for p in items]})
         return []
+
+
+class ActionShoeCareAdvice(Action):
+
+    def name(self) -> Text:
+        return "action_shoe_care_advice"
+
+    def _care_title(self, material: str) -> str:
+        material = _normalize_text(material)
+        if not material:
+            return "bảo quản giày"
+        return f"bảo quản giày {material}"
+
+    def _care_reply(self, material: str) -> str:
+        m = _normalize_text(material)
+        if "da lộn" in m or "nubuck" in m or "suede" in m:
+            return (
+                "🧴 **Hướng dẫn bảo quản giày da lộn / nubuck:**\n"
+                "1. Dùng bàn chải mềm chuyên dụng để phủi bụi khô\n"
+                "2. Tránh nước và tránh chà mạnh lên bề mặt\n"
+                "3. Dùng xịt chống thấm chuyên cho da lộn/nubuck\n"
+                "4. Nếu bị bẩn, dùng tẩy da lộn hoặc khăn khô sạch\n"
+                "5. Bảo quản nơi khô thoáng, nhét giấy giữ form"
+            )
+        if any(k in m for k in ["vải", "canvas", "mesh", "lưới", "textile"]):
+            return (
+                "🧴 **Hướng dẫn bảo quản giày vải / lưới:**\n"
+                "1. Phủi bụi sau mỗi lần sử dụng bằng bàn chải mềm\n"
+                "2. Lau vết bẩn nhẹ bằng khăn ẩm và xà phòng loãng\n"
+                "3. Không ngâm nước lâu, không phơi nắng gắt\n"
+                "4. Nhét giấy/bảo quản form để giày không bị biến dạng\n"
+                "5. Nếu ẩm, để khô tự nhiên ở nơi thoáng gió"
+            )
+        return (
+            "🧴 **Hướng dẫn bảo quản giày da:**\n"
+            "1. Lau sạch sau mỗi lần sử dụng bằng khăn ẩm\n"
+            "2. Sấy khô tự nhiên, tránh phơi nắng gắt hoặc sấy lửa\n"
+            "3. Sử dụng kem/sáp dưỡng da chuyên dụng 1-2 lần/tuần\n"
+            "4. Lưu trữ trong hộp giày hoặc túi vải, có miếng lót giữ form\n"
+            "5. Chống ẩm bằng xịt chống nước chuyên dụng cho da"
+        )
+
+    def run(self, dispatcher, tracker, domain):
+        text = (tracker.latest_message or {}).get("text") or ""
+        t = text.lower()
+        current_material = tracker.get_slot("care_material") or tracker.get_slot("care_topic") or tracker.get_slot("material")
+
+        if _match_any(t, ["da lộn", "nubuck", "suede"]):
+            current_material = "da lộn / nubuck"
+        elif _match_any(t, ["vải", "canvas", "mesh", "lưới"]):
+            current_material = "vải / lưới"
+        elif _match_any(t, ["da"]):
+            current_material = "da"
+        elif not current_material:
+            current_material = "da"
+
+        dispatcher.utter_message(text=self._care_reply(current_material))
+        dispatcher.utter_message(text="Nếu bạn muốn, mình có thể tiếp tục so sánh cách bảo quản giữa da, vải, lưới và nubuck để bạn dễ nhớ hơn.")
+        return [SlotSet("care_topic", current_material), SlotSet("care_material", current_material)]

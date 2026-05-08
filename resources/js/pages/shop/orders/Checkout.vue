@@ -1,9 +1,9 @@
 <template>
-  <main class="min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+  <main class="min-h-screen pb-28 pt-4 sm:py-10 px-3 sm:px-6 lg:px-8">
     <div class="max-w-7xl mx-auto">
-      <div class="mb-8 flex items-center justify-between gap-4">
+      <div class="mb-5 flex flex-col gap-3 sm:mb-8 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
+          <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900 dark:text-slate-100">
             Thanh toán
           </h1>
           <p class="mt-2 text-sm text-slate-500 dark:text-slate-400">
@@ -12,7 +12,7 @@
         </div>
         <button
           type="button"
-          class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
+          class="inline-flex w-full sm:w-auto items-center justify-center gap-2 px-4 py-2 rounded-lg border border-primary text-primary font-medium hover:bg-primary/10 transition-colors"
           @click="goCart"
         >
           <span class="material-symbols-outlined text-sm">arrow_back</span>
@@ -23,14 +23,14 @@
       <div v-if="pageLoading" class="text-sm text-slate-500">Đang tải dữ liệu...</div>
       <div v-else-if="pageError" class="text-sm text-red-600">{{ pageError }}</div>
 
-      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        <div class="lg:col-span-7 space-y-6">
-          <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-5">
+      <div v-else class="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-8">
+        <div class="lg:col-span-7 space-y-4 sm:space-y-6">
+          <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-6 shadow-sm">
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 sm:mb-5">
               Thông tin nhận hàng
             </h2>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
               <div>
                 <label class="mb-1.5 block text-sm font-medium text-slate-700 dark:text-slate-300">
                   Họ và tên <span class="text-red-500">*</span>
@@ -137,12 +137,12 @@
             </div>
           </section>
 
-          <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-sm">
-            <h2 class="text-lg font-bold text-slate-900 dark:text-slate-100 mb-5">
+          <section class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-6 shadow-sm">
+            <h2 class="text-base sm:text-lg font-bold text-slate-900 dark:text-slate-100 mb-4 sm:mb-5">
               Phương thức vận chuyển
             </h2>
             <div class="space-y-3">
-              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
+              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3 sm:p-4 cursor-pointer">
                 <input v-model="form.shipping_method" type="radio" value="standard" class="mt-1" />
                 <div class="flex-1">
                   <div class="font-semibold text-slate-900 dark:text-slate-100">Giao hàng tiêu chuẩn</div>
@@ -150,7 +150,7 @@
                 </div>
                 <div class="font-semibold text-slate-900 dark:text-slate-100">{{ moneyVND(15000) }}</div>
               </label>
-              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-4 cursor-pointer">
+              <label class="flex items-start gap-3 rounded-lg border border-slate-200 dark:border-slate-700 p-3 sm:p-4 cursor-pointer">
                 <input v-model="form.shipping_method" type="radio" value="express" class="mt-1" />
                 <div class="flex-1">
                   <div class="font-semibold text-slate-900 dark:text-slate-100">Giao hàng nhanh</div>
@@ -163,8 +163,8 @@
         </div>
 
         <div class="lg:col-span-5">
-          <div class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-6 shadow-md">
-            <h2 class="text-xl font-bold text-slate-900 dark:text-slate-100 mb-5">Đơn hàng của bạn</h2>
+          <div class="rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 p-4 sm:p-6 shadow-md">
+            <h2 class="text-lg sm:text-xl font-bold text-slate-900 dark:text-slate-100 mb-4 sm:mb-5">Đơn hàng của bạn</h2>
 
             <div v-if="items.length === 0" class="text-sm text-slate-500">Giỏ hàng đang trống.</div>
 
@@ -172,7 +172,7 @@
               <div
                 v-for="it in items"
                 :key="it.id"
-                class="flex gap-3 border-b border-slate-100 dark:border-slate-700 pb-4"
+                class="flex gap-3 border-b border-slate-100 dark:border-slate-700 pb-4 last:border-b-0 last:pb-0"
               >
                 <div class="h-16 w-16 rounded-lg overflow-hidden bg-slate-100 dark:bg-slate-900 flex-shrink-0">
                   <img
@@ -201,7 +201,7 @@
                 <h3 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
                   Mã giảm giá
                 </h3>
-                <div class="flex gap-2">
+                <div class="flex flex-col gap-2 sm:flex-row">
                   <input
                     v-model="couponCode"
                     type="text"

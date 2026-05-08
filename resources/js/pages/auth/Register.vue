@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden py-8">
+  <div class="auth-page min-h-screen flex items-stretch justify-center relative overflow-hidden px-3 py-4 sm:items-center sm:px-0 sm:py-8">
     <!-- Full Screen Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500">
       <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-blue-500/30 rounded-full blur-[120px] animate-pulse"></div>
@@ -9,7 +9,7 @@
     </div>
 
     <!-- Logo Top Left -->
-    <div class="absolute top-6 left-6 flex items-center gap-3 z-20">
+    <div class="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-3 z-20">
       <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
         <svg viewBox="0 0 24 24" class="h-7 w-7 text-white" fill="currentColor">
           <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
@@ -19,8 +19,8 @@
     </div>
 
     <!-- Centered Form Card -->
-    <div class="relative z-10 w-full max-w-lg mx-4">
-      <div class="bg-white rounded-lg shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-8 animate-fadeIn">
+    <div class="relative z-10 w-full max-w-lg mx-0 sm:mx-4">
+      <div class="bg-white rounded-2xl shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-5 sm:p-8 animate-fadeIn">
         <!-- Decorative top border -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-2">
@@ -31,8 +31,8 @@
         </div>
 
         <!-- Header -->
-        <div class="text-center mb-8">
-          <h1 class="text-2xl font-bold text-gray-900 mb-2">
+        <div class="text-center mb-6 sm:mb-8">
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-2">
             {{ currentStep === 'register' ? 'Tạo tài khoản mới' : 'Xác nhận email' }}
           </h1>
           <p class="text-sm text-gray-500">
@@ -41,8 +41,8 @@
         </div>
 
         <!-- Step Indicator -->
-        <div v-if="currentStep === 'verify'" class="mb-6 p-4 bg-blue-50 rounded-xl">
-          <div class="flex items-center justify-center gap-3 text-sm">
+        <div v-if="currentStep === 'verify'" class="mb-6 rounded-xl bg-blue-50 p-4">
+          <div class="flex flex-col items-center justify-center gap-2 text-sm sm:flex-row sm:gap-3">
             <span class="flex items-center gap-1.5 text-blue-600 font-medium">
               <svg viewBox="0 0 24 24" class="h-4 w-4" fill="currentColor"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/></svg>
               Đăng ký

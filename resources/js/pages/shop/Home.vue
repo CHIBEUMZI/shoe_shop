@@ -2,7 +2,7 @@
   <div class="min-h-screen bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-white">
     <Banner position="home_top" :fallback-action="goProducts" />
 
-    <main class="mx-auto max-w-7xl space-y-8 px-4 pb-10 pt-4 lg:px-6 lg:pt-6">
+    <main class="mx-auto max-w-7xl space-y-6 px-4 pb-10 pt-4 sm:space-y-8 lg:px-6 lg:pt-6">
       <div v-if="alert.visible" class="fixed right-4 top-4 z-50 w-[min(92vw,420px)]">
         <BaseAlert
           :type="alert.type"
@@ -29,7 +29,7 @@
           Chưa có mã giảm giá nào.
         </div>
 
-        <div v-else class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        <div v-else class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <article
             v-for="coupon in coupons"
             :key="coupon.id"
@@ -38,7 +38,7 @@
             <div class="absolute inset-y-0 left-0 w-3 bg-red-600"></div>
             <div class="absolute inset-y-0 left-3 w-[2px] border-l border-dashed border-red-200/80 dark:border-red-900/60"></div>
 
-            <div class="grid min-h-[180px] gap-4 p-4 pl-6 md:grid-cols-[1fr_auto] md:items-stretch">
+            <div class="grid min-h-[180px] gap-4 p-4 pl-6 sm:grid-cols-[1fr_auto] sm:items-stretch">
               <div class="flex flex-col justify-between gap-4">
                 <div class="space-y-3">
                   <div class="flex items-center gap-2">
@@ -176,19 +176,19 @@
 
       <!-- Featured products -->
       <section class="mb-8">
-      <div class="flex items-center justify-between mb-4">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between mb-4">
         <div>
           <h3 class="text-xl md:text-3xl font-black tracking-tight text-slate-950 dark:text-white">
             Sản phẩm nổi bật
           </h3>
-          <p class="text-slate-500 mt-1 text-sm font-medium">
+          <p class="text-slate-500 mt-1 text-sm font-medium max-w-xl">
             Những mẫu đáng chú ý được ưu tiên hiển thị
           </p>
         </div>
 
         <button
           type="button"
-          class="text-primary text-[11px] md:text-xs font-extrabold flex items-center gap-1 hover:gap-2 transition-all"
+          class="self-start text-primary text-[11px] md:text-xs font-extrabold flex items-center gap-1 hover:gap-2 transition-all"
           @click="goProducts"
         >
           Xem tất cả
@@ -196,7 +196,7 @@
         </button>
       </div>
 
-      <div class="relative group/carousel px-2">
+      <div class="relative group/carousel px-0 sm:px-2">
         <!-- Left Button -->
         <button
           v-if="featured.length > 4"
@@ -296,7 +296,7 @@
 
     <!-- CTA -->
     <section
-      class="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-5 md:px-8 py-8 md:py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl"
+      class="rounded-xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-4 sm:px-5 md:px-8 py-7 sm:py-8 md:py-10 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl"
     >
       <div>
         <div

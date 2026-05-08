@@ -12,6 +12,8 @@
 .env
 .env.backup
 .env.production
+.env.local
+.env.ngrok
 
 .phpunit.result.cache
 .phpactor.json

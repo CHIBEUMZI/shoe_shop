@@ -1,5 +1,5 @@
 <template>
-  <div class="auth-page min-h-screen flex items-center justify-center relative overflow-hidden">
+  <div class="auth-page min-h-screen flex items-stretch justify-center relative overflow-hidden px-3 py-4 sm:items-center sm:px-0 sm:py-0">
     <!-- Full Screen Background -->
     <div class="absolute inset-0 bg-gradient-to-br from-blue-700 via-blue-600 to-cyan-500">
       <!-- Animated Orbs -->
@@ -12,7 +12,7 @@
     </div>
 
     <!-- Logo Top Left -->
-    <div class="absolute top-6 left-6 flex items-center gap-3 z-20">
+    <div class="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-3 z-20">
       <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-xl flex items-center justify-center">
         <svg viewBox="0 0 24 24" class="h-7 w-7 text-white" fill="currentColor">
           <path d="M3 3h8v8H3V3zm10 0h8v8h-8V3zM3 13h8v8H3v-8zm10 0h8v8h-8v-8z"/>
@@ -22,8 +22,8 @@
     </div>
 
     <!-- Centered Form Card -->
-    <div class="relative z-10 w-full max-w-md mx-4">
-      <div class="bg-white rounded-lg shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-6 sm:p-8 animate-fadeIn">
+    <div class="relative z-10 w-full max-w-md mx-0 sm:mx-4">
+      <div class="bg-white rounded-2xl shadow-lg shadow-gray-900/20 ring-1 ring-white/50 p-5 sm:p-8 animate-fadeIn">
         <!-- Decorative top border -->
         <div class="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <div class="flex gap-1.5">
@@ -34,8 +34,8 @@
         </div>
 
         <!-- Header -->
-        <div class="text-center mb-7">
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Đăng nhập tài khoản</h1>
+        <div class="text-center mb-6 sm:mb-7">
+          <h1 class="text-xl sm:text-2xl font-bold text-gray-900 mb-1">Đăng nhập tài khoản</h1>
           <p class="text-sm text-gray-500">Truy cập vào tài khoản của bạn</p>
         </div>
 
@@ -174,7 +174,7 @@
           </div>
 
           <!-- SSO buttons -->
-          <div class="grid grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <button type="button" class="inline-flex items-center justify-center gap-2 rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition-all duration-200 hover:bg-gray-50 hover:border-gray-300 hover:shadow-md disabled:opacity-60" :disabled="loading">
               <svg viewBox="0 0 24 24" class="h-5 w-5" aria-hidden="true">
                 <path d="M21.8 10.2H12v3.7h5.6c-.8 2.3-2.8 3.7-5.6 3.7a6.4 6.4 0 110-12.8c1.7 0 3.1.6 4.2 1.6l2.6-2.6A9.9 9.9 0 0012 2.2 9.8 9.8 0 1021.8 12c0-.6-.1-1.2-.2-1.8z" fill="#4285F4"/>
