@@ -6,9 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\User;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+use Maatwebsite\Excel\Facades\Excel;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class DashboardController extends Controller
 {
@@ -31,19 +36,17 @@ class DashboardController extends Controller
 
     public function index(Request $request)
     {
-        $range = $request->get('range', '30days');
-
-        [$startDate, $endDate, $chartMode] = $this->resolveRange($range);
-
-        [$previousStartDate, $previousEndDate] = $this->resolvePreviousRange(
-            $startDate,
-            $endDate,
-            $chartMode
-        );
+        $filters = $this->resolveDashboardFilters($request);
+        $rangeKey = $filters['cache_key'];
+        $startDate = $filters['startDate'];
+        $endDate = $filters['endDate'];
+        $chartMode = $filters['chartMode'];
+        $previousStartDate = $filters['previousStartDate'];
+        $previousEndDate = $filters['previousEndDate'];
 
         $cacheKey = sprintf(
             'admin_dashboard:%s:%s:%s:%s:%s',
-            $range,
+            $rangeKey,
             $startDate->format('YmdHis'),
             $endDate->format('YmdHis'),
             $previousStartDate->format('YmdHis'),
@@ -70,6 +73,78 @@ class DashboardController extends Controller
         return response()->json([
             'data' => $data,
         ]);
+    }
+
+    public function exportExcel(Request $request): BinaryFileResponse
+    {
+        $filters = $this->resolveDashboardFilters($request);
+        $payload = $this->buildExportPayload($filters['startDate'], $filters['endDate'], $filters['previousStartDate'], $filters['previousEndDate'], $filters['chartMode']);
+
+        return Excel::download(
+            new \App\Exports\DashboardExport($payload),
+            sprintf('dashboard-%s.xlsx', now()->format('Y-m-d-His'))
+        );
+    }
+
+    public function exportPdf(Request $request): Response
+    {
+        $filters = $this->resolveDashboardFilters($request);
+        $payload = $this->buildExportPayload($filters['startDate'], $filters['endDate'], $filters['previousStartDate'], $filters['previousEndDate'], $filters['chartMode']);
+
+        $pdf = Pdf::loadView('exports.admin.dashboard', [
+            'payload' => $payload,
+            'rangeLabel' => $payload['period']['label'],
+            'generatedAt' => $payload['generated_at'],
+        ])->setPaper('a4', 'portrait');
+
+        return response()->streamDownload(function () use ($pdf) {
+            echo $pdf->output();
+        }, sprintf('dashboard-%s.pdf', now()->format('Y-m-d-His')));
+    }
+
+    protected function resolveDashboardFilters(Request $request): array
+    {
+        $mode = $request->get('filter_mode', 'range');
+
+        if ($mode === 'custom') {
+            $startDate = $this->parseDate($request->get('start_date'))?->startOfDay();
+            $endDate = $this->parseDate($request->get('end_date'))?->endOfDay();
+
+            if (!$startDate || !$endDate) {
+                abort(422, 'Vui lòng chọn ngày bắt đầu và ngày kết thúc hợp lệ.');
+            }
+
+            if ($startDate->gt($endDate)) {
+                abort(422, 'Ngày bắt đầu không được lớn hơn ngày kết thúc.');
+            }
+
+            $days = max(1, $startDate->diffInDays($endDate) + 1);
+            $chartMode = $days > 31 ? 'month' : 'day';
+            $previousStartDate = $this->shiftDateRangeBackwardForExport($startDate, $days, $chartMode)->startOfDay();
+            $previousEndDate = $this->shiftDateRangeBackwardForExport($endDate, $days, $chartMode)->endOfDay();
+
+            return [
+                'cache_key' => 'custom:' . $startDate->format('Ymd') . ':' . $endDate->format('Ymd'),
+                'startDate' => $startDate,
+                'endDate' => $endDate,
+                'chartMode' => $chartMode,
+                'previousStartDate' => $previousStartDate,
+                'previousEndDate' => $previousEndDate,
+            ];
+        }
+
+        $range = $request->get('range', '30days');
+        [$startDate, $endDate, $chartMode] = $this->resolveRange($range);
+        [$previousStartDate, $previousEndDate] = $this->resolvePreviousRange($startDate, $endDate, $chartMode);
+
+        return [
+            'cache_key' => $range,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'chartMode' => $chartMode,
+            'previousStartDate' => $previousStartDate,
+            'previousEndDate' => $previousEndDate,
+        ];
     }
 
     protected function resolveRange(string $range): array
@@ -112,6 +187,19 @@ class DashboardController extends Controller
             $startDate->copy()->subMonths($months)->startOfMonth(),
             $startDate->copy()->subDay()->endOfDay(),
         ];
+    }
+
+    protected function parseDate(?string $value): ?Carbon
+    {
+        if (!$value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     protected function getOverview($startDate, $endDate, $previousStartDate, $previousEndDate): array
@@ -495,6 +583,42 @@ class DashboardController extends Controller
             })
             ->values()
             ->all();
+    }
+
+    protected function buildExportPayload($startDate, $endDate, $previousStartDate, $previousEndDate, string $chartMode): array
+    {
+        return [
+            'period' => [
+                'start' => $startDate->format('d/m/Y'),
+                'end' => $endDate->format('d/m/Y'),
+                'label' => $this->rangeLabel($chartMode === 'month' ? '12months' : '30days'),
+            ],
+            'generated_at' => now()->format('d/m/Y H:i'),
+            'sections' => [
+                'overview' => $this->getOverview($startDate, $endDate, $previousStartDate, $previousEndDate),
+                'chart' => $this->getRevenueChart($startDate, $endDate, $chartMode),
+                'top_products' => $this->getTopProducts($startDate, $endDate),
+                'recent_orders' => $this->getRecentOrders(),
+                'order_status' => $this->getOrderStatus(),
+                'new_customers' => $this->getNewCustomers($startDate, $endDate),
+            ],
+        ];
+    }
+
+    protected function rangeLabel(string $range): string
+    {
+        return match ($range) {
+            '7days' => '7 ngày gần đây',
+            '12months' => '12 tháng gần đây',
+            default => '30 ngày gần đây',
+        };
+    }
+
+    protected function shiftDateRangeBackwardForExport(Carbon $date, int $days, string $chartMode): Carbon
+    {
+        return $chartMode === 'month'
+            ? $date->copy()->subMonthsNoOverflow($days)
+            : $date->copy()->subDays($days);
     }
 
     protected function growthPercent($current, $previous): float

@@ -5,6 +5,7 @@
     <ShopHeader
       v-model="headerQ"
       :isLoggedIn="auth.isLoggedIn"
+      :isAdmin="auth.isAdmin"
       :cartCount="cartCount"
       :wishlistCount="wishlistCount"
       :menu="menu"

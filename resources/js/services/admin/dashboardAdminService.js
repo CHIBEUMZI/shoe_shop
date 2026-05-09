@@ -4,4 +4,18 @@ export default {
   overview(params = {}) {
     return api.get("/api/v1/admin/dashboard", { params });
   },
-}
+
+  exportExcel(params = {}) {
+    return api.get("/api/v1/admin/dashboard/export/excel", {
+      params,
+      responseType: "blob",
+    });
+  },
+
+  exportPdf(params = {}) {
+    return api.get("/api/v1/admin/dashboard/export/pdf", {
+      params,
+      responseType: "blob",
+    });
+  },
+};

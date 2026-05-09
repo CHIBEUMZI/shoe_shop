@@ -255,6 +255,7 @@
                   </button>
 
                   <button
+                    v-if="!isAdmin"
                     type="button"
                     class="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-primary/5 transition-colors flex items-center gap-3"
                     @click="goOrders"
@@ -267,6 +268,7 @@
                   </button>
 
                   <button
+                    v-if="!isAdmin"
                     type="button"
                     class="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-primary/5 transition-colors flex items-center gap-3"
                     @click="goWishlist"
@@ -279,6 +281,7 @@
                   </button>
 
                   <button
+                    v-if="!isAdmin"
                     type="button"
                     class="w-full px-4 py-2.5 text-left text-sm text-slate-700 dark:text-slate-200 hover:bg-primary/5 transition-colors flex items-center gap-3"
                     @click="goMyCoupons"
@@ -288,6 +291,19 @@
                       local_offer
                     </span>
                     <span>Mã giảm giá của tôi</span>
+                  </button>
+
+                  <button
+                    v-if="isAdmin"
+                    type="button"
+                    class="w-full px-4 py-2.5 text-left text-sm text-primary hover:bg-primary/5 transition-colors flex items-center gap-3"
+                    @click="goAdmin"
+                  >
+                    <span
+                      class="w-8 rounded-lg flex items-center justify-center material-symbols-outlined text-[18px] text-primary">
+                      admin_panel_settings
+                    </span>
+                    <span>Trang quản lý</span>
                   </button>
 
                   <div class="mx-4 my-2 border-t border-slate-100 dark:border-slate-800/50"></div>
@@ -485,6 +501,7 @@ const props = defineProps({
   cartCount: { type: Number, default: 0 },
   wishlistCount: { type: Number, default: 0 },
   menu: { type: Array, default: () => [] },
+  isAdmin: { type: Boolean, default: false },
 });
 
 // 定义组件事件
@@ -567,6 +584,11 @@ function goOrders() {
 function goMyCoupons() {
   closeAccountMenu();
   router.push("/shop/my-coupons");
+}
+
+function goAdmin() {
+  closeAccountMenu();
+  router.push("/admin/dashboard");
 }
 
 

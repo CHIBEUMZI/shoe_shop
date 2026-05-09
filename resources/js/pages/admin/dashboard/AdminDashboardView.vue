@@ -21,6 +21,14 @@
           />
         </div>
 
+        <div v-if="selectedRange === 'custom'" class="w-full sm:w-[180px]">
+          <input v-model="customStartDate" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+
+        <div v-if="selectedRange === 'custom'" class="w-full sm:w-[180px]">
+          <input v-model="customEndDate" type="date" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm" />
+        </div>
+
         <button
           type="button"
           class="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-60"
@@ -32,6 +40,24 @@
             <path d="M20 4V10H14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
           </svg>
           Làm mới
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="exportingExcel || loading"
+          @click="exportDashboard('excel')"
+        >
+          Xuất Excel
+        </button>
+
+        <button
+          type="button"
+          class="inline-flex items-center gap-2 rounded-lg bg-rose-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-rose-700 disabled:cursor-not-allowed disabled:opacity-60"
+          :disabled="exportingPdf || loading"
+          @click="exportDashboard('pdf')"
+        >
+          Xuất PDF
         </button>
       </div>
     </section>
@@ -491,13 +517,17 @@ import BaseSelect from "../../../components/BaseSelect.vue";
 import LineChart from "../../../components/admin/LineChart.vue";
 const loading = ref(false);
 const error = ref("");
+const exportingExcel = ref(false);
+const exportingPdf = ref(false);
 const selectedRange = ref("30days");
-
+const customStartDate = ref("");
+const customEndDate = ref("");
 
 const rangeOptions = [
   { label: "7 ngày gần đây", value: "7days" },
   { label: "30 ngày gần đây", value: "30days" },
   { label: "12 tháng gần đây", value: "12months" },
+  { label: "Tùy chọn", value: "custom" },
 ];
 
 const defaultDashboard = () => ({
@@ -580,7 +610,11 @@ const statsCards = computed(() => [
 const revenueLabel = computed(() => {
   if (selectedRange.value === "7days") return "7 ngày";
   if (selectedRange.value === "30days") return "30 ngày";
-  return "12 tháng";
+  if (selectedRange.value === "12months") return "12 tháng";
+  if (selectedRange.value === "custom" && customStartDate.value && customEndDate.value) {
+    return `${customStartDate.value} → ${customEndDate.value}`;
+  }
+  return "30 ngày";
 });
 
 const totalRevenueInChart = computed(() =>
@@ -714,16 +748,99 @@ function getOrderStatusClass(status) {
   return map[status] || "bg-slate-100 text-slate-700";
 }
 
+function buildParams() {
+  if (selectedRange.value === "custom") {
+    return {
+      filter_mode: "custom",
+      start_date: customStartDate.value,
+      end_date: customEndDate.value,
+    };
+  }
 
+  return { range: selectedRange.value };
+}
+
+function buildFileName(type) {
+  const label = selectedRange.value === "custom"
+    ? `${customStartDate.value || "from"}_${customEndDate.value || "to"}`
+    : selectedRange.value;
+  return `dashboard-${label}-${type}`;
+}
+
+function getBlobFileName(response, fallbackName) {
+  const contentDisposition = response?.headers?.["content-disposition"] || response?.headers?.["Content-Disposition"] || "";
+  const match = /filename\*=UTF-8''([^;]+)|filename="?([^";]+)"?/i.exec(contentDisposition);
+  const encoded = match?.[1] || match?.[2];
+  return encoded ? decodeURIComponent(encoded) : fallbackName;
+}
+
+async function downloadBlob(response, fallbackName) {
+  const blob = new Blob([response.data], { type: response.headers["content-type"] || "application/octet-stream" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = getBlobFileName(response, fallbackName);
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.URL.revokeObjectURL(url);
+}
+
+function buildDashboardParams() {
+  if (selectedRange.value === "custom") {
+    return {
+      filter_mode: "custom",
+      start_date: customStartDate.value,
+      end_date: customEndDate.value,
+    };
+  }
+
+  return { range: selectedRange.value };
+}
+
+function validateCustomDates() {
+  if (selectedRange.value !== "custom") return true;
+  if (!customStartDate.value || !customEndDate.value) {
+    error.value = "Vui lòng chọn ngày bắt đầu và ngày kết thúc.";
+    return false;
+  }
+  if (customStartDate.value > customEndDate.value) {
+    error.value = "Ngày bắt đầu không được lớn hơn ngày kết thúc.";
+    return false;
+  }
+  return true;
+}
+
+async function exportDashboard(type) {
+  if (!validateCustomDates()) return;
+
+  try {
+    if (type === "pdf") exportingPdf.value = true;
+    else exportingExcel.value = true;
+
+    const params = buildParams();
+    const response = type === "pdf"
+      ? await dashboardAdminService.exportPdf(params)
+      : await dashboardAdminService.exportExcel(params);
+
+    await downloadBlob(response, buildFileName(type));
+  } catch (err) {
+    console.error("Xuất file thất bại:", err);
+    error.value = err?.response?.data?.message || err?.message || "Không thể xuất file.";
+  } finally {
+    if (type === "pdf") exportingPdf.value = false;
+    else exportingExcel.value = false;
+  }
+}
 
 async function fetchDashboard() {
   try {
+    if (!validateCustomDates()) return;
+
     loading.value = true;
     error.value = "";
 
-    const res = await dashboardAdminService.overview({
-      range: selectedRange.value,
-    });
+    const res = await dashboardAdminService.overview(buildParams());
 
     dashboard.value = {
       ...defaultDashboard(),
@@ -749,6 +866,13 @@ async function fetchDashboard() {
     loading.value = false;
   }
 }
+
+watch(selectedRange, (value) => {
+  if (value !== "custom") {
+    customStartDate.value = "";
+    customEndDate.value = "";
+  }
+});
 
 onMounted(() => {
   fetchDashboard();

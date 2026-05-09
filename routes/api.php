@@ -130,6 +130,8 @@ Route::prefix('v1/admin')
     ->middleware(['auth:sanctum', 'role:admin'])
     ->group(function () {
         Route::get('/dashboard', [App\Http\Controllers\Api\Admin\DashboardController::class, 'index']);
+        Route::get('/dashboard/export/excel', [App\Http\Controllers\Api\Admin\DashboardController::class, 'exportExcel']);
+        Route::get('/dashboard/export/pdf', [App\Http\Controllers\Api\Admin\DashboardController::class, 'exportPdf']);
         
         Route::apiResource('products', App\Http\Controllers\Api\Admin\ProductController::class);
         Route::apiResource('categories', App\Http\Controllers\Api\Admin\CategoryController::class);
