@@ -28,7 +28,7 @@ class DashboardExport implements FromCollection, WithHeadings, WithMapping, With
 
     public function headings(): array
     {
-        return ['Khu vực', 'Chỉ số', 'Giá trị', 'Ghi chú'];
+        return ['Khu vực', 'Chỉ số', 'Giá trị', 'Màu phổ biến', 'Ghi chú'];
     }
 
     public function map($row): array
@@ -37,13 +37,14 @@ class DashboardExport implements FromCollection, WithHeadings, WithMapping, With
             $row['section'],
             $row['title'],
             $row['metric'],
+            $row['color'] ?? '',
             $row['extra'],
         ];
     }
 
     public function styles(Worksheet $sheet)
     {
-        $sheet->getStyle('A1:D1')->applyFromArray([
+        $sheet->getStyle('A1:E1')->applyFromArray([
             'font' => [
                 'bold' => true,
                 'color' => ['rgb' => 'FFFFFF'],
@@ -88,28 +89,32 @@ class DashboardExport implements FromCollection, WithHeadings, WithMapping, With
             'section' => 'Doanh thu',
             'title' => 'Tổng doanh thu',
             'metric' => (float) data_get($overview, 'revenue', 0),
+            'color' => '',
             'extra' => 'Tăng trưởng: ' . (float) data_get($overview, 'revenue_growth', 0) . '%',
         ];
         $rows[] = [
             'section' => 'Đơn hàng',
             'title' => 'Tổng đơn hàng',
             'metric' => (int) data_get($overview, 'orders', 0),
+            'color' => '',
             'extra' => 'Tăng trưởng: ' . (float) data_get($overview, 'orders_growth', 0) . '%',
         ];
         $rows[] = [
             'section' => 'Khách hàng mới',
             'title' => 'Tổng khách hàng',
             'metric' => (int) data_get($overview, 'customers', 0),
+            'color' => '',
             'extra' => 'Tăng trưởng: ' . (float) data_get($overview, 'customers_growth', 0) . '%',
         ];
         $rows[] = [
             'section' => 'Sản phẩm',
             'title' => 'Tổng sản phẩm',
             'metric' => (int) data_get($overview, 'products', 0),
+            'color' => '',
             'extra' => 'Tăng trưởng: ' . (float) data_get($overview, 'products_growth', 0) . '%',
         ];
 
-        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'extra' => '---'];
+        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'color' => '---', 'extra' => '---'];
 
         foreach (($sections['chart'] ?? []) as $item) {
             $rows[] = [
@@ -123,15 +128,25 @@ class DashboardExport implements FromCollection, WithHeadings, WithMapping, With
         $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'extra' => '---'];
 
         foreach (($sections['top_products'] ?? []) as $product) {
+            $topColors = collect($product['top_colors'] ?? [])->map(function ($color) {
+                $name = $color['color'] ?? '';
+                $hex = $color['hex'] ?? '';
+                if (!$name) return null;
+                return $hex ? $name . ' (' . $hex . ')' : $name;
+            })->filter()->values()->all();
+
+            $topSizes = collect($product['top_sizes'] ?? [])->map(fn ($size) => $size['size'] ?? null)->filter()->values()->all();
+
             $rows[] = [
                 'section' => 'Top sản phẩm bán chạy',
                 'title' => $product['name'] ?? '',
                 'metric' => (int) ($product['sold'] ?? 0),
-                'extra' => 'Size/Màu phổ biến đã được tổng hợp',
+                'color' => implode(', ', $topColors),
+                'extra' => 'Size: ' . (implode(', ', $topSizes) ?: '-') ,
             ];
         }
 
-        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'extra' => '---'];
+        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'color' => '---', 'extra' => '---'];
 
         foreach (($sections['recent_orders'] ?? []) as $order) {
             $rows[] = [
@@ -142,13 +157,14 @@ class DashboardExport implements FromCollection, WithHeadings, WithMapping, With
             ];
         }
 
-        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'extra' => '---'];
+        $rows[] = ['section' => '---', 'title' => '---', 'metric' => '---', 'color' => '---', 'extra' => '---'];
 
         foreach (($sections['new_customers'] ?? []) as $customer) {
             $rows[] = [
                 'section' => 'Khách hàng mới',
                 'title' => $customer['name'] ?? '',
                 'metric' => 1,
+                'color' => '',
                 'extra' => ($customer['email'] ?? '') . ' | ' . ($customer['created_at'] ?? ''),
             ];
         }

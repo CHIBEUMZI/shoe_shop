@@ -17,6 +17,7 @@
         .card h4 { margin: 0 0 6px 0; font-size: 12px; }
         .card .value { font-size: 16px; font-weight: bold; }
         .muted { color: #6b7280; }
+        .swatch { display: inline-block; width: 12px; height: 12px; border-radius: 999px; margin-right: 6px; border: 1px solid rgba(0,0,0,.15); vertical-align: middle; }
     </style>
 </head>
 <body>
@@ -49,13 +50,26 @@
 
     <div class="section">Top sản phẩm bán chạy</div>
     <table>
-        <thead><tr><th>Sản phẩm</th><th>Đã bán</th><th>Ghi chú</th></tr></thead>
+        <thead><tr><th>Sản phẩm</th><th>Đã bán</th><th>Màu phổ biến</th><th>Size phổ biến</th></tr></thead>
         <tbody>
         @foreach(data_get($payload, 'sections.top_products', []) as $item)
             <tr>
                 <td>{{ $item['name'] ?? '' }}</td>
                 <td>{{ $item['sold'] ?? 0 }}</td>
-                <td>Size/Màu phổ biến đã được tổng hợp</td>
+                <td>
+                    @php($colors = collect($item['top_colors'] ?? []))
+                    @if($colors->isNotEmpty())
+                        @foreach($colors as $color)
+                            <span class="swatch" style="background-color: {{ $color['hex'] ?? '#9ca3af' }}"></span>{{ $color['color'] ?? '' }}@if(!$loop->last), @endif
+                        @endforeach
+                    @else
+                        -
+                    @endif
+                </td>
+                <td>
+                    @php($sizes = collect($item['top_sizes'] ?? []))
+                    {{ $sizes->pluck('size')->filter()->implode(', ') ?: '-' }}
+                </td>
             </tr>
         @endforeach
         </tbody>

@@ -465,6 +465,7 @@ class DashboardController extends Controller
                 'top_colors' => collect($allTopColors[$product->id] ?? [])->map(fn($item) => [
                     'color' => $item->color,
                     'sold' => (int) $item->total_sold,
+                    'hex' => $this->colorHex($item->color),
                 ])->values()->all(),
             ];
         })->values()->all();
@@ -631,6 +632,30 @@ class DashboardController extends Controller
         }
 
         return round((($current - $previous) / $previous) * 100, 1);
+    }
+
+    protected function colorHex(?string $colorName): string
+    {
+        $color = strtolower(trim((string) $colorName));
+
+        return match ($color) {
+            'đen', 'black' => '#1f2937',
+            'đỏ', 'red' => '#ef4444',
+            'xanh lá', 'green' => '#22c55e',
+            'xanh dương', 'blue' => '#3b82f6',
+            'vàng', 'yellow' => '#eab308',
+            'trắng', 'white' => '#f9fafb',
+            'nâu', 'brown' => '#92400e',
+            'xám', 'gray', 'grey' => '#6b7280',
+            'tím', 'purple' => '#a855f7',
+            'cam', 'orange' => '#f97316',
+            'hồng', 'pink' => '#ec4899',
+            'navy', 'xanh navy' => '#1e3a5f',
+            'be' => '#d6c5b3',
+            'bạc', 'silver' => '#9ca3af',
+            'vàng gold', 'gold' => '#d4af37',
+            default => '#9ca3af',
+        };
     }
 
     protected function statusLabel(?string $status): string
