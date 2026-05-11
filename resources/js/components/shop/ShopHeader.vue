@@ -724,11 +724,7 @@ function onArrowUp() {
 function onEnter() {
   if (!showSuggest.value) return;
 
-  if (activeIndex.value >= 0 && suggestions.value[activeIndex.value]) {
-    goProduct(suggestions.value[activeIndex.value].slug);
-  } else {
-    emitSearchAll();
-  }
+  emitSearchAll();
 }
 
 function onDocClick(e) {

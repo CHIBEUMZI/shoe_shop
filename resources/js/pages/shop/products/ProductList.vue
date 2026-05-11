@@ -4,10 +4,10 @@
       <div class="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
         <div class="space-y-2">
           <h1 class="text-2xl sm:text-3xl font-black text-slate-900 dark:text-white tracking-tight">
-            Tất cả sản phẩm
+            {{ headingTitle }}
           </h1>
           <p class="text-slate-500 dark:text-slate-400 text-sm">
-            Khám phá toàn bộ sản phẩm trong cửa hàng
+            {{ headingSubtitle }}
           </p>
 
           <div
@@ -443,6 +443,14 @@ const router = useRouter();
 const route = useRoute();
 
 const routeSearch = computed(() => String(route.query.search || "").trim());
+const headingTitle = computed(() =>
+  routeSearch.value ? `Kết quả tìm kiếm cho "${routeSearch.value}"` : "Tất cả sản phẩm"
+);
+const headingSubtitle = computed(() =>
+  routeSearch.value
+    ? "Hiển thị toàn bộ sản phẩm phù hợp với từ khóa bạn vừa nhập"
+    : "Khám phá toàn bộ sản phẩm trong cửa hàng"
+);
 
 const sortOptions = [
   { label: "Phổ biến", value: "pop" },
