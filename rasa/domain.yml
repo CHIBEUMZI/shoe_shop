@@ -37,7 +37,14 @@ intents:
   - ask_occasion_gift
   - ask_gift_for_lover
   - ask_faq
-  - ask_clarify
+  - ask_clarify_faq
+  - ask_clarify_purchase
+  - ask_followup_purchase
+  - ask_followup_care
+  - ask_followup_return
+  - provide_material
+  - provide_style
+  - provide_color
   - nlu_fallback
 
 entities:
@@ -47,10 +54,10 @@ entities:
   - shoe_size
   - brand
   - occasion
+  - material
   - color
   - style
   - shoe_feature
-  - material
   - gift_occasion
   - recipient_gender
 
@@ -139,6 +146,11 @@ slots:
     influence_conversation: false
     mappings:
       - type: custom
+  followup_topic:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
   purpose:
     type: text
     influence_conversation: true
@@ -214,15 +226,6 @@ slots:
     mappings:
       - type: from_entity
         entity: color
-      - type: from_text
-        conditions:
-          - active_loop: null
-  material:
-    type: text
-    influence_conversation: false
-    mappings:
-      - type: from_entity
-        entity: material
       - type: from_text
         conditions:
           - active_loop: null

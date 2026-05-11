@@ -10,15 +10,13 @@ from .api_client import _fetch_products, _product_to_card
 from .constants import _get_advice_for_purpose
 
 
-SIZE_GUIDE_TEXT = """📏 **Hướng dẫn chọn SIZE giày chuẩn:**
-
-**Cách đo:**
+SIZE_GUIDE_TEXT = """📏 Hướng dẫn chọn SIZE giày chuẩn
+Cách đo:
 1. Chuẩn bị 1 tờ giấy A4 đặt trên sàn phẳng
 2. Đặt chân lên giấy, cân bằng trọng lượng
 3. Dùng bút đánh dấu điểm đầu mũi chân dài nhất và điểm gót chân
 4. Đo khoảng cách giữa 2 điểm đó (cm)
-
-**Bảng size BMC Shoes:**
+Bảng size BMC Shoes:
 - Size 35: 22.5 cm
 - Size 36: 23.0 cm
 - Size 37: 23.5 cm
@@ -31,8 +29,7 @@ SIZE_GUIDE_TEXT = """📏 **Hướng dẫn chọn SIZE giày chuẩn:**
 - Size 44: 27.0 cm
 - Size 45: 27.5 cm
 - Size 46: 28.0 cm
-
-💡 **Mẹo:** Nên đo vào cuối ngày vì chân sẽ hơi phồng. Nếu chân rộng hơn bình thường, nên chọn size lớn hơn 0.5.
+💡 Mẹo: Nên đo vào cuối ngày vì chân sẽ hơi phồng. Nếu chân rộng hơn bình thường, nên chọn size lớn hơn 0.5.
 
 Bạn muốn mình tìm giày theo size nào?"""
 
@@ -146,6 +143,8 @@ class ActionFAQ(Action):
     ) -> List[Dict[Text, Any]]:
         text = (tracker.latest_message or {}).get("text") or ""
         t = text.lower()
+        last_bot_message = (tracker.latest_bot_utterance or {}).get("text") or ""
+        last_bot_lower = last_bot_message.lower()
 
         if any(k in t for k in ["size", "đo chân", "bàn chân", "cm", "chọn size", "hướng dẫn", "đo size", "cách chọn size"]):
             dispatcher.utter_message(text=_size_guide_brief())
@@ -154,15 +153,32 @@ class ActionFAQ(Action):
         if any(k in t for k in ["sale", "giảm giá", "khuyến mãi", "voucher", "freeship"]):
             dispatcher.utter_message(text="Hiện tại mình có thể tìm các sản phẩm đang sale hoặc lọc theo tầm giá. Nếu bạn muốn, hãy gửi tên brand, loại giày hoặc mức giá bạn mong muốn.")
             return [SlotSet("clarify_expected", "price"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm giá đúng không?")]
-        if any(k in t for k in ["da", "vải", "canvas", "suede", "bảo quản", "vệ sinh"]):
+        if any(k in t for k in ["da lộn", "suede", "nubuck"]):
+            dispatcher.utter_message(text="🧴 Hướng dẫn bảo quản giày DA LỘN / SUEDE:\n\n1. Không dùng nước trực tiếp để chà mạnh lên bề mặt\n2. Dùng bàn chải suede chải nhẹ theo một chiều\n3. Xử lý vết bẩn khô bằng gôm tẩy suede hoặc khăn khô mềm\n4. Xịt chống nước/chống bám bẩn trước khi sử dụng\n5. Phơi khô tự nhiên nếu giày bị ẩm, tránh nắng gắt và máy sấy\n6. Nhét shoe tree hoặc giấy để giữ form khi không dùng\n\nBạn cần tư vấn thêm sản phẩm chăm sóc giày nào không?")
+            return [SlotSet("clarify_expected", "care"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm cách bảo quản giày da lộn đúng không?")]
+        if any(k in t for k in ["da", "vải", "canvas", "fabric", "bảo quản", "vệ sinh"]) or any(k in last_bot_lower for k in ["bảo quản giày da", "bảo quản giày vải", "vệ sinh giày vải", "vệ sinh giày da"]):
+            if any(k in t for k in ["vải", "canvas", "fabric"]):
+                dispatcher.utter_message(text="🧼 Hướng dẫn vệ sinh giày VẢI/CANVAS:\n\n1. Giặt tay bằng nước ấm + xà phòng nhẹ, tránh giặt máy\n2. Chải nhẹ bằng bàn chải mềm các vết bẩn\n3. Xả sạch và để khô tự nhiên trong bóng râm (tránh nắng gắt)\n4. Có thể cho giấy báo vào trong giày để giữ form khi phơi\n5. Không ngâm nước quá lâu sẽ làm hỏng keo dán\n6. Lưu trữ nơi khô ráo, thoáng mát\n\nBạn cần tư vấn thêm sản phẩm nào không?")
+                return [SlotSet("clarify_expected", "care"), SlotSet("followup_topic", "care"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm cách vệ sinh giày vải đúng không?")]
             dispatcher.utter_message(text="Mình có thể tư vấn cách vệ sinh và bảo quản theo từng chất liệu như da, vải canvas, da lộn hoặc giày thể thao. Bạn cứ nói rõ loại giày nhé.")
-            return [SlotSet("clarify_expected", "comfort"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm độ êm hay cách bảo quản của mẫu này?")]
+            return [SlotSet("clarify_expected", "care"), SlotSet("followup_topic", "care"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm cách bảo quản hay cách vệ sinh của mẫu này?")]
         if any(k in t for k in ["nam", "nữ", "gender", "giới tính"]):
             dispatcher.utter_message(text="Mình có thể lọc giày theo nam, nữ hoặc unisex. Bạn chỉ cần nói rõ nhu cầu, mình sẽ gợi ý theo đúng nhóm phù hợp.")
-            return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn muốn lọc theo nam, nữ hay unisex?")]
+            return [SlotSet("clarify_expected", "general"), SlotSet("followup_topic", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn muốn lọc theo nam, nữ hay unisex?")]
+
+        if any(k in last_bot_lower for k in ["bảo quản giày da", "vệ sinh giày vải", "đổi size", "đổi mẫu"]):
+            if any(k in t for k in ["giày vải", "vải", "canvas"]):
+                dispatcher.utter_message(text="🧼 Hướng dẫn vệ sinh giày VẢI/CANVAS:\n\n1. Giặt tay bằng nước ấm + xà phòng nhẹ, tránh giặt máy\n2. Chải nhẹ bằng bàn chải mềm các vết bẩn\n3. Xả sạch và để khô tự nhiên trong bóng râm\n4. Cho giấy báo vào trong giày để giữ form khi phơi\n5. Không ngâm nước quá lâu\n\nNếu bạn muốn, mình có thể tiếp tục hướng dẫn cách bảo quản giày da nữa.")
+                return [SlotSet("clarify_expected", "care"), SlotSet("followup_topic", "care"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn muốn mình nói tiếp về giày da hay đổi size/đổi mẫu?")]
+            if any(k in t for k in ["giày da", "da", "leather"]):
+                dispatcher.utter_message(text="🧴 Hướng dẫn bảo quản giày DA:\n\n1. Lau sạch sau mỗi lần sử dụng bằng khăn ẩm\n2. Để khô tự nhiên, tránh nắng gắt và nhiệt cao\n3. Dùng kem/sáp dưỡng da chuyên dụng 1-2 lần/tuần\n4. Cất trong hộp giày hoặc túi vải, có miếng lót giữ form\n5. Có thể dùng xịt chống nước chuyên dụng cho da\n\nNếu bạn muốn, mình cũng có thể hướng dẫn luôn về đổi size/đổi mẫu.")
+                return [SlotSet("clarify_expected", "care"), SlotSet("followup_topic", "care"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn muốn hỏi tiếp về giày vải hay đổi size/đổi mẫu?")]
+            if any(k in t for k in ["đổi size", "đổi mẫu", "đổi trả", "trả hàng"]):
+                dispatcher.utter_message(text="Shop đổi size/đổi mẫu miễn phí trong 7 ngày nếu sản phẩm còn nguyên tem mác và chưa qua sử dụng. Bạn muốn đổi size hay đổi mẫu ạ?")
+                return [SlotSet("clarify_expected", "return"), SlotSet("followup_topic", "return"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn cần đổi size hay muốn đổi mẫu?")]
 
         dispatcher.utter_message(text="Mình có thể hỗ trợ tư vấn size, giá, sale, chất liệu, brand và mục đích sử dụng. Bạn hỏi tự nhiên như đang chat với nhân viên tư vấn nhé!")
-        return [SlotSet("clarify_expected", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm size, giá, độ êm hay brand của mẫu này?")]
+        return [SlotSet("clarify_expected", "general"), SlotSet("followup_topic", "general"), SlotSet("last_product_query", text), SlotSet("clarify_question", "Bạn đang quan tâm size, giá, độ êm hay brand của mẫu này?")]
 
 
 class ActionCareGuide(Action):
@@ -180,58 +196,53 @@ class ActionCareGuide(Action):
         t = text.lower()
 
         if any(k in t for k in ["da lộn", "suede", "nubuck"]):
-            guide_text = """🧴 **Hướng dẫn bảo quản giày DA LỘN / SUEDE:**
-
-1. **Không dùng nước trực tiếp** để chà mạnh lên bề mặt
-2. **Dùng bàn chải suede** chải nhẹ theo một chiều
-3. **Xử lý vết bẩn khô** bằng gôm tẩy suede hoặc khăn khô mềm
-4. **Xịt chống nước/chống bám bẩn** trước khi sử dụng
-5. **Phơi khô tự nhiên** nếu giày bị ẩm, tránh nắng gắt và máy sấy
-6. **Nhét shoe tree hoặc giấy** để giữ form khi không dùng
+            guide_text = """🧴 Hướng dẫn bảo quản giày DA LỘN / SUEDE:
+1. Không dùng nước trực tiếp để chà mạnh lên bề mặt
+2. Dùng bàn chải suede chải nhẹ theo một chiều
+3. Xử lý vết bẩn khô bằng gôm tẩy suede hoặc khăn khô mềm
+4. Xịt chống nước/chống bám bẩn trước khi sử dụng
+5. Phơi khô tự nhiên nếu giày bị ẩm, tránh nắng gắt và máy sấy
+6. Nhét shoe tree hoặc giấy để giữ form khi không dùng
 
 Bạn cần tư vấn thêm sản phẩm chăm sóc giày nào không?"""
         elif any(k in t for k in ["da", "leather"]):
-            guide_text = """🧴 **Hướng dẫn bảo quản giày DA:**
-
-1. **Lau sạch** sau mỗi lần sử dụng bằng khăn ẩm
-2. **Sấy khô** tự nhiên, tránh phơi nắng gắt hoặc sấy lửa
-3. **Sử dụng kem/sáp dưỡng da** chuyên dụng 1-2 lần/tuần
-4. **Lưu trữ** trong hộp giày hoặc túi vải, có miếng lót giữ form
-5. **Chống ẩm** bằng xịt chống nước chuyên dụng cho da
+            guide_text = """🧴 Hướng dẫn bảo quản giày DA:
+1. Lau sạch sau mỗi lần sử dụng bằng khăn ẩm
+2. Sấy khô tự nhiên, tránh phơi nắng gắt hoặc sấy lửa
+3. Sử dụng kem/sáp dưỡng da chuyên dụng 1-2 lần/tuần
+4. Lưu trữ trong hộp giày hoặc túi vải, có miếng lót giữ form
+5. Chống ẩm bằng xịt chống nước chuyên dụng cho da
 
 Bạn cần tư vấn thêm sản phẩm chăm sóc giày nào không?"""
         elif any(k in t for k in ["vải", "canvas", "fabric"]):
-            guide_text = """🧼 **Hướng dẫn vệ sinh giày VẢI/CANVAS:**
-
-1. **Giặt tay** bằng nước ấm + xà phòng nhẹ, tránh giặt máy
-2. **Chải nhẹ** bằng bàn chải mềm các vết bẩn
-3. **Xả sạch** và **để khô tự nhiên** trong bóng râm (tránh nắng gắt)
-4. **Có thể** cho giấy báo vào trong giày để giữ form khi phơi
-5. **Không ngâm** nước quá lâu sẽ làm hỏng keo dán
-6. **Lưu trữ** nơi khô ráo, thoáng mát
+            guide_text = """🧼 Hướng dẫn vệ sinh giày VẢI/CANVAS:
+1. Giặt tay bằng nước ấm + xà phòng nhẹ, tránh giặt máy
+2. Chải nhẹ bằng bàn chải mềm các vết bẩn
+3. Xả sạch và để khô tự nhiên trong bóng râm (tránh nắng gắt)
+4. Có thể cho giấy báo vào trong giày để giữ form khi phơi
+5. Không ngâm nước quá lâu sẽ làm hỏng keo dán
+6. Lưu trữ nơi khô ráo, thoáng mát
 
 Bạn cần tư vấn thêm sản phẩm nào không?"""
         elif any(k in t for k in ["giày thể thao", "running", "chạy bộ", "đá bóng"]):
-            guide_text = """🏃 **Hướng dẫn bảo quản giày THỂ THAO:**
-
-1. **Vệ sinh sau mỗi buổi tập**: Lau sạch bùn, cỏ, mồ hôi
-2. **Tháo laces & insole** trước khi vệ sinh
-3. **Để khô** hoàn toàn trước khi cất, tránh ẩm mốc
-4. **Thay laces** định kỳ nếu đã cũ hoặc giãn
-5. **Tránh giặt máy** sẽ làm hỏng đệm và form giày
-6. **Sử dụng** 2-3 đôi luân phiên để kéo dài tuổi thọ giày
-7. **Thay giày** sau 500-800km chạy bộ để đảm bảo đệm tốt
+            guide_text = """🏃 Hướng dẫn bảo quản giày THỂ THAO:
+1. Vệ sinh sau mỗi buổi tập: Lau sạch bùn, cỏ, mồ hôi
+2. Tháo laces & insole trước khi vệ sinh
+3. Để khô hoàn toàn trước khi cất, tránh ẩm mốc
+4. Thay laces định kỳ nếu đã cũ hoặc giãn
+5. Tránh giặt máy sẽ làm hỏng đệm và form giày
+6. Sử dụng 2-3 đôi luân phiên để kéo dài tuổi thọ giày
+7. Thay giày sau 500-800km chạy bộ để đảm bảo đệm tốt
 
 Bạn muốn tìm thêm giày thể thao nào không?"""
         else:
-            guide_text = """🧴 **Hướng dẫn bảo quản giày CHUNG:**
-
-1. **Lau sạch** giày sau mỗi lần sử dụng
-2. **Để khô** tự nhiên, tránh phơi nắng gắt hoặc sấy lửa
-3. **Lưu trữ** trong hộp giày hoặc túi vải
-4. **Sử dụng** miếng lót giày để giữ form và hút ẩm
-5. **Luân phiên** nhiều đôi để giày có thời gian "nghỉ"
-6. **Kiểm tra** đế giày định kỳ, thay khi mòn
+            guide_text = """🧴 Hướng dẫn bảo quản giày CHUNG:
+1. Lau sạch giày sau mỗi lần sử dụng
+2. Để khô tự nhiên, tránh phơi nắng gắt hoặc sấy lửa
+3. Lưu trữ trong hộp giày hoặc túi vải
+4. Sử dụng miếng lót giày để giữ form và hút ẩm
+5. Luân phiên nhiều đôi để giày có thời gian "nghỉ"
+6. Kiểm tra đế giày định kỳ, thay khi mòn
 
 Bạn cần tư vấn thêm sản phẩm nào không?"""
 

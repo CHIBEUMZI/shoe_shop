@@ -481,19 +481,21 @@ function animateText(msgObj, onComplete) {
 <style scoped>
 /* === Variables === */
 .chatbot-wrapper {
-  --chat-primary: #6366f1;
-  --chat-primary-dark: #4f46e5;
+  --chat-primary: #5b5bf6;
+  --chat-primary-dark: #4338ca;
   --chat-primary-light: #818cf8;
+  --chat-accent: #22c55e;
   --chat-success: #22c55e;
   --chat-danger: #ef4444;
-  --chat-bg: #f8fafc;
+  --chat-bg: #f3f6fb;
+  --chat-surface: rgba(255, 255, 255, 0.86);
   --chat-white: #ffffff;
-  --chat-text: #1e293b;
+  --chat-text: #0f172a;
   --chat-text-muted: #64748b;
-  --chat-border: rgba(0, 0, 0, 0.08);
-  --chat-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-  --chat-radius: 20px;
-  --chat-radius-sm: 12px;
+  --chat-border: rgba(15, 23, 42, 0.08);
+  --chat-shadow: 0 30px 70px -18px rgba(15, 23, 42, 0.32);
+  --chat-radius: 24px;
+  --chat-radius-sm: 14px;
 }
 
 /* === Wrapper === */
@@ -509,7 +511,7 @@ function animateText(msgObj, onComplete) {
   background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-primary-dark) 100%);
   color: var(--chat-white);
   border: none;
-  border-radius: 999px;
+  border-radius: 14px;
   padding: 12px 20px;
   cursor: pointer;
   display: inline-flex;
@@ -568,7 +570,7 @@ function animateText(msgObj, onComplete) {
   font-weight: 700;
   width: 20px;
   height: 20px;
-  border-radius: 50%;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -609,16 +611,18 @@ function animateText(msgObj, onComplete) {
 .chat-window {
   position: absolute;
   right: 0;
-  bottom: 60px;
-  width: 380px;
-  max-height: 580px;
-  background: var(--chat-white);
-  border-radius: var(--chat-radius);
+  bottom: 68px;
+  width: 390px;
+  max-height: 620px;
+  background: var(--chat-surface);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 18px;
   box-shadow: var(--chat-shadow);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--chat-border);
+  border: 1px solid rgba(255, 255, 255, 0.65);
 }
 
 /* === Slide Animation === */
@@ -654,24 +658,25 @@ function animateText(msgObj, onComplete) {
 
 /* === Header === */
 .chat-header {
-  padding: 16px 16px;
-  background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-primary-dark) 100%);
+  padding: 18px 18px;
+  background: linear-gradient(135deg, rgba(91, 91, 246, 0.98) 0%, rgba(67, 56, 202, 0.98) 100%);
   color: var(--chat-white);
   display: flex;
   justify-content: space-between;
   align-items: center;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
 }
 
 .chat-header::before {
   content: "";
   position: absolute;
-  top: -50%;
-  right: -20%;
-  width: 200px;
-  height: 200px;
-  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+  top: -60%;
+  right: -18%;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16) 0%, transparent 72%);
   border-radius: 50%;
 }
 
@@ -684,15 +689,16 @@ function animateText(msgObj, onComplete) {
 }
 
 .chat-avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.2);
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
   backdrop-filter: blur(10px);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18);
 }
 
 .chat-avatar img {
@@ -788,11 +794,13 @@ function animateText(msgObj, onComplete) {
 .chat-messages {
   flex: 1;
   overflow-y: auto;
-  background: var(--chat-bg);
-  padding: 16px;
+  background:
+    radial-gradient(circle at top, rgba(91, 91, 246, 0.08), transparent 32%),
+    linear-gradient(180deg, #f8fbff 0%, var(--chat-bg) 100%);
+  padding: 18px 16px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
 }
 
 .chat-messages::-webkit-scrollbar {
@@ -815,8 +823,8 @@ function animateText(msgObj, onComplete) {
 /* === Welcome Section === */
 .chat-welcome {
   text-align: center;
-  padding: 24px 16px;
-  margin-bottom: 8px;
+  padding: 28px 18px 20px;
+  margin-bottom: 10px;
 }
 
 .chat-welcome-icon {
@@ -855,25 +863,26 @@ function animateText(msgObj, onComplete) {
 .chat-suggestions {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
-  padding: 0 8px;
+  gap: 10px;
+  margin-bottom: 18px;
+  padding: 0 8px 4px;
+  justify-content: center;
 }
 
 .chat-suggestion {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
-  background: var(--chat-white);
-  border: 1px solid var(--chat-border);
+  gap: 8px;
+  padding: 10px 15px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  border: 1px solid rgba(99, 102, 241, 0.12);
   border-radius: 999px;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--chat-text);
   cursor: pointer;
   transition: all 0.2s ease;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.06);
 }
 
 .chat-suggestion:hover {
@@ -931,26 +940,27 @@ function animateText(msgObj, onComplete) {
 }
 
 .chat-msg-bubble {
-  padding: 10px 14px;
-  border-radius: var(--chat-radius-sm);
+  padding: 11px 15px;
+  border-radius: 12px;
   font-size: 14px;
-  line-height: 1.5;
+  line-height: 1.65;
   white-space: pre-wrap;
   word-break: break-word;
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 }
 
 .chat-msg.bot .chat-msg-bubble {
-  background: var(--chat-white);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
   color: var(--chat-text);
-  border: 1px solid var(--chat-border);
-  border-top-left-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  border-radius: 12px 12px 12px 4px;
+  box-shadow: 0 8px 22px rgba(15, 23, 42, 0.05);
 }
 
 .chat-msg.user .chat-msg-bubble {
   background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-primary-dark) 100%);
   color: white;
-  border-top-right-radius: 4px;
+  border-radius: 12px 12px 4px 12px;
 }
 
 .chat-msg-time {
@@ -1077,8 +1087,8 @@ function animateText(msgObj, onComplete) {
   flex-direction: column;
   padding: 8px;
   border-radius: var(--chat-radius-sm);
-  border: 1px solid var(--chat-border);
-  background: var(--chat-bg);
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
   text-decoration: none;
   color: inherit;
   transition: all 0.2s ease;
@@ -1087,8 +1097,8 @@ function animateText(msgObj, onComplete) {
 
 .chat-product-card:hover {
   transform: translateY(-2px);
-  border-color: var(--chat-primary);
-  box-shadow: 0 8px 24px rgba(99, 102, 241, 0.15);
+  border-color: rgba(99, 102, 241, 0.22);
+  box-shadow: 0 12px 28px rgba(99, 102, 241, 0.16);
 }
 
 .chat-product-img-wrap {
@@ -1214,26 +1224,26 @@ function animateText(msgObj, onComplete) {
 
 /* === Input === */
 .chat-input {
-  padding: 12px 16px;
-  background: var(--chat-white);
-  border-top: 1px solid var(--chat-border);
+  padding: 12px 16px 14px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
+  border-top: 1px solid rgba(15, 23, 42, 0.06);
 }
 
 .chat-input-wrap {
   display: flex;
   align-items: center;
   gap: 8px;
-  background: var(--chat-bg);
+  background: rgba(241, 245, 249, 0.92);
   border-radius: 999px;
   padding: 4px;
-  border: 2px solid transparent;
+  border: 1px solid rgba(15, 23, 42, 0.06);
   transition: all 0.2s ease;
 }
 
 .chat-input-wrap:focus-within {
-  border-color: var(--chat-primary);
+  border-color: rgba(91, 91, 246, 0.35);
   background: var(--chat-white);
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow: 0 0 0 4px rgba(91, 91, 246, 0.1);
 }
 
 .chat-input input {
@@ -1251,8 +1261,8 @@ function animateText(msgObj, onComplete) {
 }
 
 .chat-send-btn {
-  width: 36px;
-  height: 36px;
+  width: 40px;
+  height: 40px;
   border: none;
   background: linear-gradient(135deg, var(--chat-primary) 0%, var(--chat-primary-dark) 100%);
   color: white;
@@ -1263,6 +1273,7 @@ function animateText(msgObj, onComplete) {
   justify-content: center;
   transition: all 0.2s ease;
   flex-shrink: 0;
+  box-shadow: 0 8px 18px rgba(91, 91, 246, 0.25);
 }
 
 .chat-send-btn:hover:not(:disabled) {
@@ -1290,12 +1301,13 @@ function animateText(msgObj, onComplete) {
 
 /* === Footer === */
 .chat-footer {
-  padding: 8px 16px;
-  background: var(--chat-bg);
+  padding: 10px 16px;
+  background: rgba(255, 255, 255, 0.75);
   text-align: center;
   font-size: 11px;
   color: var(--chat-text-muted);
-  border-top: 1px solid var(--chat-border);
+  border-top: 1px solid rgba(15, 23, 42, 0.05);
+  backdrop-filter: blur(10px);
 }
 
 .chat-footer-brand {

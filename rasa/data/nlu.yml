@@ -362,6 +362,11 @@ nlu:
       - mua nhầm thì đổi sao
       - giày không vừa thì sao
       - giày giao nhầm thì sao
+      - thế đổi size thế nào
+      - còn đổi mẫu được không
+      - nếu không vừa thì đổi sao
+      - muốn đổi size thì làm gì
+      - giày này không vừa thì sao
 
   - intent: ask_warranty
     examples: |
@@ -488,6 +493,16 @@ nlu:
       - giày [jordan](brand) [basketball](purpose)
       - giày [reebok](brand) [training](purpose)
       - tìm giày [đá bóng](purpose) [nike](brand)
+      - giày da [công sở](purpose) màu [đen](color)
+      - giày [da lộn](material) [retro](style)
+      - giày [vải](material) [casual](style)
+      - sneaker [trắng](color) [basic](style)
+      - giày [da](material) đi làm
+      - giày [canvas](material) đi học
+      - giày [mesh](material) chạy bộ
+      - giày [suede](material) phong cách [retro](style)
+      - giày [Puma](brand) màu [đen](color) size [40](shoe_size)
+      - giày [New Balance](brand) [retro](style) tầm [2-3 triệu](price_range)
       - giày [nike](brand) [air max](purpose) [trắng](purpose)
       - giày [adidas](brand) [stan smith](purpose) [xanh](purpose)
       - giày [puma](brand) [suede](purpose) [đen](purpose)
@@ -614,6 +629,11 @@ nlu:
       - giày suede bị ướt thì sao
       - cách chải giày suede
       - có nên đánh xi giày da không
+      - vậy giày vải thì sao
+      - còn giày da thì bảo quản thế nào
+      - còn giày vải/canvas thì vệ sinh sao
+      - nếu giày bị ẩm thì xử lý thế nào
+      - giày vải bị bẩn thì làm sao
 
   - intent: ask_compare
     examples: |
@@ -671,7 +691,46 @@ nlu:
       - màu này đẹp không
 
 
-  - intent: ask_clarify
+  - intent: provide_material
+    examples: |
+      - mình thích giày [da](material)
+      - ưu tiên chất liệu [vải](material)
+      - mình muốn giày [canvas](material)
+      - giày [suede](material) có không
+      - chọn chất liệu [mesh](material)
+      - có giày [da lộn](material) không
+      - tìm giày [da](material) đi làm
+      - mình cần giày [vải](material) đi học
+      - giày [canvas](material) màu trắng
+      - giày [mesh](material) chạy bộ
+
+  - intent: provide_color
+    examples: |
+      - mình thích màu [trắng](color)
+      - tìm giày màu [đen](color)
+      - có màu [nâu](color) không
+      - giày [xanh navy](color) có không
+      - mình muốn màu [hồng](color)
+      - ưu tiên màu [xám](color)
+      - giày màu [đỏ](color)
+      - chọn màu [be](color)
+      - sneaker màu [trắng](color)
+      - giày [xanh](color) cho nam
+
+  - intent: provide_style
+    examples: |
+      - mình thích kiểu [retro](style)
+      - ưu tiên phong cách [basic](style)
+      - giày style [casual](style)
+      - giày [formal](style) đi làm
+      - chọn kiểu [sporty](style)
+      - mình muốn dáng [classic](style)
+      - sneaker phong cách [streetwear](style)
+      - giày [trendy](style)
+      - kiểu [năng động](style)
+      - giày [tối giản](style)
+
+  - intent: ask_clarify_faq
     examples: |
       - đôi này thế nào
       - mẫu này có ổn không
@@ -695,13 +754,78 @@ nlu:
       - nên lấy đôi này không
       - có nên mua không
       - nói kỹ hơn đi
+      - tư vấn thêm về sản phẩm này
+      - mẫu này có gì nổi bật
+      - đôi này dùng cho ai
+
+  - intent: ask_clarify_purchase
+    examples: |
+      - thế còn giày vải
+      - còn giày da thì sao
+      - còn giày suede thì sao
+      - vậy giày vải thì sao
+      - giày da nào tốt
+      - giày vải nào ổn
+      - còn mẫu nào màu đen size 40
+      - lọc theo màu đen size 40
+      - mình muốn mua mẫu này
+      - có mẫu nào khác không
+      - còn màu khác không
+      - còn size khác không
+      - đổi size thế nào
+      - đổi mẫu thế nào
+      - mình muốn đổi size
+      - mình muốn đổi mẫu
+      - trả hàng thế nào
+      - bảo quản sao
+      - giày đi làm thì sao
+      - giày đi tiệc thì sao
+      - giày đi chơi thì sao
+      - giày đi du lịch thì sao
+      - giày tặng valentine thế nào
+      - giày đi làm màu đen size 40
+      - giày đi tiệc màu đỏ
+      - vệ sinh thế nào
+      - tư vấn thêm đi
+      - nói rõ thêm được không
+      - giày này thế nào vậy
+      - mẫu này có gì đặc biệt
+
+  - intent: ask_followup_purchase
+    examples: |
+      - thế còn giày vải
+      - còn giày da thì sao
+      - còn giày suede thì sao
+      - vậy giày vải thì sao
+      - giày da nào tốt
+      - giày vải nào ổn
+      - còn mẫu nào màu đen size 40
+      - lọc theo màu đen size 40
+      - mình muốn mua mẫu này
+      - có mẫu nào khác không
+      - còn màu khác không
+      - còn size khác không
+      - đổi size thế nào
+      - đổi mẫu thế nào
+      - mình muốn đổi size
+      - mình muốn đổi mẫu
+      - trả hàng thế nào
+      - bảo quản sao
+      - giày đi làm thì sao
+      - giày đi tiệc thì sao
+      - giày đi chơi thì sao
+      - giày đi du lịch thì sao
+      - giày tặng valentine thế nào
+      - giày đi làm màu đen size 40
+      - giày đi tiệc màu đỏ
+      - vệ sinh thế nào
+      - tư vấn thêm đi
+      - nói rõ thêm được không
       - giày này thế nào vậy
       - mẫu này có gì đặc biệt
       - đôi này hợp không
       - cái này ổn không
       - nghe thế nào
-      - tư vấn thêm đi
-      - nói rõ thêm được không
 
   - intent: ask_gender
     examples: |

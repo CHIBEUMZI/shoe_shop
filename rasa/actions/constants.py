@@ -95,6 +95,20 @@ OCCASION_SCENE_MAP = {
 }
 
 
+def _group_advice(group: str) -> str:
+    if group == "da":
+        return "🧴 **Tư vấn giày da:** Các mẫu giày da trong shop thường phù hợp đi làm, đi chơi lịch sự và dễ phối đồ. Khi bảo quản, bạn nên lau sạch sau khi mang, để khô tự nhiên và dùng kem dưỡng da định kỳ để giữ bề mặt luôn đẹp."
+    if group == "vai":
+        return "🧼 **Tư vấn giày vải/canvas:** Giày vải/canvas thường nhẹ, thoáng và hợp đi học, đi chơi hoặc mặc hằng ngày. Khi vệ sinh, bạn nên chải nhẹ bằng bàn chải mềm, giặt tay với xà phòng dịu và phơi trong bóng râm để giữ form."
+    if group == "the_thao":
+        return "🏃 **Tư vấn giày thể thao:** Nhóm giày thể thao trong shop thường ưu tiên độ êm, độ nhẹ và độ bám tốt để đi bộ, chạy bộ hoặc vận động hằng ngày. Bạn nên chọn mẫu có đệm tốt và size vừa chân để thoải mái nhất."
+    if group == "da_bong":
+        return "⚽ **Tư vấn giày đá bóng:** Các mẫu giày đá bóng trong shop được thiết kế cho từng mặt sân, đặc biệt là sân cỏ nhân tạo với đinh TF hoặc sân cỏ tự nhiên với đinh FG. Bạn nên ưu tiên form ôm chân, bám sân tốt và cảm giác bóng ổn định."
+    if group == "cong_so":
+        return "💼 **Tư vấn giày công sở:** Giày công sở trong shop thiên về sự thanh lịch, chỉn chu và thoải mái khi mang cả ngày. Những mẫu da đen, nâu, oxford, derby hoặc chelsea boots thường là lựa chọn rất phù hợp."
+    return "Mình gợi ý một số mẫu giày phù hợp với yêu cầu của bạn:"
+
+
 def _get_advice_for_purpose(purpose: str) -> str:
     if not purpose:
         return "Mình gợi ý một số mẫu giày phù hợp với yêu cầu của bạn:"
