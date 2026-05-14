@@ -337,29 +337,7 @@
           </div>
 
           <!-- Wishlist button -->
-          <button
-            class="p-2 sm:p-2.5 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-all duration-200 hover:scale-105 relative group"
-            type="button"
-            @click="$emit('wishlist')"
-            title="Yêu thích"
-          >
-            <span
-              class="material-symbols-outlined text-slate-700 dark:text-slate-300 group-hover:text-red-500 transition-colors">
-              favorite
-            </span>
-            <span
-              v-if="wishlistCount > 0"
-              class="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 bg-gradient-to-r from-red-500 to-red-400 text-white text-[10px] flex items-center justify-center rounded-full border-2 border-white dark:border-background-dark font-bold shadow-lg shadow-red-500/30 animate-bounce-subtle"
-            >
-              {{ wishlistCount > 99 ? "99+" : wishlistCount }}
-            </span>
-            <!-- Tooltip -->
-            <span
-              class="absolute -bottom-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-slate-900 dark:bg-slate-700 text-white text-[10px] font-medium rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none"
-            >
-              Yêu thích
-            </span>
-          </button>
+
 
           <!-- Cart button -->
           <button

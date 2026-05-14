@@ -101,7 +101,6 @@
           </div>
 
           <div class="right">
-            <!-- Khi KHÔNG có yêu cầu hủy từ khách: hiển thị panel hành động thông thường -->
             <AdminActionPanel
               v-if="!order.cancellation_requested_at"
               title="Thao tác đơn hàng"
@@ -121,31 +120,31 @@
               </button>
             </AdminActionPanel>
 
-            <section v-if="order.cancellation_requested_at && order.status !== 'cancelled'" class="section">
+            <section v-if="canShowCancellationSection" class="section">
               <div class="section-head">
                 <div class="section-icon">⚠️</div>
-                <div class="section-title">Yêu cầu hủy đơn hàng</div>
+                <div class="section-title">Xử lý hủy đơn hàng</div>
               </div>
               <div class="section-body">
-                <div class="cancel-info">
-                  <div class="cancel-row">
-                    <span class="cancel-label">Thời gian yêu cầu:</span>
-                    <span class="cancel-value">{{ formatDateTime(order.cancellation_requested_at) }}</span>
+                <div v-if="order.cancellation_requested_at" class="cancel-request-box">
+                  <div class="cancel-request-badge">Khách hàng đã yêu cầu hủy</div>
+                  <div class="cancel-info">
+                    <div class="cancel-row">
+                      <span class="cancel-label">Thời gian yêu cầu:</span>
+                      <span class="cancel-value">{{ formatDateTime(order.cancellation_requested_at) }}</span>
+                    </div>
+                    <div class="cancel-row">
+                      <span class="cancel-label">Lý do khách hàng:</span>
+                      <span class="cancel-value">{{ order.cancellation_reason || "-" }}</span>
+                    </div>
                   </div>
-                  <div class="cancel-row">
-                    <span class="cancel-label">Lý do khách hàng:</span>
-                    <span class="cancel-value">{{ order.cancellation_reason || "-" }}</span>
-                  </div>
-                </div>
-
-                <div class="cancel-actions">
-                  <div class="cancel-action-hint">Hành động của bạn với yêu cầu hủy này:</div>
-                  <div class="flex gap-3 mt-3">
+                  <div class="cancel-action-hint mt-3">Chọn cách xử lý yêu cầu này:</div>
+                  <div class="cancel-action-buttons mt-3">
                     <button
                       class="btn btn-danger"
                       type="button"
                       :disabled="submitting"
-                      @click="confirmCancel"
+                      @click="approveCancellationRequest"
                     >
                       Xác nhận hủy đơn
                     </button>
@@ -155,14 +154,29 @@
                       :disabled="submitting"
                       @click="rejectCancel"
                     >
-                      Từ chối
+                      Từ chối yêu cầu
                     </button>
                   </div>
                 </div>
 
-                <div v-if="cancelActionError" class="cancel-error">
-                  {{ cancelActionError }}
+                <div v-else class="cancel-request-box">
+                  <div class="cancel-request-badge neutral">Chưa có yêu cầu hủy từ khách hàng</div>
+                  <div class="cancel-action-hint">
+                    Nếu cần hủy thủ công, hệ thống sẽ yêu cầu nhập lý do trong popup xác nhận.
+                  </div>
+                  <div class="mt-3">
+                    <button
+                      class="btn btn-danger"
+                      type="button"
+                      :disabled="submitting"
+                      @click="confirmCancel"
+                    >
+                      Hủy đơn hàng
+                    </button>
+                  </div>
                 </div>
+
+                <div v-if="cancelActionError" class="sr-only">{{ cancelActionError }}</div>
               </div>
             </section>
 
@@ -244,12 +258,7 @@
             ></textarea>
           </div>
 
-          <div
-            v-if="cancelActionError"
-            class="rounded-xl border border-red-200 bg-red-50 dark:bg-red-900/20 px-4 py-3 text-sm text-red-600 dark:text-red-400"
-          >
-            {{ cancelActionError }}
-          </div>
+          <div v-if="cancelActionError" class="sr-only">{{ cancelActionError }}</div>
         </div>
 
         <div class="px-6 py-4 border-t border-slate-200 dark:border-slate-700 flex justify-end gap-3">
@@ -395,19 +404,11 @@ const fullAddress = computed(() => {
     .join(", ") || "-";
 });
 
-const canConfirmCod = computed(() => {
-  return (
-    order.value.payment_method === "cod" &&
-    order.value.status === "pending" &&
-    !order.value.stock_deducted_at
-  );
-});
-
 const nextStatuses = computed(() => {
   const map = {
-    pending: ["confirmed", "cancelled"],
-    confirmed: ["processing", "cancelled"],
-    processing: ["shipping", "cancelled"],
+    pending: ["confirmed"],
+    confirmed: ["processing"],
+    processing: ["shipping"],
     shipping: ["completed"],
     completed: [],
     cancelled: [],
@@ -415,6 +416,8 @@ const nextStatuses = computed(() => {
 
   return map[order.value.status] || [];
 });
+
+const canShowCancellationSection = computed(() => order.value.status !== "cancelled");
 
 function updateStatus(status) {
   const labelMap = {
@@ -656,9 +659,18 @@ async function submitConfirmCancel() {
   } catch (e) {
     const msg = e?.response?.data?.message || "Không thể hủy đơn hàng.";
     cancelActionError.value = msg;
+
+    notify.error(msg, {
+      title: "Hủy đơn thất bại",
+      duration: 3500,
+    });
   } finally {
     submitting.value = false;
   }
+}
+
+function approveCancellationRequest() {
+  confirmCancel();
 }
 
 async function rejectCancel() {
@@ -677,6 +689,11 @@ async function rejectCancel() {
   } catch (e) {
     const msg = e?.response?.data?.message || "Không thể từ chối yêu cầu hủy đơn.";
     cancelActionError.value = msg;
+
+    notify.error(msg, {
+      title: "Từ chối thất bại",
+      duration: 3500,
+    });
   } finally {
     submitting.value = false;
   }
@@ -868,6 +885,10 @@ async function rejectCancel() {
   color: #991b1b;
 }
 
+.alert-inline {
+  display: none;
+}
+
 .alert-title {
   font-weight: 700;
   font-size: 13px;
@@ -985,6 +1006,30 @@ async function rejectCancel() {
   background: linear-gradient(135deg, #fee2e2, #fecaca);
 }
 
+.cancel-request-box {
+  border: 1px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 16px;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.cancel-request-badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 6px 12px;
+  margin-bottom: 12px;
+  background: #fee2e2;
+  color: #b91c1c;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.cancel-request-badge.neutral {
+  background: #e2e8f0;
+  color: #334155;
+}
+
 .cancel-info {
   display: flex;
   flex-direction: column;
@@ -1008,26 +1053,10 @@ async function rejectCancel() {
   color: #1e293b;
 }
 
-.cancel-actions {
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px dashed #e2e8f0;
-}
-
 .cancel-action-hint {
   font-size: 13px;
   color: #475569;
   font-weight: 600;
-}
-
-.cancel-error {
-  margin-top: 12px;
-  padding: 10px 14px;
-  background: #fef2f2;
-  border: 1px solid #fecaca;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #dc2626;
 }
 
 .btn-danger {
@@ -1042,6 +1071,12 @@ async function rejectCancel() {
 
 .flex {
   display: flex;
+}
+
+.cancel-action-buttons {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 .gap-3 {
