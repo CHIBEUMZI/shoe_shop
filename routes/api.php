@@ -1,8 +1,5 @@
 <?php
 
-use App\Mail\OrderStatusMail;
-use App\Models\Order;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -10,37 +7,6 @@ use Illuminate\Support\Facades\Route;
 | API Routes
 |--------------------------------------------------------------------------
 */
-
-// TEST
-// Route::get('/test', function () {
-//     return response()->json([
-//         'message' => 'API OK',
-//     ]);
-// });
-
-// Route::get('/test-mail', function () {
-//     $order = Order::with(['items', 'payments', 'items.variant'])->latest()->first();
-
-//     if (!$order) {
-//         return response()->json([
-//             'message' => 'Không có đơn hàng để test.',
-//         ], 404);
-//     }
-
-//     if (empty($order->customer_email)) {
-//         return response()->json([
-//             'message' => 'Đơn hàng chưa có customer_email.',
-//         ], 422);
-//     }
-
-//     Mail::to($order->customer_email)->send(
-//         new OrderStatusMail($order, 'paid')
-//     );
-
-//     return response()->json([
-//         'message' => 'Đã gửi mail thành công tới ' . $order->customer_email,
-//     ]);
-// });
 
 // AUTH
 Route::prefix('auth')->group(function () {
@@ -65,6 +31,7 @@ Route::prefix('auth')->group(function () {
 // PUBLIC STORE
 Route::prefix('v1')->group(function () {
     Route::get('products/facets', [App\Http\Controllers\Api\Public\ProductFacetController::class, 'index']);
+    Route::get('products/trending', [App\Http\Controllers\Api\Public\ProductController::class, 'trending']);
     Route::get('products', [App\Http\Controllers\Api\Public\ProductController::class, 'index']);
     Route::get('products/{product:slug}', [App\Http\Controllers\Api\Public\ProductController::class, 'show']);
 

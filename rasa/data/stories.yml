@@ -79,6 +79,21 @@ stories:
       - intent: ask_clarify_purchase
       - action: action_search_by_occasion
 
+  - story: trending best selling
+    steps:
+      - intent: ask_best_selling
+      - action: action_search_best_selling
+
+  - story: trending most viewed
+    steps:
+      - intent: ask_most_viewed
+      - action: action_search_most_viewed
+
+  - story: trending color follow-up
+    steps:
+      - intent: ask_trending_color
+      - action: action_trending_color
+
   - story: event shopping - party
     steps:
       - intent: occasion_search

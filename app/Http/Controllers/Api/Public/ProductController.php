@@ -6,9 +6,66 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\ProductResource;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProductController extends Controller
 {
+    public function trending(Request $request)
+    {
+        $perPage = $request->integer('per_page', 12);
+        $mode = (string) $request->query('mode', 'best_selling');
+
+        Log::info('products.trending.request', [
+            'mode' => $mode,
+            'per_page' => $perPage,
+            'query' => $request->query(),
+            'user_agent' => $request->userAgent(),
+        ]);
+
+        $query = Product::query()
+            ->where('status', 1)
+            ->with([
+                'brand:id,name,slug',
+                'categories:id,name,slug',
+                'variants:id,product_id,color,color_hex,size,price,sale_price,stock,is_active',
+            ]);
+
+        if ($mode === 'most_viewed') {
+            $query->orderByDesc('views')->orderByDesc('id');
+        } else {
+            $query->leftJoin('order_items', 'order_items.product_id', '=', 'products.id')
+                ->leftJoin('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereIn('orders.status', ['paid', 'processing', 'shipping', 'completed'])
+                ->select('products.*')
+                ->selectRaw('COALESCE(SUM(order_items.quantity), 0) as sold_total')
+                ->groupBy('products.id')
+                ->orderByDesc('sold_total')
+                ->orderByDesc('products.id');
+        }
+
+        Log::info('products.trending.sql_preview', [
+            'mode' => $mode,
+            'bindings' => $query->getBindings(),
+        ]);
+
+        $products = $query->limit($perPage)->get();
+
+        Log::info('products.trending.result', [
+            'mode' => $mode,
+            'count' => $products->count(),
+            'first_ids' => $products->take(3)->pluck('id')->values()->all(),
+            'first_names' => $products->take(3)->pluck('name')->values()->all(),
+        ]);
+
+        return response()->json([
+            'data' => ProductResource::collection($products),
+            'debug' => app()->hasDebugModeEnabled() ? [
+                'mode' => $mode,
+                'count' => $products->count(),
+            ] : null,
+        ]);
+    }
+
     public function index(Request $request)
     {
         $perPage = $request->integer('per_page', 12);

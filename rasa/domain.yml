@@ -23,6 +23,9 @@ intents:
   - ask_return_policy
   - ask_warranty
   - ask_store_info
+  - ask_best_selling
+  - ask_most_viewed
+  - ask_trending_color
   - search_products
   - ask_brands
   - ask_categories
@@ -335,6 +338,9 @@ actions:
   - action_search_by_brand
   - action_search_by_price
   - action_search_by_size
+  - action_search_best_selling
+  - action_search_most_viewed
+  - action_trending_color
   - action_search_promo
   - action_search_men
   - action_search_by_event

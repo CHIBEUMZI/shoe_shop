@@ -112,6 +112,21 @@ rules:
       - intent: ask_categories
       - action: action_list_categories
 
+  - rule: best selling products rule
+    steps:
+      - intent: ask_best_selling
+      - action: action_search_best_selling
+
+  - rule: most viewed products rule
+    steps:
+      - intent: ask_most_viewed
+      - action: action_search_most_viewed
+
+  - rule: trending color rule
+    steps:
+      - intent: ask_trending_color
+      - action: action_trending_color
+
   - rule: occasion search rule
     steps:
       - intent: occasion_search

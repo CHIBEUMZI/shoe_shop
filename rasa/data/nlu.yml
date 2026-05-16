@@ -272,6 +272,60 @@ nlu:
       - giày xịn xò thì giá sao
       - mình muốn giày giá vừa phải
 
+  - intent: ask_best_selling
+    examples: |
+      - giày nào bán chạy nhất
+      - đôi nào bán chạy nhất shop
+      - top sản phẩm bán chạy
+      - top 5 giày bán chạy
+      - mẫu nào bán chạy nhất
+      - sản phẩm hot nhất là gì
+      - giày bán nhiều nhất
+      - shop có mẫu nào bán chạy không
+      - cho mình xem giày bán chạy nhất
+      - best seller là mẫu nào
+      - best-selling shoes là gì
+      - sản phẩm bán chạy hôm nay
+      - màu nào bán chạy nhất
+      - màu nào được mua nhiều nhất
+      - giày màu trắng có bán chạy không
+      - giày màu đen có bán chạy không
+      - màu hot nhất là gì
+      - màu nào đang hot
+
+  - intent: ask_most_viewed
+    examples: |
+      - giày nào được xem nhiều nhất
+      - mẫu nào được xem nhiều nhất shop
+      - top sản phẩm xem nhiều
+      - top 5 giày xem nhiều
+      - sản phẩm hot nhất được xem nhiều nhất
+      - đôi nào được xem nhiều nhất
+      - giày nào có lượt xem nhiều nhất
+      - shop có mẫu nào được quan tâm nhiều không
+      - cho mình xem giày được xem nhiều nhất
+      - most viewed là mẫu nào
+      - view nhiều nhất là mẫu nào
+      - sản phẩm được xem hôm nay nhiều nhất
+      - màu nào được xem nhiều nhất
+      - màu nào được chú ý nhiều nhất
+
+  - intent: ask_trending_color
+    examples: |
+      - màu nào đang hot nhất
+      - màu hot nhất là gì
+      - màu nào bán chạy nhất
+      - màu nào được mua nhiều nhất
+      - màu nào được xem nhiều nhất
+      - màu nào đang được ưa chuộng
+      - màu nào đang trend
+      - màu nào đang thịnh hành
+      - màu hot của giày là gì
+      - giày màu nào hot nhất shop
+      - màu nào đang bán chạy
+      - màu nào được quan tâm nhiều nhất
+      - màu hot nhất theo sản phẩm là màu gì
+
   - intent: ask_promotion
     examples: |
       - shop đang có khuyến mãi gì

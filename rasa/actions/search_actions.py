@@ -10,6 +10,7 @@ from .api_client import (
     _fetch_products,
     _fetch_products_by_occasion,
     _fetch_products_with_attributes,
+    _fetch_trending_products as _api_fetch_trending_products,
     _fetch_facets,
     _infer_brand_from_text,
     _infer_category_ids_from_text,
@@ -25,6 +26,11 @@ _SHOE_STYLE_TERMS = {
     "màu": ["màu", "color", "trắng", "đen", "nâu", "xanh", "đỏ", "hồng", "be", "xám", "vàng", "xanh navy"],
     "material": ["da", "da lộn", "suede", "vải", "canvas", "mesh", "lưới", "nỉ", "cao su"],
     "style": ["basic", "tối giản", "retro", "streetwear", "sporty", "formal", "casual", "trendy", "classic", "năng động"],
+}
+
+_TRENDING_KEYWORDS = {
+    "best_selling": ["bán chạy nhất", "bán chạy", "bán nhiều nhất", "hot nhất", "best seller", "best-selling", "top bán chạy", "sản phẩm bán chạy"],
+    "most_viewed": ["xem nhiều nhất", "lượt xem nhiều nhất", "được xem nhiều nhất", "view nhiều nhất", "most viewed", "top view", "sản phẩm xem nhiều"],
 }
 
 
@@ -53,6 +59,50 @@ def _build_search_hints(text: str, entities: List[Dict[str, Any]]) -> Dict[str, 
         "size": size,
         "price_range": price_range,
     }
+
+
+def _detect_trending_mode(text: str) -> Optional[str]:
+    t = _normalize_text(text)
+    for mode, keywords in _TRENDING_KEYWORDS.items():
+        if _match_any(t, keywords):
+            return mode
+    return None
+
+
+def _fetch_trending_products(mode: str, limit: int = 5) -> List[dict]:
+    try:
+        items = _api_fetch_trending_products(mode=mode, limit=limit)
+        if items:
+            return items
+    except Exception as exc:
+        print(f"[trending-debug] api fetch failed mode={mode}: {exc}")
+
+    try:
+        sort = "popular"
+        fallback = _fetch_products(search=None, size=None, price_range=None, limit=limit, sort=sort)
+        print(f"[trending-debug] fallback list returned {len(fallback)} items for mode={mode}")
+        return fallback
+    except Exception as exc:
+        print(f"[trending-debug] fallback fetch failed mode={mode}: {exc}")
+        return []
+
+
+def _color_summary(items: List[dict]) -> str:
+    counts: Dict[str, int] = {}
+    for item in items or []:
+        colors = item.get("colors") if isinstance(item, dict) else None
+        if not colors:
+            card = _product_to_card(item)
+            colors = card.get("colors") or []
+        for color in colors or []:
+            key = str(color).strip().lower()
+            if not key:
+                continue
+            counts[key] = counts.get(key, 0) + 1
+    if not counts:
+        return ""
+    top = sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:3]
+    return ", ".join([f"{name} ({count})" for name, count in top])
 
 
 class ActionSuggestShoes(Action):
@@ -111,7 +161,7 @@ class ActionSuggestShoes(Action):
 
         if not data:
             dispatcher.utter_message(
-                text="Mình chưa tìm được sản phẩm phù hợp với yêu cầu của bạn 😢 Bạn thử điều chỉnh tầm giá hoặc mô tả nhu cầu cụ thể hơn nhé."
+                text="Mình chưa tư vấn được mẫu phù hợp lúc này 😢 Bạn vui lòng liên hệ trực tiếp shop qua Zalo số 0327264556 để được hỗ trợ nhanh nhất nhé."
             )
             return [SlotSet("purpose", None), SlotSet("shoe_size", None), SlotSet("price_range", None)]
 
@@ -179,6 +229,11 @@ class ActionSearchProducts(Action):
         active_purpose = ent_purpose or purpose_slot or tracker.get_slot("last_product_query")
         cat_ids = _infer_category_ids_from_text(active_purpose or text)
 
+        trending_mode = _detect_trending_mode(text)
+        if trending_mode:
+            search = None
+            active_purpose = None
+
         if ent_purpose:
             search = None
 
@@ -195,8 +250,11 @@ class ActionSearchProducts(Action):
         if not search and not cat_ids and (ent_material or ent_style or inferred_color):
             search = _clean_search_query(active_purpose or text)
 
+        if trending_mode:
+            items = _fetch_trending_products(trending_mode, limit=5)
+
         try:
-            if occasion == "football":
+            if not items and occasion == "football":
                 items = _fetch_products_with_attributes(
                     search="giày đá bóng",
                     size=size,
@@ -317,7 +375,11 @@ class ActionSearchProducts(Action):
             )
             return []
 
-        if occasion:
+        if trending_mode == "best_selling":
+            advice_text = "🔥 Đây là 5 mẫu giày bán chạy nhất shop đang gợi ý cho bạn:"
+        elif trending_mode == "most_viewed":
+            advice_text = "👀 Đây là 5 mẫu giày được xem nhiều nhất hiện tại:"
+        elif occasion:
             scene = OCCASION_SCENE_MAP.get(occasion, {})
             advice_text = scene.get("advice", _get_advice_for_purpose(active_purpose or text))
         else:
@@ -358,6 +420,10 @@ class ActionSearchProducts(Action):
                 enriched_lines.append(f"- {c['name']}: " + ", ".join(extra))
 
         filter_bits = []
+        if trending_mode == "best_selling":
+            filter_bits.append("sắp xếp theo sản phẩm bán chạy")
+        elif trending_mode == "most_viewed":
+            filter_bits.append("sắp xếp theo lượt xem")
         if ent_color:
             filter_bits.append(f"màu {ent_color}")
         elif inferred_color:
@@ -380,7 +446,7 @@ class ActionSearchProducts(Action):
         )
         if enriched_lines:
             dispatcher.utter_message(text="Một vài thông tin nhanh mình lấy được từ sản phẩm:\n" + "\n".join(enriched_lines))
-        dispatcher.utter_message(text="Bạn muốn mình lọc thêm theo size hoặc tầm giá cụ thể không?")
+        dispatcher.utter_message(text="Bạn muốn mình lọc thêm theo size, màu hoặc tầm giá cụ thể không?")
         return []
 
 
@@ -798,6 +864,81 @@ class ActionSearchMen(Action):
         dispatcher.utter_message(
             text="Bạn muốn tìm giày công sở, sneaker, giày thể thao hay loại nào khác? Hoặc mình lọc theo size/tầm giá cụ thể?"
         )
+        return []
+
+
+class ActionSearchBestSelling(Action):
+
+    def name(self) -> Text:
+        return "action_search_best_selling"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        try:
+            items = _fetch_trending_products("best_selling", limit=8)
+        except Exception:
+            items = []
+
+        if not items:
+            dispatcher.utter_message(text="Mình chưa lấy được danh sách sản phẩm bán chạy lúc này 😢 Bạn thử lại sau nhé.")
+            return []
+
+        colors = _color_summary(items)
+        title = "🔥 Đây là các sản phẩm bán chạy nhất shop đang có:"
+        if colors:
+            title = f"{title} Màu bán chạy nổi bật: {colors}."
+        dispatcher.utter_message(json_message={"type": "products", "title": title, "items": [_product_to_card(p) for p in items[:6]]})
+        dispatcher.utter_message(text="Bạn muốn mình lọc tiếp theo brand, size hay xem nhóm màu nào đang hot nhất không?")
+        return []
+
+
+class ActionSearchMostViewed(Action):
+
+    def name(self) -> Text:
+        return "action_search_most_viewed"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        try:
+            items = _fetch_trending_products("most_viewed", limit=8)
+        except Exception:
+            items = []
+
+        if not items:
+            dispatcher.utter_message(text="Mình chưa lấy được danh sách sản phẩm xem nhiều lúc này 😢 Bạn thử lại sau nhé.")
+            return []
+
+        colors = _color_summary(items)
+        title = "👀 Đây là các sản phẩm được xem nhiều nhất:"
+        if colors:
+            title = f"{title} Màu được quan tâm nhiều: {colors}."
+        dispatcher.utter_message(json_message={"type": "products", "title": title, "items": [_product_to_card(p) for p in items[:6]]})
+        dispatcher.utter_message(text="Nếu bạn muốn, mình có thể gợi ý theo màu, brand hoặc tầm giá tương tự các mẫu đang hot.")
+        return []
+
+
+class ActionTrendingColor(Action):
+
+    def name(self) -> Text:
+        return "action_trending_color"
+
+    def run(self, dispatcher: CollectingDispatcher, tracker: Tracker, domain: Dict[Text, Any]) -> List[Dict[Text, Any]]:
+        try:
+            items = _fetch_trending_products("best_selling", limit=12)
+        except Exception:
+            items = []
+
+        if not items:
+            dispatcher.utter_message(text="Mình chưa lấy được dữ liệu màu hot lúc này 😢 Bạn thử lại sau nhé.")
+            return []
+
+        colors = _color_summary(items)
+        if not colors:
+            dispatcher.utter_message(text="Mình đã tìm được sản phẩm hot, nhưng chưa tổng hợp được màu nổi bật từ dữ liệu hiện tại.")
+            return []
+
+        lines = [f"- {idx + 1}. {part.strip()}" for idx, part in enumerate(colors.split(", "))]
+        dispatcher.utter_message(text="🎨 Màu đang hot nhất hiện tại:")
+        dispatcher.utter_message(text="\n".join(lines))
+        dispatcher.utter_message(json_message={"type": "products", "title": "Một số sản phẩm đang góp phần tạo trend màu này:", "items": [_product_to_card(p) for p in items[:6]]})
         return []
 
 

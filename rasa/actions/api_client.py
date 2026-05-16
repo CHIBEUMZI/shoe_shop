@@ -115,6 +115,17 @@ def _fetch_facets() -> dict:
     return payload if isinstance(payload, dict) else {}
 
 
+def _fetch_trending_products(*, mode: str = "best_selling", limit: int = 5) -> List[dict]:
+    api = (os.getenv("SHOP_API_BASE_URL") or os.getenv("APP_URL") or "http://nginx").rstrip("/")
+    res = requests.get(f"{api}/api/v1/products/trending", params={"mode": mode, "per_page": limit}, timeout=8)
+    res.raise_for_status()
+    payload = res.json()
+    items = payload.get("data") if isinstance(payload, dict) else None
+    if not isinstance(items, list):
+        return []
+    return items[:limit]
+
+
 def _fetch_products(
     *,
     search: Optional[str],
@@ -122,11 +133,12 @@ def _fetch_products(
     price_range: Optional[str],
     category_ids: Optional[List[int]] = None,
     limit: int = 5,
+    sort: str = "popular",
 ) -> List[dict]:
     api = (os.getenv("SHOP_API_BASE_URL") or os.getenv("APP_URL") or "http://nginx").rstrip("/")
     min_vnd, max_vnd = _parse_budget_text_to_range(price_range)
 
-    params: Dict[str, Any] = {"per_page": 12, "sort": "popular"}
+    params: Dict[str, Any] = {"per_page": 12, "sort": sort}
     if search:
         params["search"] = search
     if size:
@@ -342,6 +354,21 @@ def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
     ]
     if any(kw in t for kw in valentine_keywords):
         return "valentine"
+
+    # Natural language users often ask: "đi đâu", "làm gì", "nên mang giày gì"
+    # so we map those to the most likely usage context.
+    if any(kw in t for kw in ["đi làm", "đi làm gì", "đi đâu", "đi đâu chơi", "làm gì", "nên mang", "nên đi", "mang gì", "mặc gì", "đi đâu vậy", "đi đâu đó"]):
+        if any(kw in t for kw in ["đi học", "học sinh", "sinh viên", "trường", "lớp"]):
+            return "casual"
+        if any(kw in t for kw in ["đi làm", "công sở", "văn phòng", "phỏng vấn", "xin việc", "họp"]):
+            return "interview"
+        if any(kw in t for kw in ["du lịch", "phượt", "đi xa", "đi biển", "trekking", "resort", "vacation"]):
+            return "travel"
+        if any(kw in t for kw in ["đi chơi", "đi cafe", "đi xem phim", "dạo phố", "hẹn hò", "ra phố", "cuối tuần"]):
+            return "casual"
+        if any(kw in t for kw in ["tiệc", "party", "club", "bar", "đi tiệc", "đi club", "đi concert"]):
+            return "party"
+        return "casual"
 
     interview_keywords = ["phỏng vấn", "xin việc", "công sở", "văn phòng", "đi làm",
                          "đi họp", "quan trọng", "formal", "đi làm", "đi làm hàng ngày"]
