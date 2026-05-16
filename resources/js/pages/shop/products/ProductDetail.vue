@@ -324,14 +324,14 @@
                     <label class="text-xs font-bold uppercase tracking-wide text-slate-900">
                       Kích thước
                     </label>
-                    <a
+                    <button
                       class="flex items-center gap-1 text-xs font-medium text-primary transition hover:underline"
-                      href="#"
-                      @click.prevent
+                      type="button"
+                      @click="isSizeGuideOpen = true"
                     >
                       <span class="material-symbols-outlined text-[12px]">straighten</span>
                       Hướng dẫn
-                    </a>
+                    </button>
                   </div>
 
                   <div class="grid grid-cols-4 gap-1.5 sm:grid-cols-7">
@@ -633,6 +633,103 @@
       </div>
     </div>
 
+    <!-- Size Guide Modal -->
+    <transition
+      enter-active-class="transition duration-200 ease-out"
+      enter-from-class="opacity-0"
+      enter-to-class="opacity-100"
+      leave-active-class="transition duration-150 ease-in"
+      leave-from-class="opacity-100"
+      leave-to-class="opacity-0"
+    >
+      <div
+        v-if="isSizeGuideOpen"
+        class="fixed inset-0 z-[80] flex items-center justify-center bg-slate-950/60 px-4 py-6 backdrop-blur-sm"
+        @click.self="isSizeGuideOpen = false"
+      >
+        <div class="w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-2xl">
+          <div class="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4">
+            <div>
+              <p class="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Hướng dẫn chọn size</p>
+              <h3 class="mt-1 text-lg font-black text-slate-900">Chọn size giày phù hợp</h3>
+            </div>
+            <button
+              type="button"
+              class="grid h-9 w-9 place-items-center rounded-full bg-slate-100 text-slate-600 transition hover:bg-slate-200"
+              @click="isSizeGuideOpen = false"
+            >
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <div class="space-y-4 px-5 py-4 text-sm text-slate-600">
+            <div class="rounded-xl bg-primary/5 p-4 ring-1 ring-primary/10">
+              <p class="font-semibold text-slate-900">Mẹo chọn size nhanh</p>
+              <ul class="mt-2 space-y-2 leading-relaxed">
+                <li>• Đo chiều dài bàn chân vào cuối ngày để có kết quả sát nhất.</li>
+                <li>• Cộng thêm 0.5–1 cm nếu bạn thích mang thoải mái hoặc đi tất dày.</li>
+                <li>• Nếu đang phân vân giữa 2 size, hãy ưu tiên size lớn hơn.</li>
+              </ul>
+            </div>
+
+            <div class="overflow-hidden rounded-xl border border-slate-200">
+              <div class="grid grid-cols-4 bg-slate-50 px-4 py-2 text-xs font-bold uppercase tracking-wide text-slate-500">
+                <span>Chiều dài chân</span>
+                <span>VN</span>
+                <span>EU</span>
+                <span>US</span>
+              </div>
+              <div class="divide-y divide-slate-200 text-sm">
+                <div class="grid grid-cols-4 px-4 py-3">
+                  <span>22.0 - 22.5 cm</span>
+                  <span class="font-semibold text-slate-900">36</span>
+                  <span>36</span>
+                  <span>5</span>
+                </div>
+                <div class="grid grid-cols-4 px-4 py-3 bg-slate-50/50">
+                  <span>23.0 - 23.5 cm</span>
+                  <span class="font-semibold text-slate-900">37 - 38</span>
+                  <span>37 - 38</span>
+                  <span>6 - 6.5</span>
+                </div>
+                <div class="grid grid-cols-4 px-4 py-3">
+                  <span>24.0 - 24.5 cm</span>
+                  <span class="font-semibold text-slate-900">39 - 40</span>
+                  <span>39 - 40</span>
+                  <span>7.5 - 8</span>
+                </div>
+                <div class="grid grid-cols-4 px-4 py-3 bg-slate-50/50">
+                  <span>25.0 - 25.5 cm</span>
+                  <span class="font-semibold text-slate-900">41</span>
+                  <span>41</span>
+                  <span>8.5 - 9</span>
+                </div>
+                <div class="grid grid-cols-4 px-4 py-3">
+                  <span>26.0 - 26.5 cm</span>
+                  <span class="font-semibold text-slate-900">42 - 43</span>
+                  <span>42 - 43</span>
+                  <span>9.5 - 10</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-amber-800">
+              <p class="font-semibold text-amber-900">Cách đo chiều dài chân</p>
+              <ol class="mt-2 list-decimal space-y-1.5 pl-5 leading-relaxed">
+                <li>Đặt chân lên tờ giấy, giữ gót chân sát tường.</li>
+                <li>Đánh dấu điểm xa nhất ở đầu ngón chân dài nhất.</li>
+                <li>Đo khoảng cách giữa 2 điểm, tính theo cm rồi đối chiếu bảng.</li>
+              </ol>
+            </div>
+
+            <p class="text-xs text-slate-500">
+              Lưu ý: bảng size chỉ mang tính tham khảo. Tùy form giày, chất liệu và từng hãng, size thực tế có thể chênh lệch nhẹ.
+            </p>
+          </div>
+        </div>
+      </div>
+    </transition>
+
     <!-- Spacer for mobile sticky CTA -->
     <div v-if="product" class="h-16 lg:hidden"></div>
   </main>
@@ -659,6 +756,7 @@ const notify = useAlert();
 const loading = ref(false);
 const addingToCart = ref(false);
 const error = ref("");
+const isSizeGuideOpen = ref(false);
 
 const product = ref(null);
 const activeImage = ref("");
@@ -1008,6 +1106,7 @@ async function fetchDetail() {
   qtyInput.value = "1";
   tab.value = "desc";
   currentIndex.value = 0;
+  isSizeGuideOpen.value = false;
 
   try {
     const res = await productService.show(slug.value);

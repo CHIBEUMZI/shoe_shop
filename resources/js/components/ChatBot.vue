@@ -949,6 +949,15 @@ function animateText(msgObj, onComplete) {
   box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 }
 
+.chat-msg-bubble,
+.chat-msg-bubble * {
+  white-space: inherit;
+}
+
+.chat-msg-bubble span {
+  display: inline;
+}
+
 .chat-msg.bot .chat-msg-bubble {
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(248, 250, 252, 0.98));
   color: var(--chat-text);

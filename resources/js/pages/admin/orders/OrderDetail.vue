@@ -126,53 +126,62 @@
                 <div class="section-title">Xử lý hủy đơn hàng</div>
               </div>
               <div class="section-body">
-                <div v-if="order.cancellation_requested_at" class="cancel-request-box">
-                  <div class="cancel-request-badge">Khách hàng đã yêu cầu hủy</div>
-                  <div class="cancel-info">
-                    <div class="cancel-row">
-                      <span class="cancel-label">Thời gian yêu cầu:</span>
-                      <span class="cancel-value">{{ formatDateTime(order.cancellation_requested_at) }}</span>
+                <template v-if="isCancelableByAdmin">
+                  <div v-if="order.cancellation_requested_at" class="cancel-request-box">
+                    <div class="cancel-request-badge">Khách hàng đã yêu cầu hủy</div>
+                    <div class="cancel-info">
+                      <div class="cancel-row">
+                        <span class="cancel-label">Thời gian yêu cầu:</span>
+                        <span class="cancel-value">{{ formatDateTime(order.cancellation_requested_at) }}</span>
+                      </div>
+                      <div class="cancel-row">
+                        <span class="cancel-label">Lý do khách hàng:</span>
+                        <span class="cancel-value">{{ order.cancellation_reason || "-" }}</span>
+                      </div>
                     </div>
-                    <div class="cancel-row">
-                      <span class="cancel-label">Lý do khách hàng:</span>
-                      <span class="cancel-value">{{ order.cancellation_reason || "-" }}</span>
+                    <div class="cancel-action-hint mt-3">Chọn cách xử lý yêu cầu này:</div>
+                    <div class="cancel-action-buttons mt-3">
+                      <button
+                        class="btn btn-danger"
+                        type="button"
+                        :disabled="submitting"
+                        @click="approveCancellationRequest"
+                      >
+                        Xác nhận hủy đơn
+                      </button>
+                      <button
+                        class="btn btn-ghost"
+                        type="button"
+                        :disabled="submitting"
+                        @click="rejectCancel"
+                      >
+                        Từ chối yêu cầu
+                      </button>
                     </div>
                   </div>
-                  <div class="cancel-action-hint mt-3">Chọn cách xử lý yêu cầu này:</div>
-                  <div class="cancel-action-buttons mt-3">
-                    <button
-                      class="btn btn-danger"
-                      type="button"
-                      :disabled="submitting"
-                      @click="approveCancellationRequest"
-                    >
-                      Xác nhận hủy đơn
-                    </button>
-                    <button
-                      class="btn btn-ghost"
-                      type="button"
-                      :disabled="submitting"
-                      @click="rejectCancel"
-                    >
-                      Từ chối yêu cầu
-                    </button>
-                  </div>
-                </div>
 
-                <div v-else class="cancel-request-box">
-                  <div class="cancel-request-badge neutral">Chưa có yêu cầu hủy từ khách hàng</div>
-                  <div class="cancel-action-hint">
-                    Nếu cần hủy thủ công, hệ thống sẽ yêu cầu nhập lý do trong popup xác nhận.
+                  <div v-else class="cancel-request-box">
+                    <div class="cancel-request-badge neutral">Chưa có yêu cầu hủy từ khách hàng</div>
+                    <div class="cancel-action-hint">
+                      Nếu cần hủy thủ công, hệ thống sẽ yêu cầu nhập lý do trong popup xác nhận.
+                    </div>
+                    <div class="mt-3">
+                      <button
+                        class="btn btn-danger"
+                        type="button"
+                        :disabled="submitting"
+                        @click="confirmCancel"
+                      >
+                        Hủy đơn hàng
+                      </button>
+                    </div>
                   </div>
-                  <div class="mt-3">
-                    <button
-                      class="btn btn-danger"
-                      type="button"
-                      :disabled="submitting"
-                      @click="confirmCancel"
-                    >
-                      Hủy đơn hàng
-                    </button>
+                </template>
+
+                <div v-else class="cancel-request-box cancel-blocked-box">
+                  <div class="cancel-request-badge neutral">Không thể hủy đơn hàng đã hoàn thành</div>
+                  <div class="cancel-action-hint">
+                    Đơn hàng đã hoàn thành nên không còn cho phép hủy hoặc nhập lý do hủy.
                   </div>
                 </div>
 
@@ -418,6 +427,7 @@ const nextStatuses = computed(() => {
 });
 
 const canShowCancellationSection = computed(() => order.value.status !== "cancelled");
+const isCancelableByAdmin = computed(() => order.value.status !== "completed");
 
 function updateStatus(status) {
   const labelMap = {
@@ -629,6 +639,14 @@ function orderStatusClass(v) {
 // ======================
 
 function confirmCancel() {
+  if (!isCancelableByAdmin.value) {
+    notify.error("Không thể hủy đơn hàng đã hoàn thành.", {
+      title: "Thao tác không hợp lệ",
+      duration: 3000,
+    });
+    return;
+  }
+
   showConfirmCancelModal.value = true;
   adminCancelReason.value = "";
   cancelActionError.value = "";
@@ -645,6 +663,10 @@ async function submitConfirmCancel() {
   submitting.value = true;
 
   try {
+    if (!isCancelableByAdmin.value) {
+      throw new Error("Không thể hủy đơn hàng đã hoàn thành.");
+    }
+
     await orderAdminService.confirmCancellation(order.value.id, {
       reason: adminCancelReason.value.trim() || null,
     });

@@ -162,13 +162,21 @@ class OrderController extends Controller
     }
     public function confirmCancellation(ConfirmOrderCancellationRequest $request, Order $order)
     {
-        if ((string) $order->status === 'cancelled') {
+        $currentStatus = (string) $order->status;
+
+        if ($currentStatus === 'cancelled') {
             return response()->json([
                 'message' => 'Đơn hàng đã được hủy trước đó.',
             ], 422);
         }
 
-        if ((string) $order->status === 'shipping') {
+        if ($currentStatus === 'completed') {
+            return response()->json([
+                'message' => 'Không thể hủy đơn hàng đã hoàn thành.',
+            ], 422);
+        }
+
+        if ($currentStatus === 'shipping') {
             return response()->json([
                 'message' => 'Không thể hủy đơn hàng đang giao.',
             ], 422);
@@ -206,7 +214,7 @@ class OrderController extends Controller
         }
     }
 
-    public function rejectCancellation(Request $request, Order $order)
+    public function rejectCancellation(Order $order)
     {
         if ((string) $order->status === 'cancelled') {
             return response()->json([
