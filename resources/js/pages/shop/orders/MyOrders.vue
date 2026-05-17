@@ -479,6 +479,7 @@ const statusOptions = [
   { value: "processing", label: "Đang chuẩn bị hàng" },
   { value: "shipping", label: "Đang giao" },
   { value: "completed", label: "Hoàn thành" },
+  { value: "delivery_failed", label: "Giao thất bại" },
   { value: "cancelled", label: "Đã hủy" },
 ];
 
@@ -598,6 +599,8 @@ function orderStatusText(v) {
       return "Đang giao";
     case "completed":
       return "Hoàn thành";
+    case "delivery_failed":
+      return "Giao thất bại";
     case "cancelled":
       return "Đã hủy";
     default:
@@ -647,6 +650,8 @@ function orderStatusClass(v) {
       return "bg-sky-100 text-sky-700";
     case "completed":
       return "bg-green-100 text-green-700";
+    case "delivery_failed":
+      return "bg-amber-100 text-amber-700";
     case "cancelled":
       return "bg-red-100 text-red-700";
     default:
@@ -763,19 +768,20 @@ function getOrderSteps() {
     { key: "confirmed", label: "Xác nhận", icon: "check_circle" },
     { key: "processing", label: "Chuẩn bị", icon: "inventory_2" },
     { key: "shipping", label: "Giao hàng", icon: "local_shipping" },
+    { key: "delivery_failed", label: "Giao thất bại", icon: "error" },
     { key: "completed", label: "Hoàn thành", icon: "task_alt" },
   ];
 }
 
 // CSS class cho từng bước
 function getStepClass(currentStatus, stepKey) {
-  const statusOrder = ["pending", "confirmed", "processing", "shipping", "completed"];
+  const statusOrder = ["pending", "confirmed", "processing", "shipping", "delivery_failed", "completed"];
   const currentIndex = statusOrder.indexOf(currentStatus);
   const stepIndex = statusOrder.indexOf(stepKey);
 
-  if (stepKey === "cancelled") {
-    return currentStatus === "cancelled"
-      ? "bg-red-500 text-white"
+  if (stepKey === "delivery_failed") {
+    return currentStatus === "delivery_failed"
+      ? "bg-amber-500 text-white"
       : "bg-slate-200 dark:bg-slate-700 text-slate-400";
   }
 
@@ -787,7 +793,7 @@ function getStepClass(currentStatus, stepKey) {
 
 // Độ rộng thanh tiến trình
 function getProgressWidth(status) {
-  const statusOrder = ["pending", "confirmed", "processing", "shipping", "completed"];
+  const statusOrder = ["pending", "confirmed", "processing", "shipping", "delivery_failed", "completed"];
   const index = statusOrder.indexOf(status);
 
   if (status === "cancelled") return "0%";

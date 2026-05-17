@@ -39,6 +39,9 @@ intents:
   - ask_gender
   - ask_occasion_gift
   - ask_gift_for_lover
+  - ask_gift_for_father
+  - ask_gift_for_mother
+  - ask_gift_for_friend
   - ask_faq
   - ask_clarify_faq
   - ask_clarify_purchase
@@ -187,6 +190,11 @@ slots:
       - type: from_text
         conditions:
           - active_loop: null
+  gift_target_group:
+    type: text
+    influence_conversation: false
+    mappings:
+      - type: custom
   gift_occasion:
     type: text
     influence_conversation: true
@@ -286,10 +294,26 @@ responses:
     - text: "Bạn tặng giày nhân dịp gì vậy? Ví dụ: sinh nhật, kỷ niệm, Valentine, hay một dịp đặc biệt nào khác?"
   utter_ask_recipient_gender:
     - text: "Người nhận quà là nam hay nữ vậy bạn?"
+  utter_ask_gift_recommendation_form_gift_occasion:
+    - text: "Bạn muốn tặng vào dịp nào vậy?"
+  utter_ask_gift_recommendation_form_gift_price_range:
+    - text: "Bạn dự định ngân sách cho đôi giày là bao nhiêu?"
   utter_ask_gift_shoe_size:
     - text: "Bạn biết size giày của người nhận quà không? Nếu không biết, bạn có thể ước lượng hoặc mình sẽ gợi ý size phổ biến nhé!"
   utter_ask_gift_price_range:
     - text: "Bạn dự định ngân sách cho đôi giày là bao nhiêu? Ví dụ: dưới 1 triệu, 1-2 triệu, 2-3 triệu, hoặc trên 3 triệu?"
+  utter_ask_gift_occasion_father:
+    - text: "Bạn muốn tặng bố vào dịp nào vậy? Ví dụ: sinh nhật, ngày của cha, lễ Tết, kỷ niệm hay chỉ là một món quà bất ngờ?"
+  utter_ask_gift_occasion_mother:
+    - text: "Bạn muốn tặng mẹ vào dịp nào vậy? Ví dụ: sinh nhật, 8/3, 20/10, lễ Tết hay một dịp thật đặc biệt?"
+  utter_ask_gift_occasion_friend:
+    - text: "Bạn muốn tặng bạn bè vào dịp nào vậy? Ví dụ: sinh nhật, tốt nghiệp, kỷ niệm, lễ Tết hay một dịp vui nào đó?"
+  utter_ask_gift_price_range_father:
+    - text: "Bạn muốn dành khoảng ngân sách bao nhiêu cho bố? Mình sẽ ưu tiên những đôi lịch sự, êm chân và dễ mang cả ngày."
+  utter_ask_gift_price_range_mother:
+    - text: "Bạn muốn dành khoảng ngân sách bao nhiêu cho mẹ? Mình sẽ chọn những đôi nhẹ nhàng, tinh tế và dễ phối đồ nhé."
+  utter_ask_gift_price_range_friend:
+    - text: "Bạn muốn dành khoảng ngân sách bao nhiêu cho bạn bè? Mình sẽ gợi ý những mẫu trẻ trung, hợp trend và dễ đi hằng ngày."
   utter_promotion:
     - text: "Hiện shop đang có nhiều ưu đãi hấp dẫn! Bạn cho mình biết bạn cần giày loại nào và tầm giá bao nhiêu, mình sẽ tìm sản phẩm đang giảm giá phù hợp cho bạn nhé!"
   utter_shipping:
@@ -299,13 +323,13 @@ responses:
   utter_return_policy:
     - text: "Shop đổi size/đổi mẫu miễn phí trong 7 ngày nếu sản phẩm còn nguyên tem mác và chưa qua sử dụng. Bạn cần đổi size hay muốn trả hàng?"
   utter_store_info:
-    - text: "Cửa hàng BMC Shoes mở cửa từ 8h-21h các ngày trong tuần. Bạn muốn biết địa chỉ cụ thể hay liên hệ hỗ trợ?"
+    - text: "Cửa hàng BMC Shoes mở cửa từ 8h-21h các ngày trong tuần. Nếu bạn muốn liên hệ hỗ trợ, bạn có thể nhắn trực tiếp Zalo theo số 0327264556, sẽ có người hỗ trợ bạn nhé."
   utter_goodbye:
     - text: "Cảm ơn bạn đã trò chuyện cùng BMC Shoes! Nếu cần tư vấn thêm về giày, cứ nhắn mình nhé. Chúc bạn tìm được đôi giày ưng ý! 👟"
   utter_default:
-    - text: "Mình chưa hiểu rõ ý bạn 😅 Bạn có thể nói rõ hơn không? Ví dụ: bạn cần giày để làm gì, thương hiệu nào, hay tầm giá bao nhiêu?"
+    - text: "Mình chưa hiểu rõ ý bạn 😅 Nếu bạn cần hỗ trợ trực tiếp, hãy nhắn Zalo 0327264556 nhé, sẽ có người hỗ trợ bạn."
   utter_nlu_fallback:
-    - text: "Mình chưa chắc đã hiểu đúng ý bạn. Bạn có thể nói rõ hơn một chút không? Ví dụ: loại giày, size, tầm giá, hoặc dịp sử dụng."
+    - text: "Mình chưa chắc đã hiểu đúng ý bạn. Bạn có thể nhắn trực tiếp Zalo 0327264556 để được hỗ trợ nhanh hơn nhé."
   utter_faq_hint:
     - text: "Nếu bạn hỏi về chính sách, bảo hành, giao hàng hoặc thanh toán, mình có thể trả lời ngay trong chat. Bạn cứ hỏi tự nhiên nhé!"
   utter_faq_generic:
@@ -329,6 +353,9 @@ actions:
   - validate_shoe_recommendation_form
   - validate_gift_recommendation_form
   - action_gift_go_back
+  - action_start_gift_recommendation_form
+  - action_ask_gift_recommendation_form_gift_occasion
+  - action_ask_gift_recommendation_form_gift_price_range
   - action_suggest_shoes
   - action_suggest_gift_shoes
   - action_search_products

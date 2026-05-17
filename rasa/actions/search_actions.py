@@ -19,7 +19,7 @@ from .api_client import (
     _shop_products_list_url,
 )
 from .constants import OCCASION_SCENE_MAP, _get_advice_for_purpose, _group_advice
-from .utils import _clean_search_query, _get_entity, _infer_color_from_text, _parse_size, _parse_budget_text_to_range
+from .utils import _clean_search_query, _get_entity, _infer_color_from_text, _parse_size, _parse_budget_text_to_range, _tokenize_search_text
 
 
 _SHOE_STYLE_TERMS = {
@@ -127,10 +127,27 @@ class ActionSuggestShoes(Action):
         color = tracker.get_slot("color")
         material = tracker.get_slot("material")
         style = tracker.get_slot("style")
+        query_text = purpose or (tracker.latest_message or {}).get("text") or ""
+        query_tokens = _tokenize_search_text(query_text)
 
         try:
-            if occasion:
-                data = _fetch_products_by_occasion(occasion, limit=5, price_range=price)
+            if occasion == "football":
+                football_search = " ".join(query_tokens) if query_tokens else "giày đá bóng"
+                football_categories = _infer_category_ids_from_text(football_search)
+                data = _fetch_products_with_attributes(
+                    search=football_search,
+                    size=size,
+                    price_range=price,
+                    category_ids=football_categories or None,
+                    color=color,
+                    material=material,
+                    style=style,
+                    limit=5,
+                )
+                if not data:
+                    data = _fetch_products_by_occasion(occasion, limit=5, price_range=price, query_text=query_text)
+            elif occasion:
+                data = _fetch_products_by_occasion(occasion, limit=5, price_range=price, query_text=query_text)
             else:
                 cat_ids = _infer_category_ids_from_text(purpose)
                 search_query = None if cat_ids else purpose
@@ -149,10 +166,12 @@ class ActionSuggestShoes(Action):
 
         if not data:
             from .api_client import _fallback_near_match
+            fallback_search = " ".join(query_tokens[:4]) if occasion == "football" and query_tokens else ("giày đá bóng" if occasion == "football" else purpose)
             data = _fallback_near_match(
-                search=purpose,
+                search=fallback_search,
                 size=size,
                 price_range=price,
+                category_ids=_infer_category_ids_from_text("giày đá bóng") if occasion == "football" else None,
                 color=color,
                 material=material,
                 style=style,
@@ -209,6 +228,7 @@ class ActionSearchProducts(Action):
         text = (tracker.latest_message or {}).get("text") or ""
         entities = (tracker.latest_message or {}).get("entities") or []
         hints = _build_search_hints(text, entities)
+        query_tokens = _tokenize_search_text(text)
 
         ent_brand = hints["brand"]
         ent_size = hints["size"]
@@ -226,6 +246,8 @@ class ActionSearchProducts(Action):
         brand = ent_brand
         inferred_color = ent_color
         search = brand or _clean_search_query(text)
+        if query_tokens and not search:
+            search = " ".join(query_tokens[:4])
         active_purpose = ent_purpose or purpose_slot or tracker.get_slot("last_product_query")
         cat_ids = _infer_category_ids_from_text(active_purpose or text)
 
@@ -248,7 +270,7 @@ class ActionSearchProducts(Action):
             search = None
 
         if not search and not cat_ids and (ent_material or ent_style or inferred_color):
-            search = _clean_search_query(active_purpose or text)
+            search = _clean_search_query(active_purpose or text) or " ".join(query_tokens[:4])
 
         if trending_mode:
             items = _fetch_trending_products(trending_mode, limit=5)
@@ -387,6 +409,12 @@ class ActionSearchProducts(Action):
 
         if brand:
             advice_text = f"🏷️ **Tư vấn theo brand {brand}:** Mình đã ưu tiên các mẫu cùng brand, rồi mới lọc tiếp theo size, màu và chất liệu để ra gợi ý sát nhu cầu nhất."
+        elif occasion == "football":
+            advice_text = "⚽ **Tư vấn:** Với giày đá bóng, mình ưu tiên các mẫu có từ khóa TF/FG, sân cỏ nhân tạo và form ôm chân để bạn dễ chọn đúng loại sân."
+        elif occasion == "running":
+            advice_text = "🏃 **Tư vấn:** Với giày chạy bộ, mình ưu tiên mẫu nhẹ, thoáng, êm và có đệm tốt để hỗ trợ chạy lâu."
+        elif occasion in {"gift", "birthday_gift", "anniversary_gift", "valentine"}:
+            advice_text = "🎁 **Tư vấn:** Với giày quà tặng, mình ưu tiên những mẫu có phong cách phù hợp dịp tặng, dễ phối đồ và có cảm giác sang hơn."
         elif ent_material:
             mat = ent_material.lower()
             if any(k in mat for k in ["da lộn", "suede", "nubuck"]):
@@ -424,6 +452,12 @@ class ActionSearchProducts(Action):
             filter_bits.append("sắp xếp theo sản phẩm bán chạy")
         elif trending_mode == "most_viewed":
             filter_bits.append("sắp xếp theo lượt xem")
+        if occasion == "football":
+            filter_bits.append("ưu tiên giày đá bóng TF/FG và sân cỏ")
+        elif occasion == "running":
+            filter_bits.append("ưu tiên giày chạy bộ nhẹ/thoáng/êm")
+        elif occasion in {"gift", "birthday_gift", "anniversary_gift", "valentine"}:
+            filter_bits.append("ưu tiên mẫu hợp quà tặng")
         if ent_color:
             filter_bits.append(f"màu {ent_color}")
         elif inferred_color:
@@ -599,9 +633,6 @@ class ActionSearchByOccasion(Action):
         scene = OCCASION_SCENE_MAP.get(occasion, {})
         advice = scene.get("advice", "Mình đã tìm được một số mẫu giày phù hợp cho bạn:")
 
-        scene = OCCASION_SCENE_MAP.get(occasion, {})
-        advice = scene.get("advice", "Mình đã tìm được một số mẫu giày phù hợp cho bạn:")
-
         try:
             items = _fetch_products_by_occasion(occasion, limit=5, price_range=tracker.get_slot("price_range"))
         except Exception:
@@ -622,7 +653,8 @@ class ActionSearchByOccasion(Action):
             advice = advice + " Mình chỉ hiển thị các mẫu đúng nhóm thể thao để bạn dễ chọn hơn."
 
         dispatcher.utter_message(json_message={"type": "products", "title": advice, "items": cards})
-        dispatcher.utter_message(text="Bạn có muốn lọc thêm theo thương hiệu, size hoặc thay đổi tầm giá không? Mình sẵn sàng hỗ trợ bạn!")
+        dispatcher.utter_message(text=self._clarify_prompt("price", occasion))
+        dispatcher.utter_message(text="Nếu bạn muốn, mình cũng có thể lọc tiếp theo size, màu, chất liệu hoặc brand nhé.")
         return [SlotSet("clarify_expected", None), SlotSet("last_product_query", None), SlotSet("clarify_question", None)]
 
 

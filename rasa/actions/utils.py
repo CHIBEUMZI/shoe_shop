@@ -110,24 +110,55 @@ def _parse_size(text: Optional[str]) -> Optional[str]:
     return None
 
 
-def _clean_search_query(text: str) -> Optional[str]:
+_STOPWORDS = {
+    "tìm", "tim", "cho", "mình", "toi", "tôi", "m\u00ecnh", "gi\u00fay", "giup", "xem",
+    "g\u1ee3i", "g\u1ee3i", "t\u01b0", "v\u1ea5n", "tu", "van", "shop", "c\u00f3", "kh\u00f4ng",
+    "khong", "c\u1ea7n", "can", "mu\u1ed1n", "muon", "th\u00edch", "thich", "mua", "đôi", "doi",
+    "gi\u00e0y", "size", "tầm", "tam", "khoảng", "khoang", "nào", "nao", "hộ", "ho", "với", "voi",
+    "mẫu", "mau", "loại", "loai", "này", "nay", "đó", "do", "phù", "phu", "hợp", "hop"
+}
+
+
+def _normalize_search_text(text: Optional[str]) -> str:
     t = (text or "").lower().strip()
+    t = re.sub(r"[^\w\s\u00c0-\u1ef9]+", " ", t)
+    t = re.sub(r"\s+", " ", t).strip()
+    return t
+
+
+def _tokenize_search_text(text: Optional[str]) -> List[str]:
+    t = _normalize_search_text(text)
+    if not t:
+        return []
+    synonym_map = {
+        "đá banh": "đá bóng",
+        "bóng đá": "đá bóng",
+        "giày công ty": "đi làm",
+        "giày chạy": "chạy bộ",
+        "giày jogging": "chạy bộ",
+        "quà cho người yêu": "valentine",
+        "quà người yêu": "valentine",
+    }
+    for src, dst in synonym_map.items():
+        t = t.replace(src, dst)
+    tokens = [tok for tok in t.split() if tok and tok not in _STOPWORDS and not tok.isdigit()]
+    return tokens
+
+
+def _clean_search_query(text: str) -> Optional[str]:
+    t = _normalize_search_text(text)
     if not t:
         return None
 
-    t = re.sub(
-        r"\b(tìm|tim|cho|mình|toi|tôi|m\u00ecnh|gi\u00fay|giup|xem|g\u1ee3i\s*y|g\u1ee3i|t\u01b0\s*v\u1ea5n|tu\s*van|shop|c\u00f3|kh\u00f4ng|khong|c\u1ea7n|can|mu\u1ed1n|muon|th\u00edch|thich|mua)\b",
-        " ",
-        t,
-    )
-    t = re.sub(r"\bgi\u00e0y\b", " ", t)
     t = re.sub(r"\bsize\s*[0-9]{2}\b", " ", t)
     t = re.sub(
-        r"(d\u01b0\u1edbi|duoi|tr\u00ean|tren|t\u1ea7m|kho\u1ea3ng|t\u1eeb|tu|t\u1edbi|toi|\u0111\u1ebfn|den)\s*[0-9]+(?:[.,][0-9]+)?\s*(tri\u1ec7u|trieu|tr|m|k|ngh\u00ecn|nghin)?",
+        r"(dưới|duoi|trên|tren|tầm|tam|khoảng|khoang|từ|tu|tới|toi|đến|den)\s*[0-9]+(?:[.,][0-9]+)?\s*(triệu|trieu|tr|m|k|nghìn|nghin)?",
         " ",
         t,
     )
     t = re.sub(r"\b[0-9]+(?:[.,][0-9]+)?\b", " ", t)
+    for stop in _STOPWORDS:
+        t = re.sub(rf"\b{re.escape(stop)}\b", " ", t)
 
     t = re.sub(r"\s+", " ", t).strip()
     return t or None

@@ -25,6 +25,7 @@ class AdminUpdateOrderStatusRequest extends FormRequest
                     'shipping',
                     'completed',
                     'cancelled',
+                    'delivery_failed',
                 ]),
             ],
         ];

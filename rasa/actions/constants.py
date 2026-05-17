@@ -1,5 +1,7 @@
 """Constants and configuration for Rasa actions."""
 
+from .product_keyword_map import PRODUCT_KEYWORD_MAP
+
 OCCASION_SCENE_MAP = {
     "valentine": {
         "description": "💕 Lãng mạn cho ngày Valentine",

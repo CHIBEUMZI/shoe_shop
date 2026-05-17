@@ -68,6 +68,13 @@ nlu:
       - mình muốn giày
       - cần mua giày
       - tìm giày cho mình
+      - mình cần vài mẫu để tham khảo
+      - mở shop giày ra cho mình xem
+      - có mẫu sneaker nào mới không
+      - có mẫu nào đang hot không
+      - cho mình xem bộ sưu tập giày
+      - shop có gì hợp đi làm đi học không
+      - mình đang muốn đổi giày mới
 
   - intent: ask_advice
     examples: |
@@ -101,6 +108,15 @@ nlu:
       - nên chọn giày nào cho dân văn phòng
       - mẹo chọn giày cho người mới
       - mình cần được tư vấn thêm
+      - tôi muốn chọn giày phù hợp
+      - làm sao để chọn đúng đôi giày
+      - có cách nào gợi ý theo nhu cầu không
+      - mình muốn được tư vấn kỹ hơn
+      - chọn giày theo mục đích thế nào
+      - tư vấn thêm về form giày
+      - tư vấn thêm về chất liệu giày
+      - giúp mình hiểu mẫu nào hợp với mình
+      - nên lấy mẫu nào cho đi hằng ngày
 
   - intent: provide_purpose
     examples: |
@@ -111,10 +127,14 @@ nlu:
       - giày đi bộ hằng ngày
       - mình cần giày để [chạy bộ](purpose)
       - giày [đi làm](purpose) hàng ngày
+      - giày [giày công ty](purpose)
       - mình cần giày [đá bóng](purpose)
       - giày [đá bóng](purpose)
+      - giày [đá banh](purpose)
       - giày đá bóng
+      - giày đá banh
       - mình muốn mua giày đá bóng
+      - mình muốn mua giày đá banh
       - mình cần mua giày đá bóng
       - cho mình giày đá bóng
       - giày để [đá bóng](purpose)
@@ -526,6 +546,7 @@ nlu:
       - tìm giày [nike](brand)
       - tìm sneaker [adidas](brand)
       - giày [chạy bộ](purpose) dưới [2 triệu](price_range)
+      - giày [giày chạy](purpose) dưới [2 triệu](price_range)
       - giày size [40](shoe_size) tầm [1 đến 2 triệu](price_range)
       - mình cần giày [đá bóng](purpose) size [41](shoe_size)
       - gợi ý giày [puma](brand) size [39](shoe_size) dưới [1 triệu](price_range)
@@ -631,6 +652,8 @@ nlu:
   - intent: ask_gift_for_lover
     examples: |
       - mua giày tặng người yêu
+      - mua giày tặng crush
+      - quà cho người yêu là giày
       - tặng giày cho người yêu
       - giày tặng bạn gái
       - giày tặng bạn trai
@@ -638,6 +661,55 @@ nlu:
       - giày làm quà cho người yêu
       - quà tặng người yêu là giày
       - gợi ý giày quà tặng
+      - cần mua giày tặng người yêu dịp sinh nhật
+      - tặng người yêu đôi sneaker nào đẹp
+      - quà cho bạn trai là giày gì hợp
+      - quà cho bạn gái là giày gì hợp
+      - muốn mua giày làm quà cho nửa kia
+      - giúp mình chọn giày tặng người thương
+      - giày tặng bạn đời
+      - giày cho người yêu nam
+      - giày cho người yêu nữ
+
+  - intent: ask_gift_for_father
+    examples: |
+      - mua giày tặng bố
+      - tặng giày cho bố
+      - giày tặng cha
+      - giày tặng ba
+      - giày làm quà cho bố
+      - quà tặng bố là giày
+      - gợi ý giày tặng ba
+      - mua giày làm quà cho cha
+
+  - intent: ask_gift_for_mother
+    examples: |
+      - mua giày tặng mẹ
+      - tặng giày cho mẹ
+      - giày tặng má
+      - giày tặng mẹ ruột
+      - giày làm quà cho mẹ
+      - quà tặng mẹ là giày
+      - gợi ý giày tặng mẹ
+      - mua giày làm quà cho mẹ
+
+  - intent: ask_gift_for_friend
+    examples: |
+      - mua giày tặng bạn
+      - tặng giày cho bạn bè
+      - giày tặng bạn thân
+      - giày làm quà cho bạn
+      - quà tặng bạn là giày
+      - gợi ý giày tặng bạn thân
+      - mua giày làm quà cho bạn
+      - giày tặng đồng nghiệp
+      - cần giày làm quà cho bạn thân
+      - quà sinh nhật cho bạn là đôi nào
+      - chọn giày tặng bạn cùng lớp
+      - giày tặng đồng nghiệp nam
+      - giày tặng đồng nghiệp nữ
+      - món quà giày cho bạn bè
+      - tặng bạn đôi sneaker nào ổn
 
   - intent: ask_size_guide
     examples: |
@@ -659,6 +731,12 @@ nlu:
       - chân dài bao nhiêu thì chọn size nào
       - size giày nữ nam khác nhau thế nào
       - size giày này tính sao
+      - size 42 là bao nhiêu cm
+      - chân 25cm mang size nào
+      - mình nên đo chân như thế nào
+      - size giày 40 có vừa không
+      - cách đo size cho giày sneaker
+      - size giày của shop quy đổi ra sao
 
   - intent: ask_care_guide
     examples: |
@@ -688,6 +766,12 @@ nlu:
       - còn giày vải/canvas thì vệ sinh sao
       - nếu giày bị ẩm thì xử lý thế nào
       - giày vải bị bẩn thì làm sao
+      - làm sao để giày không bị hôi
+      - cách vệ sinh sneaker trắng
+      - bảo quản giày trắng thế nào
+      - giày da bị xước thì xử lý sao
+      - giày bị bong keo thì làm sao
+      - phơi giày bao lâu thì khô
 
   - intent: ask_compare
     examples: |
@@ -743,6 +827,15 @@ nlu:
       - giày này có tốt không
       - giày này có êm không
       - màu này đẹp không
+      - size này còn không
+      - mẫu này có hợp đi làm không
+      - mẫu này có hợp đi học không
+      - đôi này mang đi chơi được không
+      - đôi này có đáng tiền không
+      - hàng này có chính hãng không
+      - đôi này có êm chân không
+      - đôi này có bền không
+      - mẫu này có dễ phối đồ không
 
 
   - intent: provide_material
@@ -811,6 +904,12 @@ nlu:
       - tư vấn thêm về sản phẩm này
       - mẫu này có gì nổi bật
       - đôi này dùng cho ai
+      - đôi này có hợp chân bè không
+      - đôi này đi mưa được không
+      - giày này hợp phối đồ gì
+      - đôi này có đi cả ngày được không
+      - mẫu này nên mang khi nào
+      - đôi này có dễ vệ sinh không
 
   - intent: ask_clarify_purchase
     examples: |
@@ -880,6 +979,12 @@ nlu:
       - đôi này hợp không
       - cái này ổn không
       - nghe thế nào
+      - còn đôi nào êm hơn không
+      - có mẫu nào hợp đi cả ngày không
+      - có mẫu nào sang hơn không
+      - có mẫu nào trẻ trung hơn không
+      - có lựa chọn nào rẻ hơn không
+      - có mẫu nào dễ phối hơn không
 
   - intent: ask_gender
     examples: |
@@ -1036,6 +1141,18 @@ nlu:
       - giày tặng crush
       - giày làm quà tặng
       - giày tặng kỷ niệm ngày yêu
+      - quà tặng bằng giày cho ai phù hợp
+      - giày tặng bố nên chọn mẫu nào
+      - giày tặng mẹ nên chọn mẫu nào
+      - giày tặng bạn thân nên chọn mẫu nào
+      - giày tặng người thương nên chọn mẫu nào
+      - mua giày làm quà cho sinh nhật
+      - mua giày làm quà cho kỷ niệm
+      - mua giày làm quà cho lễ tình nhân
+      - gợi ý quà tặng giày theo dịp
+      - giày làm quà cưới
+      - giày tặng ngày của cha
+      - giày tặng ngày của mẹ
       - giày tặng ngày sinh nhật
       - giày tặng ngày 8/3
       - giày tặng ngày 20/10
@@ -1233,6 +1350,15 @@ nlu:
       - nữ
       - bạn trai
       - bạn gái
+      - bố
+      - cha
+      - ba
+      - ba già
+      - mẹ
+      - má
+      - bạn
+      - bạn bè
+      - bạn thân
       - boyfriend
       - girlfriend
 

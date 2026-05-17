@@ -210,11 +210,11 @@
                   <div class="flex items-center gap-3">
                     <!-- Avatar -->
                     <div
-                      v-if="isLoggedIn && avatar"
+                      v-if="isLoggedIn && avatarSrc"
                       class="w-11 h-11 rounded-full overflow-hidden ring-2 ring-primary/20 shadow-lg"
                     >
                       <img
-                        :src="avatar"
+                        :src="avatarSrc"
                         :alt="userName || 'Avatar'"
                         class="w-full h-full object-cover"
                       />
@@ -466,7 +466,7 @@
 
 <script setup>
 
-import { onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import productPublicService from "../../services/public/productService";
 
@@ -580,13 +580,14 @@ const activeIndex = ref(-1);
 const API_BASE = import.meta.env.VITE_API_URL || "";
 const apiBase = API_BASE.replace(/\/$/, "");
 
-
 function buildImageUrl(pathOrUrl) {
   if (!pathOrUrl) return "";
   if (String(pathOrUrl).startsWith("http")) return pathOrUrl;
   if (String(pathOrUrl).startsWith("/")) return `${API_BASE}${pathOrUrl}`;
   return `${API_BASE}/storage/${pathOrUrl}`;
 }
+
+const avatarSrc = computed(() => buildImageUrl(props.avatar));
 
 function getPrice(p) {
   const sale =

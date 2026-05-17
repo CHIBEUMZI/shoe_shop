@@ -1,0 +1,60 @@
+#### Event-focused stories to validate product recommendation flows.
+#### Run with: rasa test core --stories tests/event_flows_test_stories.yml
+
+stories:
+  - story: football size price flow
+    steps:
+      - user: |
+          mình muốn mua giày đá banh size 41 tầm 500k-1 triệu
+        intent: search_products
+      - action: action_search_products
+
+  - story: football follow-up purpose flow
+    steps:
+      - user: |
+          giày đá bóng
+        intent: provide_purpose
+      - action: action_search_by_occasion
+      - user: |
+          size 41
+        intent: provide_size
+      - action: action_search_by_size
+      - user: |
+          500k-1 triệu
+        intent: provide_price_range
+      - action: action_search_by_price
+
+  - story: running shoes flow
+    steps:
+      - user: |
+          mình cần giày chạy bộ nhẹ
+        intent: ask_running_shoes
+      - action: action_search_running_shoes
+
+  - story: work shoes flow
+    steps:
+      - user: |
+          mình cần giày công ty màu đen
+        intent: ask_work_shoes
+      - action: action_search_work_shoes
+
+  - story: gift lover flow
+    steps:
+      - user: |
+          quà cho người yêu
+        intent: ask_gift_for_lover
+      - action: action_start_gift_recommendation_form
+      - active_loop: gift_recommendation_form
+      - user: |
+          valentine
+        intent: provide_gift_occasion
+      - action: gift_recommendation_form
+      - active_loop: null
+      - action: action_suggest_gift_shoes
+
+  - story: valentine event search
+    steps:
+      - user: |
+          giày tặng người yêu dịp valentine
+        intent: ask_occasion_gift
+      - action: action_search_by_event

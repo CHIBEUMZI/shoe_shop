@@ -222,6 +222,7 @@ const statusOptions = [
   { label: "Đang chuẩn bị", value: "processing" },
   { label: "Đang giao", value: "shipping" },
   { label: "Hoàn thành", value: "completed" },
+  { label: "Giao thất bại", value: "delivery_failed" },
   { label: "Đã hủy", value: "cancelled" },
 ];
 
@@ -453,6 +454,8 @@ function orderStatusText(v) {
       return "Đang giao";
     case "completed":
       return "Hoàn thành";
+    case "delivery_failed":
+      return "Giao thất bại";
     case "cancelled":
       return "Đã hủy";
     default:
@@ -489,6 +492,8 @@ function orderStatusClass(v) {
       return "bg-sky-100 text-sky-700";
     case "completed":
       return "bg-green-100 text-green-700";
+    case "delivery_failed":
+      return "bg-orange-100 text-orange-700";
     case "cancelled":
       return "bg-red-100 text-red-700";
     default:

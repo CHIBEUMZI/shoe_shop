@@ -86,19 +86,53 @@ class OrderController extends Controller
             ], 422);
         }
 
+        if ($nextStatus === 'delivery_failed') {
+            if ($currentStatus !== 'shipping') {
+                return response()->json([
+                    'message' => 'Chỉ có thể đánh dấu giao thất bại khi đơn hàng đang giao.',
+                ], 422);
+            }
+
+            try {
+                $order->update([
+                    'status' => 'delivery_failed',
+                ]);
+
+                $this->inventoryService->restoreStockForCancelledOrder(
+                    $order->fresh(['items.variant'])
+                );
+
+                $this->sendStatusMail(
+                    $order->fresh(['items', 'payments', 'user']),
+                    'delivery_failed'
+                );
+
+                return response()->json([
+                    'message' => 'Đơn hàng đã được đánh dấu giao thất bại và hoàn tồn kho thành công.',
+                    'data' => new OrderResource($order->fresh(['items', 'payments', 'user'])),
+                ]);
+            } catch (\Throwable $e) {
+                report($e);
+
+                return response()->json([
+                    'message' => 'Không thể cập nhật trạng thái giao thất bại.',
+                ], 500);
+            }
+        }
+
         if (
             $order->payment_method === 'cod' &&
             $nextStatus === 'confirmed' &&
             !$order->stock_deducted_at
         ) {
             try {
-                $order->update([
-                    'status' => 'confirmed',
-                ]);
-
                 $this->inventoryService->deductStockForOrder(
                     $order->fresh(['items.variant'])
                 );
+
+                $order->update([
+                    'status' => 'confirmed',
+                ]);
 
                 $this->sendStatusMail(
                     $order->fresh(['items', 'payments', 'user']),
@@ -153,9 +187,10 @@ class OrderController extends Controller
             'pending' => ['confirmed', 'cancelled'],
             'confirmed' => ['processing', 'cancelled'],
             'processing' => ['shipping', 'cancelled'],
-            'shipping' => ['completed'],
+            'shipping' => ['completed', 'delivery_failed'],
             'completed' => [],
             'cancelled' => [],
+            'delivery_failed' => [],
         ];
 
         return in_array($next, $map[$current] ?? [], true);
@@ -250,6 +285,7 @@ class OrderController extends Controller
             'shipping',
             'completed',
             'cancelled',
+            'delivery_failed',
         ];
 
         if (!in_array($status, $allowedStatuses, true)) {

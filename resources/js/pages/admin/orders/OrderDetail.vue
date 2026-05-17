@@ -418,9 +418,10 @@ const nextStatuses = computed(() => {
     pending: ["confirmed"],
     confirmed: ["processing"],
     processing: ["shipping"],
-    shipping: ["completed"],
+    shipping: ["completed", "delivery_failed"],
     completed: [],
     cancelled: [],
+    delivery_failed: [],
   };
 
   return map[order.value.status] || [];
@@ -435,6 +436,7 @@ function updateStatus(status) {
     processing: { title: "Chuyển sang chuẩn bị", message: "Chuyển đơn hàng sang trạng thái đang chuẩn bị?", variant: "info" },
     shipping: { title: "Chuyển sang đang giao", message: "Chuyển đơn hàng sang trạng thái đang giao?", variant: "info" },
     completed: { title: "Hoàn thành đơn hàng", message: "Đánh dấu đơn hàng này là đã hoàn thành?", variant: "success" },
+    delivery_failed: { title: "Giao thất bại", message: "Đánh dấu đơn hàng này là giao thất bại và hoàn tồn kho?", variant: "warning" },
     cancelled: { title: "Hủy đơn hàng", message: "Bạn có chắc muốn hủy đơn hàng này? Hành động này không thể hoàn tác.", variant: "danger" },
   };
 
@@ -490,6 +492,8 @@ function statusActionLabel(status) {
       return "Chuyển sang đang giao";
     case "completed":
       return "Đánh dấu hoàn thành";
+    case "delivery_failed":
+      return "Giao thất bại";
     case "cancelled":
       return "Hủy đơn";
     default:
@@ -507,6 +511,8 @@ function statusSuccessMessage(status) {
       return "Đơn hàng đã được chuyển sang trạng thái đang giao.";
     case "completed":
       return "Đơn hàng đã được đánh dấu hoàn thành.";
+    case "delivery_failed":
+      return "Đơn hàng đã được đánh dấu giao thất bại và tồn kho đã được hoàn lại.";
     case "cancelled":
       return "Đơn hàng đã được hủy thành công.";
     default:
@@ -524,6 +530,8 @@ function statusErrorMessage(status) {
       return "Không thể chuyển đơn hàng sang trạng thái đang giao.";
     case "completed":
       return "Không thể đánh dấu đơn hàng hoàn thành.";
+    case "delivery_failed":
+      return "Không thể đánh dấu giao thất bại.";
     case "cancelled":
       return "Không thể hủy đơn hàng.";
     default:
@@ -591,6 +599,8 @@ function orderStatusText(v) {
       return "Đang giao";
     case "completed":
       return "Hoàn thành";
+    case "delivery_failed":
+      return "Giao thất bại";
     case "cancelled":
       return "Đã hủy";
     default:
@@ -627,6 +637,8 @@ function orderStatusClass(v) {
       return "bg-sky";
     case "completed":
       return "bg-green";
+    case "delivery_failed":
+      return "bg-orange";
     case "cancelled":
       return "bg-red";
     default:

@@ -6,6 +6,8 @@
       v-model="headerQ"
       :isLoggedIn="auth.isLoggedIn"
       :isAdmin="auth.isAdmin"
+      :avatar="auth.user?.avatar || ''"
+      :userName="auth.user?.name || ''"
       :cartCount="cartCount"
       :wishlistCount="wishlistCount"
       :menu="menu"

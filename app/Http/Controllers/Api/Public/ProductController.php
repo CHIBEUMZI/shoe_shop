@@ -5,11 +5,101 @@ namespace App\Http\Controllers\Api\Public;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\Public\ProductResource;
 use App\Models\Product;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+
 class ProductController extends Controller
 {
+    protected const GIFT_RECIPIENT_PROFILES = [
+        'father' => [
+            'search_terms' => ['bố', 'nam', 'công sở', 'lịch sự', 'derby', 'oxford', 'chelsea boots', 'đen', 'nâu'],
+            'blocked_terms' => ['nữ', 'pink', 'hồng', 'mẹ', 'bạn gái', 'nữ tính'],
+            'preferred_slugs' => [
+                'sereno-brogues-oxford-of37',
+                'classy-chelsea-boots-bo14',
+                'giay-da-derby-nam-e-chunky-gnta51-5103-d',
+                'sir-classic-oxford-of34',
+            ],
+        ],
+        'mother' => [
+            'search_terms' => ['mẹ', 'nữ', 'nữ tính', 'thanh lịch', 'nhẹ nhàng', 'sneaker nữ', 'trắng', 'hồng', 'be'],
+            'blocked_terms' => ['nam', 'derby', 'oxford', 'chelsea boots', 'bố', 'công sở nam'],
+            'preferred_slugs' => [
+                'giay-puma-skye-clean-pink',
+                'giay-nike-air-force-1-shadow-infinite-lilac',
+                'giay-nike-air-force-1-07-m-all-white-cw2288-111',
+                'giay-nike-air-force-1-07-white-gum',
+            ],
+        ],
+        'friend' => [
+            'search_terms' => ['bạn bè', 'trẻ trung', 'dễ phối', 'casual', 'sneaker', 'basic'],
+            'blocked_terms' => [],
+            'preferred_slugs' => [
+                'giay-nike-air-force-1-07-m-all-white-cw2288-111',
+                'giay-puma-army-trainer-white-black',
+                'giay-puma-rs-x-the-unity-collection',
+                'giay-new-balance-530-retro-running-navy',
+            ],
+        ],
+        'lover' => [
+            'search_terms' => ['người yêu', 'valentine', 'lãng mạn', 'quà tặng', 'romantic', 'hồng', 'đỏ'],
+            'blocked_terms' => [],
+            'preferred_slugs' => [
+                'giay-nike-air-force-1-low-valentine-s-day-2023',
+                'giay-nike-air-force-1-shadow-infinite-lilac',
+                'giay-puma-skye-clean-pink',
+                'giay-nike-air-force-1-07-lx-lucky-charms',
+            ],
+        ],
+    ];
+
+    protected function giftRecipientProfile(?string $group): array
+    {
+        return self::GIFT_RECIPIENT_PROFILES[$group ?? ''] ?? [];
+    }
+
+    protected function applyGiftRecipientFilters(Request $request, Builder $query): Builder
+    {
+        $group = (string) $request->query('recipient_group', '');
+        $profile = $this->giftRecipientProfile($group);
+        $searchTerms = $profile['search_terms'] ?? [];
+        $blockedTerms = $profile['blocked_terms'] ?? [];
+
+        if (empty($profile)) {
+            return $query;
+        }
+
+        $query->where(function ($q) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $term = trim((string) $term);
+                if ($term === '') {
+                    continue;
+                }
+                $q->orWhere('name', 'like', "%{$term}%")
+                    ->orWhere('slug', 'like', "%{$term}%")
+                    ->orWhere('short_description', 'like', "%{$term}%")
+                    ->orWhere('description', 'like', "%{$term}%");
+            }
+        });
+
+        foreach ($blockedTerms as $term) {
+            $term = trim((string) $term);
+            if ($term === '') {
+                continue;
+            }
+            $query->where(function ($q) use ($term) {
+                $q->where('name', 'not like', "%{$term}%")
+                    ->where('slug', 'not like', "%{$term}%")
+                    ->where('short_description', 'not like', "%{$term}%")
+                    ->where('description', 'not like', "%{$term}%");
+            });
+        }
+
+        return $query;
+    }
+
     public function trending(Request $request)
     {
         $perPage = $request->integer('per_page', 12);
@@ -75,8 +165,11 @@ class ProductController extends Controller
             ->with([
                 'brand:id,name,slug',
                 'categories:id,name,slug',
-            ])
-            ->when($request->filled('search'), function ($q) use ($request) {
+            ]);
+
+        $query = $this->applyGiftRecipientFilters($request, $query);
+
+        $query->when($request->filled('search'), function ($q) use ($request) {
                 $s = trim((string) $request->query('search'));
                 $q->where(function ($qq) use ($s) {
                     $qq->where('name', 'like', "%{$s}%")

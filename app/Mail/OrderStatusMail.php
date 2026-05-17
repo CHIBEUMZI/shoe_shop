@@ -26,6 +26,7 @@ class OrderStatusMail extends Mailable implements ShouldQueue
             'shipping' => 'Đơn hàng #' . $this->order->code . ' đang được giao',
             'completed' => 'Đơn hàng #' . $this->order->code . ' đã giao thành công',
             'cancelled' => 'Đơn hàng #' . $this->order->code . ' đã bị hủy',
+            'delivery_failed' => 'Đơn hàng #' . $this->order->code . ' giao thất bại',
             default => 'Xác nhận đơn hàng #' . $this->order->code,
         };
 

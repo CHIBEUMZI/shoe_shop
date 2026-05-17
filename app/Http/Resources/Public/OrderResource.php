@@ -7,6 +7,20 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class OrderResource extends JsonResource
 {
+    protected function getStatusLabel(): string
+    {
+        return match ($this->status) {
+            'pending' => 'Chờ xử lý',
+            'confirmed' => 'Đã xác nhận',
+            'processing' => 'Đang chuẩn bị hàng',
+            'shipping' => 'Đang giao',
+            'completed' => 'Hoàn thành',
+            'cancelled' => 'Đã hủy',
+            'delivery_failed' => 'Giao thất bại',
+            default => (string) $this->status,
+        };
+    }
+
     public function toArray(Request $request): array
     {
         return [
@@ -31,6 +45,7 @@ class OrderResource extends JsonResource
             'payment_status' => $this->payment_status,
 
             'status' => $this->status,
+            'status_label' => $this->getStatusLabel(),
 
             'subtotal' => $this->subtotal,
             'discount_total' => $this->discount_total,

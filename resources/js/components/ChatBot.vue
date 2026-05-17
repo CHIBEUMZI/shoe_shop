@@ -168,35 +168,39 @@
 
                   <!-- Text with linkify & typing animation -->
                   <template v-if="m.from === 'bot' && m.typing !== undefined">
-                    <span v-for="(p, pi) in linkify(m.displayedText)" :key="pi">
-                      <a
-                        v-if="p.type === 'link'"
-                        class="chat-link"
-                        :href="p.href"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {{ p.text }}
-                      </a>
-                      <span v-else>{{ p.text }}<span v-if="m.typing && pi === linkify(m.displayedText).length - 1" class="chat-cursor">|</span></span>
-                    </span>
+                    <div class="chat-text">
+                      <template v-for="(p, pi) in linkify(m.displayedText)" :key="pi">
+                        <a
+                          v-if="p.type === 'link'"
+                          class="chat-link"
+                          :href="p.href"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {{ p.text }}
+                        </a>
+                        <span v-else>{{ p.text }}<span v-if="m.typing && pi === linkify(m.displayedText).length - 1" class="chat-cursor">|</span></span>
+                      </template>
+                    </div>
                   </template>
                   <template v-else-if="m.from === 'bot'">
-                    <span v-for="(p, pi) in linkify(m.text)" :key="pi">
-                      <a
-                        v-if="p.type === 'link'"
-                        class="chat-link"
-                        :href="p.href"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                      >
-                        {{ p.text }}
-                      </a>
-                      <span v-else>{{ p.text }}</span>
-                    </span>
+                    <div class="chat-text">
+                      <template v-for="(p, pi) in linkify(m.text)" :key="pi">
+                        <a
+                          v-if="p.type === 'link'"
+                          class="chat-link"
+                          :href="p.href"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {{ p.text }}
+                        </a>
+                        <span v-else>{{ p.text }}</span>
+                      </template>
+                    </div>
                   </template>
                   <template v-else>
-                    {{ m.text }}
+                    <div class="chat-text">{{ m.text }}</div>
                   </template>
                 </div>
                 <div class="chat-msg-time">{{ formatTime(m.timestamp) }}</div>
@@ -353,6 +357,10 @@ function linkify(text) {
   return out.length ? out : [{ type: "text", text: raw }];
 }
 
+function normalizeBotText(text) {
+  return String(text ?? "").replace(/\r\n?/g, "\n");
+}
+
 function formatPrice(price) {
   if (price == null || price === "") return "";
   const n = Number(price);
@@ -394,7 +402,7 @@ async function send() {
             const introText = msg.custom.type === "products"
               ? "Mình tìm được các sản phẩm này cho bạn nè! 👟"
               : "Dưới đây là các gợi ý cho bạn nhé!";
-            const msgObj = { from: "bot", text: introText, displayedText: "", typing: true, timestamp: new Date() };
+            const msgObj = { from: "bot", text: normalizeBotText(introText), displayedText: "", typing: true, timestamp: new Date() };
             messages.value.push(msgObj);
             await animateText(msgObj);
             messages.value.push({ from: "bot", custom: msg.custom, timestamp: new Date() });
@@ -403,7 +411,7 @@ async function send() {
             continue;
           }
 
-          const msgObj = { from: "bot", text: msg.text, displayedText: "", typing: true, timestamp: new Date() };
+          const msgObj = { from: "bot", text: normalizeBotText(msg.text), displayedText: "", typing: true, timestamp: new Date() };
           messages.value.push(msgObj);
           await animateText(msgObj);
           await new Promise(resolve => setTimeout(resolve, 250));
@@ -412,7 +420,7 @@ async function send() {
         if (!botPayloads.length) {
           const msgObj = {
             from: "bot",
-            text: "Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé.",
+            text: normalizeBotText("Mình đã nhận được tin nhắn, bạn mô tả rõ hơn giúp mình nhé."),
             displayedText: "",
             typing: true,
             timestamp: new Date(),
@@ -427,7 +435,7 @@ async function send() {
         if (attempt === maxRetries) {
           const msgObj = {
             from: "bot",
-            text: "Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé.",
+            text: normalizeBotText("Xin lỗi, hệ thống đang bận hoặc chatbot chưa sẵn sàng. Bạn thử lại sau nhé."),
             displayedText: "",
             typing: true,
             timestamp: new Date(),
@@ -612,8 +620,9 @@ function animateText(msgObj, onComplete) {
   position: absolute;
   right: 0;
   bottom: 68px;
-  width: 390px;
-  max-height: 620px;
+  width: 440px;
+  height: 680px;
+  max-height: calc(100vh - 110px);
   background: var(--chat-surface);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -952,6 +961,11 @@ function animateText(msgObj, onComplete) {
 .chat-msg-bubble,
 .chat-msg-bubble * {
   white-space: inherit;
+}
+
+.chat-text {
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .chat-msg-bubble span {
@@ -1333,13 +1347,18 @@ function animateText(msgObj, onComplete) {
 
   .chat-window {
     width: calc(100vw - 24px);
-    max-width: 380px;
+    max-width: 440px;
     right: -8px;
+    height: calc(100vh - 100px);
     max-height: calc(100vh - 100px);
   }
 
   .chat-toggle {
     padding: 10px 16px;
+  }
+
+  .chat-window {
+    height: calc(100vh - 96px);
   }
 
   .chat-suggestions {

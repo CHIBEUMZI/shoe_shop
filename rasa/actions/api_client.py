@@ -4,7 +4,8 @@ from typing import Any, Dict, List, Optional, Text
 
 import requests
 
-from .utils import _parse_budget_text_to_range, _parse_size
+from .utils import _parse_budget_text_to_range, _parse_size, _tokenize_search_text
+from .constants import PRODUCT_KEYWORD_MAP
 
 
 def _shop_base_url() -> str:
@@ -134,6 +135,7 @@ def _fetch_products(
     category_ids: Optional[List[int]] = None,
     limit: int = 5,
     sort: str = "popular",
+    recipient_group: Optional[str] = None,
 ) -> List[dict]:
     api = (os.getenv("SHOP_API_BASE_URL") or os.getenv("APP_URL") or "http://nginx").rstrip("/")
     min_vnd, max_vnd = _parse_budget_text_to_range(price_range)
@@ -141,6 +143,8 @@ def _fetch_products(
     params: Dict[str, Any] = {"per_page": 12, "sort": sort}
     if search:
         params["search"] = search
+    if recipient_group:
+        params["recipient_group"] = recipient_group
     if size:
         params["size"] = size
     if category_ids:
@@ -182,6 +186,7 @@ def _fetch_products_with_attributes(
     material: Optional[str] = None,
     style: Optional[str] = None,
     limit: int = 5,
+    recipient_group: Optional[str] = None,
 ) -> List[dict]:
     query_terms = [search, color, material, style]
     primary = " ".join([t.strip() for t in query_terms if t and str(t).strip()]) or None
@@ -191,6 +196,7 @@ def _fetch_products_with_attributes(
         price_range=price_range,
         category_ids=category_ids,
         limit=20,
+        recipient_group=recipient_group,
     )
 
     filters = {
@@ -212,7 +218,7 @@ def _fetch_products_with_attributes(
 
     filtered = [p for p in items if _matches(p)] if any(filters.values()) else items
     if not filtered and any(filters.values()):
-        relaxed = _fetch_products(search=search, size=size, price_range=price_range, category_ids=category_ids, limit=20)
+        relaxed = _fetch_products(search=search, size=size, price_range=price_range, category_ids=category_ids, limit=20, recipient_group=recipient_group)
         filtered = [p for p in relaxed if _matches(p)] or relaxed
     return filtered[:limit]
 
@@ -227,6 +233,7 @@ def _fallback_near_match(
     material: Optional[str] = None,
     style: Optional[str] = None,
     limit: int = 5,
+    recipient_group: Optional[str] = None,
 ) -> List[dict]:
     candidates: List[List[dict]] = []
     seen = set()
@@ -241,22 +248,22 @@ def _fallback_near_match(
         if filtered:
             candidates.append(filtered)
 
-    _push(_fetch_products_with_attributes(search=search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+    _push(_fetch_products_with_attributes(search=search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20, recipient_group=recipient_group))
 
     relaxed_search = search
     if not relaxed_search:
         relaxed_search = None
 
     if size:
-        _push(_fetch_products_with_attributes(search=relaxed_search, size=None, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=None, price_range=price_range, category_ids=category_ids, color=color, material=material, style=style, limit=20, recipient_group=recipient_group))
     if price_range:
-        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=None, category_ids=category_ids, color=color, material=material, style=style, limit=20))
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=None, category_ids=category_ids, color=color, material=material, style=style, limit=20, recipient_group=recipient_group))
     if color:
-        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=None, material=material, style=style, limit=20))
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=None, material=material, style=style, limit=20, recipient_group=recipient_group))
     if material:
-        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=None, style=style, limit=20))
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=None, style=style, limit=20, recipient_group=recipient_group))
     if style:
-        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=None, limit=20))
+        _push(_fetch_products_with_attributes(search=relaxed_search, size=size, price_range=price_range, category_ids=category_ids, color=color, material=material, style=None, limit=20, recipient_group=recipient_group))
 
     for batch in candidates:
         if batch:
@@ -271,6 +278,7 @@ def _infer_brand_from_text(text: Optional[str]) -> Optional[str]:
     from typing import Dict, Text
 
     t = (text or "").strip().lower()
+    t = t.replace("đá banh", "đá bóng").replace("quà cho người yêu", "valentine").replace("quà người yêu", "valentine").replace("giày công ty", "đi làm").replace("giày chạy", "chạy bộ").replace("giày jogging", "chạy bộ")
     if not t:
         return None
     try:
@@ -331,6 +339,7 @@ def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
         return None
 
     t = (text or "").strip().lower()
+    t = t.replace("đá banh", "đá bóng").replace("quà cho người yêu", "valentine").replace("quà người yêu", "valentine").replace("giày công ty", "đi làm").replace("giày chạy", "chạy bộ").replace("giày jogging", "chạy bộ")
 
     gift_birthday_keywords = ["sinh nhật", "birthday", "bday", "sn", "quà sinh nhật", "tặng sn", "mừng sn", "mừng birthday", "sinh nhật bạn gái", "sinh nhật người yêu", "sn bạn gái", "sn người yêu"]
     gift_anniversary_keywords = ["kỷ niệm", "anniversary", " anniversary", "ngày kỷ niệm", "tặng kỷ niệm", "ở bên nhau", "kỷ niệm ngày cưới", "ngày cưới"]
@@ -395,9 +404,9 @@ def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
                       "yoga", "cardio", "cầu lông", "tennis", "bóng rổ", "gym", "crossfit"]
     if any(kw in t for kw in sports_keywords):
         # Check specific sports first (more specific = higher priority)
-        if any(kw in t for kw in ["giày đá bóng", "đá bóng", "bóng đá", "football", "soccer"]):
+        if any(kw in t for kw in ["giày đá bóng", "đá bóng", "đá banh", "bóng đá", "football", "soccer", "sân cỏ nhân tạo", "tf", "fg", "sg"]):
             return "football"
-        if any(kw in t for kw in ["chạy bộ", "running", "jogging", "marathon"]):
+        if any(kw in t for kw in ["chạy bộ", "chạy", "running", "jogging", "marathon", "giày chạy"]):
             return "running"
         if any(kw in t for kw in ["gym", "tập gym", "crossfit", "fitness", "nâng tạ", "workout"]):
             return "gym"
@@ -406,7 +415,33 @@ def _infer_occasion_from_text(text: Optional[str]) -> Optional[str]:
     return None
 
 
-def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Optional[str] = None) -> List[dict]:
+def _keyword_score_for_product(p: dict, occasion: str, query_tokens: Optional[List[str]] = None) -> int:
+    slug = str(p.get("slug") or "").lower()
+    name = str(p.get("name") or "").lower()
+    short_description = str(p.get("short_description") or "").lower()
+    description = str(p.get("description") or "").lower()
+    blob = " ".join([slug, name, short_description, description])
+    keywords = PRODUCT_KEYWORD_MAP.get(slug, [])
+    score = 0
+    for kw in keywords:
+        k = str(kw).strip().lower()
+        if k and k in blob:
+            score += 8
+    if occasion and occasion in keywords:
+        score += 5
+    for tok in query_tokens or []:
+        if tok and tok in blob:
+            score += 3
+        else:
+            for kw in keywords:
+                k = str(kw).strip().lower()
+                if tok and (tok in k or k in tok):
+                    score += 2
+                    break
+    return score
+
+
+def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Optional[str] = None, query_text: Optional[str] = None) -> List[dict]:
     from .constants import OCCASION_SCENE_MAP
 
     api = os.getenv("SHOP_API_BASE_URL", "http://nginx").rstrip("/")
@@ -415,29 +450,21 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
     effective_price_range = price_range if price_range else scene.get("price_range", None)
     style_keywords = [str(kw).strip().lower() for kw in (scene.get("style_keywords", []) or []) if str(kw).strip()]
 
-    # Stronger guard rails for sport-specific requests.
     if occasion == "football":
-        style_keywords = list(dict.fromkeys(style_keywords + ["đá bóng", "bóng đá", "football", "sân cỏ", "tf", "fg", "sg", "mercurial", "predator", "copa"]))
+        style_keywords = list(dict.fromkeys(style_keywords + ["đá bóng", "đá banh", "bóng đá", "football", "soccer", "sân cỏ", "sân cỏ nhân tạo", "tf", "fg", "sg", "mercurial", "predator", "copa", "hitek", "jogarbola", "mitre", "chân bè", "form ôm"]))
     elif occasion == "running":
-        style_keywords = list(dict.fromkeys(style_keywords + ["chạy bộ", "running", "jogging", "marathon"]))
+        style_keywords = list(dict.fromkeys(style_keywords + ["chạy bộ", "giày chạy", "running", "jogging", "marathon", "nhẹ", "êm", "thoáng khí", "đệm tốt"]))
     elif occasion == "gym":
-        style_keywords = list(dict.fromkeys(style_keywords + ["gym", "tập gym", "fitness", "crossfit", "training", "workout"]))
+        style_keywords = list(dict.fromkeys(style_keywords + ["gym", "tập gym", "fitness", "crossfit", "training", "workout", "đế bám", "thăng bằng"]))
 
-    params: Dict[str, Any] = {
-        "per_page": 12,
-        "sort": "popular",
-    }
-
+    params: Dict[str, Any] = {"per_page": 12, "sort": "popular"}
     min_vnd, max_vnd = _parse_budget_text_to_range(effective_price_range)
+    occasion_tokens = _tokenize_search_text(query_text or occasion)
+    query_hint = " ".join(occasion_tokens) if occasion_tokens else (query_text or occasion or "")
     if min_vnd is not None:
         params["price_min"] = min_vnd
     if max_vnd is not None:
         params["price_max"] = max_vnd
-
-    # If the provided range looks malformed or overly broad, still keep the request
-    # usable by avoiding a hard filter that would eliminate all matches.
-    if price_range and min_vnd is None and max_vnd is None:
-        effective_price_range = None
 
     def _get_items(p: dict) -> List[dict]:
         try:
@@ -450,12 +477,7 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
             return []
 
     def _text_blob(p: dict) -> str:
-        parts = [
-            str(p.get("name") or ""),
-            str(p.get("slug") or ""),
-            str(p.get("short_description") or ""),
-            str(p.get("description") or ""),
-        ]
+        parts = [str(p.get("name") or ""), str(p.get("slug") or ""), str(p.get("short_description") or ""), str(p.get("description") or "")]
         for v in p.get("variants") or []:
             if isinstance(v, dict):
                 parts.extend([str(v.get("name") or ""), str(v.get("color") or ""), str(v.get("size") or "")])
@@ -466,81 +488,81 @@ def _fetch_products_by_occasion(occasion: str, limit: int = 5, price_range: Opti
         if not blob:
             return False
         if occasion == "football":
-            return any(k in blob for k in ["đá bóng", "bóng đá", "football", "tf", "fg", "sg", "sân cỏ", "mercurial", "predator", "copa"])
+            return any(k in blob for k in ["đá bóng", "bóng đá", "đá banh", "football", "soccer", "tf", "fg", "sg", "sân cỏ", "sân cỏ nhân tạo", "mercurial", "predator", "copa", "hitek", "jogarbola", "mitre", "form ôm", "chân bè"])
         if occasion == "running":
-            return any(k in blob for k in ["chạy bộ", "running", "jogging", "marathon"])
+            return any(k in blob for k in ["chạy bộ", "giày chạy", "running", "jogging", "marathon", "run", "retro running", "new balance 530", "nhẹ", "êm", "thoáng khí"])
         if occasion == "gym":
-            return any(k in blob for k in ["gym", "tập gym", "fitness", "crossfit", "training", "workout"])
-        return any(k in blob for k in style_keywords)
+            return any(k in blob for k in ["gym", "tập gym", "fitness", "crossfit", "training", "workout", "muran", "đế bám", "thăng bằng"])
+        if occasion in {"interview", "gift", "birthday_gift", "anniversary_gift", "valentine"}:
+            return any(k in blob for k in style_keywords) or any(k in blob for k in query_tokens)
+        return any(k in blob for k in style_keywords) or any(k in blob for k in query_tokens)
+
+    def _score_product(p: dict) -> int:
+        blob = _text_blob(p)
+        if not blob:
+            return 0
+        score = _keyword_score_for_product(p, occasion, query_tokens)
+        if occasion == "football" and any(k in blob for k in ["hitek", "jogarbola", "mitre", "tf", "fg", "sg", "sân cỏ nhân tạo"]):
+            score += 14
+        if occasion == "running" and any(k in blob for k in ["new balance 530", "retro running", "navy", "run", "jogging"]):
+            score += 14
+        if occasion == "interview" and any(k in blob for k in ["oxford", "derby", "chelsea", "công sở", "văn phòng"]):
+            score += 14
+        if occasion in {"gift", "birthday_gift", "anniversary_gift", "valentine"} and any(k in blob for k in ["quà", "tặng", "romantic", "đỏ", "hồng", "sang trọng", "nữ tính"]):
+            score += 14
+        price_val = _safe_int(p.get("base_sale_price") or p.get("base_price"))
+        if price_val is not None:
+            if min_vnd is not None and price_val >= min_vnd:
+                score += 3
+            if max_vnd is not None and price_val <= max_vnd:
+                score += 3
+        if p.get("is_featured"):
+            score += 2
+        if any(tok in blob for tok in query_tokens):
+            score += 4
+        score += min((_safe_int(p.get("views")) or 0) // 10, 5)
+        return score
+
+    query_tokens = occasion_tokens
 
     try:
-        # Fast path for football: keep the number of API calls low because this
-        # is the most frequent guided search flow and users feel delay quickly.
-        if occasion == "football":
-            fast_queries = [
-                {**params, "occasion": [occasion]},
-                {**params, "search": "giày đá bóng"},
-                {**params, "search": "football"},
-            ]
-            if min_vnd is not None or max_vnd is not None:
-                params_no_price = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
-                fast_queries.extend([
-                    {**params_no_price, "occasion": [occasion]},
-                    {**params_no_price, "search": "giày đá bóng"},
-                ])
+        batches: List[List[dict]] = []
+        for query in ({**params, "occasion": [occasion]}, {**params, "search": query_hint}, {**params, "search": occasion}):
+            items = _get_items(query)
+            if items:
+                batches.append(items)
 
-            for query in fast_queries:
-                items = _get_items(query)
-                filtered = [p for p in items if _is_relevant(p)]
-                if filtered:
-                    return filtered[:limit]
-            return []
-
-        candidate_sets: List[List[dict]] = []
-
-        items = _get_items({**params, "occasion": [occasion]})
-        if items:
-            candidate_sets.append(items)
-
-        for kw in style_keywords:
+        for kw in style_keywords[:4]:
             items = _get_items({**params, "search": kw})
             if items:
-                candidate_sets.append(items)
-                break
-
-        items = _get_items({**params, "search": occasion})
-        if items:
-            candidate_sets.append(items)
+                batches.append(items)
 
         if min_vnd is not None or max_vnd is not None:
             params_no_price = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
-            items = _get_items({**params_no_price, "occasion": [occasion]})
-            if items:
-                candidate_sets.append(items)
-            for kw in style_keywords:
+            for query in ({**params_no_price, "occasion": [occasion]}, {**params_no_price, "search": query_hint}, {**params_no_price, "search": occasion}):
+                items = _get_items(query)
+                if items:
+                    batches.append(items)
+            for kw in style_keywords[:3]:
                 items = _get_items({**params_no_price, "search": kw})
                 if items:
-                    candidate_sets.append(items)
-                    break
+                    batches.append(items)
 
-        params_relaxed = {k: v for k, v in params.items() if k not in ("price_min", "price_max")}
-        for kw in style_keywords:
-            items = _get_items({**params_relaxed, "search": kw})
-            if items:
-                candidate_sets.append(items)
-                break
+        merged: List[dict] = []
+        seen = set()
+        for batch in batches:
+            for p in batch:
+                slug = str(p.get("slug") or "")
+                if slug and slug not in seen:
+                    seen.add(slug)
+                    merged.append(p)
 
-        for candidates in candidate_sets:
-            filtered = [p for p in candidates if _is_relevant(p)]
-            if filtered:
-                return filtered[:limit]
+        ranked = sorted([p for p in merged if _is_relevant(p)] or merged, key=lambda p: (_score_product(p), _keyword_score_for_product(p, occasion, query_tokens), _safe_int(p.get("views")) or 0), reverse=True)
+        if ranked:
+            return ranked[:limit]
 
-        if occasion not in {"football", "running", "gym", "sports"}:
-            items = _get_items({"per_page": 12, "sort": "popular"})
-            filtered = [p for p in items if _is_relevant(p)]
-            if filtered:
-                return filtered[:limit]
-
-        return []
+        fallback = _get_items({"per_page": 12, "sort": "popular"})
+        ranked_fb = sorted([p for p in fallback if _is_relevant(p)] or fallback, key=lambda p: (_score_product(p), _keyword_score_for_product(p, occasion, query_tokens), _safe_int(p.get("views")) or 0), reverse=True)
+        return ranked_fb[:limit]
     except Exception:
         return []
