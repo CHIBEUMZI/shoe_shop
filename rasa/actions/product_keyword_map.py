@@ -16,7 +16,7 @@ PRODUCT_KEYWORD_MAP = {
     "giay-a-bong-230727": ["đá bóng", "bóng đá", "đá banh", "tf", "fg", "mitre", "tập luyện", "sân cỏ nhân tạo"],
     "giay-the-thao-promax-muran": ["gym", "fitness", "cầu lông", "bóng chuyền", "muran", "thể thao", "đa dụng", "giày chạy"],
     "sereno-brogues-oxford-of37": ["bố", "công sở", "phỏng vấn", "lịch sự", "oxford", "đen", "nâu", "nam", "father", "giày công ty"],
-    "sir-classic-oxford-of34": ["bố", "công sở", "chelsea boots", "lịch sự", "smart casual", "đi làm", "nữ", "father"],
+    "sir-classic-oxford-of34": ["bố", "công sở", "chelsea boots", "lịch sự", "smart casual", "đi làm", "nam", "father"],
     "classy-chelsea-boots-bo14": ["bố", "đi làm", "đi chơi", "chelsea boots", "lịch sự", "sang trọng", "nam", "father", "giày công ty"],
     "giay-da-derby-nam-e-chunky-gnta51-5103-d": ["bố", "derby", "công sở", "phỏng vấn", "chỉnh chu", "nam", "đi làm", "father", "giày công ty"],
     "giay-puma-skye-clean-pink": ["mẹ", "nữ", "nữ tính", "hồng", "thanh lịch", "mother"],

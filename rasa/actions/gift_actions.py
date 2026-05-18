@@ -40,6 +40,12 @@ GIFT_OCCASION_MAP = {
     "20/10": "valentine",
     "ngày 20/10": "valentine",
     "tốt nghiệp": "casual",
+    "đá bóng": "football",
+    "bóng đá": "football",
+    "đá banh": "football",
+    "football": "football",
+    "soccer": "football",
+    "giày đá bóng": "football",
     "sinh nhật bạn gái": "birthday_gift",
     "sinh nhật người yêu": "birthday_gift",
     "kỷ niệm ngày cưới": "anniversary_gift",
@@ -197,6 +203,8 @@ def _search_gift_shoes(
 
         if occasion_key == "birthday_gift":
             score += 2 if any(k in blob for k in ["sinh nhật", "birthday", "quà tặng", "gift"]) else 0
+        if occasion_key == "football" and any(k in blob for k in ["đá bóng", "bóng đá", "football", "soccer", "tf", "fg", "sg", "sân cỏ", "chân bè", "form ôm"]):
+            score += 10
         if gender == "nam" and any(k in blob for k in ["nam", "derby", "oxford", "chelsea", "công sở"]):
             score += 4
         if gender == "nữ" and any(k in blob for k in ["nữ", "pink", "hồng", "thanh lịch", "nữ tính", "be"]):
@@ -227,6 +235,15 @@ def _search_gift_shoes(
     # Football gifts often come through the gift flow with a generic occasion
     # such as sinh nhật / quà tặng. Add a sports-specific attempt so football
     # shoes are not missed when the user already gave size + budget.
+    if occasion_key == "football":
+        football_terms = ["giày đá bóng", "đá bóng", "bóng đá", "football", "soccer", "tf", "fg", "sg"]
+        for term in football_terms:
+            params_football = _build_params(include_occasion=False, include_gender=False, include_size=True, include_price=True)
+            params_football["search"] = term
+            items = _fetch(params_football)
+            if items:
+                return sorted(items, key=_score, reverse=True)
+
     if occasion_key in {"birthday_gift", "anniversary_gift", "gift", "casual"} and (
         (gender == "nam") or (recipient_label in {"bố", "bạn bè", "nam"})
     ):
@@ -256,6 +273,7 @@ def _search_gift_shoes(
             "casual": ["casual", "thoải mái", "năng động"],
             "interview": ["lịch sự", "formal", "công sở"],
             "sports": ["thể thao", "chạy bộ", "gym"],
+            "football": ["đá bóng", "bóng đá", "football", "soccer", "tf", "fg", "sg", "sân cỏ", "sân cỏ nhân tạo", "form ôm"],
             "travel": ["du lịch", "thoải mái", "nhẹ"],
             "party": ["thời trang", "sang trọng", "nổi bật"],
         }
