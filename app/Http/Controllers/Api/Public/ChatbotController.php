@@ -10,12 +10,21 @@ class ChatbotController extends Controller
 {
     public function message(Request $request)
     {
-        $text = $request->input('message');
+        $text = trim((string) $request->input('message'));
 
-        if (!$text) {
+        if ($text === '') {
             return response()->json([
                 'error' => 'message is required',
             ], 422);
+        }
+
+        // Respond directly to clearly off-topic questions so the bot stays on-brand.
+        if ($this->isOutOfScope($text)) {
+            return response()->json([
+                [
+                    'text' => 'Mình chỉ hỗ trợ tư vấn giày và phụ kiện của BMC Shoes. Nếu bạn đang tìm giày, hãy cho mình biết mục đích sử dụng, size, thương hiệu hoặc tầm giá nhé.',
+                ],
+            ]);
         }
 
         // Use conversation_id if provided (from frontend), otherwise fallback
@@ -39,5 +48,25 @@ class ChatbotController extends Controller
                 'error' => 'Cannot connect to chatbot server',
             ], 500);
         }
+    }
+
+    private function isOutOfScope(string $text): bool
+    {
+        $normalized = mb_strtolower($text, 'UTF-8');
+
+        $shoeKeywords = [
+            'giày', 'shoe', 'shoes', 'sneaker', 'sneakers', 'boot', 'boots',
+            'sandal', 'sandals', 'dép', 'dep', 'running', 'chạy bộ', 'đá bóng',
+            'bóng rổ', 'gym', 'tập gym', 'đi làm', 'đi học', 'đi chơi', 'du lịch',
+            'size', 'màu', 'mau', 'giá', 'gia', 'khuyến mãi', 'sale',
+        ];
+
+        foreach ($shoeKeywords as $keyword) {
+            if (str_contains($normalized, $keyword)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

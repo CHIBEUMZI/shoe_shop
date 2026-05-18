@@ -1138,7 +1138,7 @@ select.control {
   position: relative;
   border: 2px dashed #c7d4e8;
   border-radius: 14px;
-  height: 190px;
+  height: clamp(190px, 24vw, 280px);
   background: #fafbfd;
   overflow: hidden;
   transition:
@@ -1208,7 +1208,8 @@ select.control {
 .preview img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
+  background: #fff;
 }
 
 /* ── Buttons ── */

@@ -1352,7 +1352,8 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
 .img-row:hover { border-color: #c7d4e8; }
 
 .img-preview {
-  width: 90px; height: 90px;
+  width: clamp(90px, 8vw, 120px);
+  height: clamp(90px, 8vw, 120px);
   border-radius: 12px;
   overflow: hidden;
   border: 1.5px solid #e8ecf4;
@@ -1362,7 +1363,7 @@ input[type="checkbox"] { accent-color: #3b82f6; width: 15px; height: 15px; curso
   font-weight: 600;
   font-size: 11px;
 }
-.img-preview img { width: 100%; height: 100%; object-fit: cover; }
+.img-preview img { width: 100%; height: 100%; object-fit: cover; background: #fff; }
 
 .fieldx { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .labelx { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: .04em; }
