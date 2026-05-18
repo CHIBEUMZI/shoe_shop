@@ -33,34 +33,34 @@
           <article
             v-for="coupon in coupons"
             :key="coupon.id"
-            class="group relative overflow-hidden rounded-[24px] bg-white shadow-[0_14px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(15,23,42,0.12)] dark:bg-slate-900"
+            class="group relative flex h-full min-h-[220px] overflow-hidden rounded-[24px] bg-white shadow-[0_14px_30px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_22px_44px_rgba(15,23,42,0.12)] dark:bg-slate-900"
           >
             <div class="absolute inset-y-0 left-0 w-3 bg-red-600"></div>
             <div class="absolute inset-y-0 left-3 w-[2px] border-l border-dashed border-red-200/80 dark:border-red-900/60"></div>
 
-            <div class="grid min-h-[180px] gap-4 p-4 pl-6 sm:grid-cols-[1fr_auto] sm:items-stretch">
-              <div class="flex flex-col justify-between gap-4">
-                <div class="space-y-3">
-                  <div class="flex items-center gap-2">
-                    <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
-                      Mã giảm giá
-                    </span>
-                  </div>
+            <div class="flex flex-1 flex-col gap-4 p-4 pl-6">
+              <div class="space-y-3">
+                <div class="flex items-center gap-2">
+                  <span class="text-[11px] font-semibold uppercase tracking-[0.12em] text-slate-400 dark:text-slate-500">
+                    Mã giảm giá
+                  </span>
+                </div>
 
-                  <h3 class="line-clamp-2 break-words text-[22px] font-extrabold leading-7 text-slate-900 dark:text-white">
-                    {{ coupon.name }}
-                  </h3>
+                <h3 class="line-clamp-2 break-words text-[22px] font-extrabold leading-7 text-slate-900 dark:text-white">
+                  {{ coupon.name }}
+                </h3>
 
-                  <p class="text-[13px] font-medium leading-5 text-slate-500 dark:text-slate-400">
-                    Giảm {{ coupon.value_formatted }} • Áp dụng cho đơn từ {{ moneyVND(coupon.min_order_amount || 0) }}
-                  </p>
-                  <div>
+                <p class="text-[13px] font-medium leading-5 text-slate-500 dark:text-slate-400">
+                  Giảm {{ coupon.value_formatted }} • Áp dụng cho đơn từ {{ moneyVND(coupon.min_order_amount || 0) }}
+                </p>
+                <div>
                   <p class="break-words text-[12px] font-black tracking-[0.22em] text-slate-900 dark:text-white">
                     Mã: {{ coupon.code }}
                   </p>
                 </div>
-                </div>
+              </div>
 
+              <div class="mt-auto space-y-3">
                 <div class="flex items-center gap-2 text-[12px] font-medium text-slate-500 dark:text-slate-400">
                   <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                     ⏳
@@ -69,7 +69,7 @@
                 </div>
                 <button
                   type="button"
-                  class="mt-4 rounded-full bg-slate-950 px-4 py-2.5 text-[12px] font-black text-white transition-all duration-300 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 disabled:cursor-not-allowed disabled:opacity-60"
+                  class="w-full rounded-full bg-slate-950 px-4 py-2.5 text-[12px] font-black text-white transition-all duration-300 hover:bg-primary hover:shadow-lg hover:shadow-primary/25 disabled:cursor-not-allowed disabled:opacity-60"
                   :disabled="claimingCouponCode === coupon.code"
                   @click="claimCoupon(coupon.code)"
                 >

@@ -61,7 +61,7 @@
       <div
         v-for="coupon in coupons"
         :key="coupon.id"
-        class="relative rounded-xl overflow-hidden bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-lg transition-all"
+        class="relative flex h-full min-h-[320px] flex-col overflow-hidden rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 shadow-sm transition-all hover:shadow-lg"
         :class="{ 'opacity-60': coupon.is_claimed }"
       >
         <!-- Top color bar -->
@@ -70,69 +70,74 @@
         <!-- Claimed badge -->
         <div
           v-if="coupon.is_claimed"
-          class="absolute top-4 right-4 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-xs font-semibold"
+          class="absolute top-4 right-4 z-10 flex items-center gap-1 rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400"
         >
           <span class="material-symbols-outlined text-sm">check_circle</span>
           Đã nhận
         </div>
 
-        <div class="p-5 pt-6">
-          <!-- Discount & Code -->
-          <div class="flex items-start justify-between mb-3">
-            <div class="flex-1">
-              <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-primary/10 text-primary text-xs font-semibold mb-2">
-                <span class="material-symbols-outlined text-sm">sell</span>
-                {{ coupon.type === 'percentage' ? 'Giảm ' + coupon.value + '%' : 'Giảm ' + formatMoney(coupon.value) }}
+        <div class="flex h-full flex-1 flex-col p-5 pt-6">
+          <!-- Top content -->
+          <div>
+            <!-- Discount & Code -->
+            <div class="mb-3 flex items-start justify-between gap-3">
+              <div class="flex-1">
+                <div class="mb-2 inline-flex items-center gap-1.5 rounded-lg bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary">
+                  <span class="material-symbols-outlined text-sm">sell</span>
+                  {{ coupon.type === 'percentage' ? 'Giảm ' + coupon.value + '%' : 'Giảm ' + formatMoney(coupon.value) }}
+                </div>
+                <h3 class="text-base font-bold leading-tight text-slate-900 dark:text-white">{{ coupon.name }}</h3>
               </div>
-              <h3 class="font-bold text-base text-slate-900 dark:text-white leading-tight">{{ coupon.name }}</h3>
-            </div>
-            <div class="text-right ml-3">
-              <div class="text-[10px] text-slate-400 uppercase tracking-wider mb-1">Mã</div>
-              <div class="font-mono font-bold text-sm text-primary bg-primary/10 px-2.5 py-1.5 rounded-lg">
-                {{ coupon.code }}
+              <div class="ml-3 text-right">
+                <div class="mb-1 text-[10px] uppercase tracking-wider text-slate-400">Mã</div>
+                <div class="rounded-lg bg-primary/10 px-2.5 py-1.5 font-mono text-sm font-bold text-primary">
+                  {{ coupon.code }}
+                </div>
               </div>
             </div>
-          </div>
 
-          <!-- Description -->
-          <p v-if="coupon.description" class="text-sm text-slate-500 dark:text-slate-400 mb-3 line-clamp-2">
-            {{ coupon.description }}
-          </p>
+            <!-- Description -->
+            <p v-if="coupon.description" class="mb-3 text-sm text-slate-500 dark:text-slate-400 line-clamp-2">
+              {{ coupon.description }}
+            </p>
 
-          <!-- Info -->
-          <div class="space-y-1.5 mb-4">
-            <div v-if="coupon.min_order_amount" class="flex items-center gap-2 text-xs text-slate-500">
-              <span class="material-symbols-outlined text-sm">payments</span>
-              Đơn tối thiểu {{ formatMoney(coupon.min_order_amount) }}
-            </div>
-            <div v-if="coupon.max_discount && coupon.type === 'percentage'" class="flex items-center gap-2 text-xs text-slate-500">
-              <span class="material-symbols-outlined text-sm">trending_down</span>
-              Giảm tối đa {{ formatMoney(coupon.max_discount) }}
-            </div>
-            <div class="flex items-center gap-2 text-xs" :class="isExpired(coupon) ? 'text-red-500' : 'text-emerald-600'">
-              <span class="material-symbols-outlined text-sm">schedule</span>
-              {{ getExpiryText(coupon) }}
+            <!-- Info -->
+            <div class="space-y-1.5">
+              <div v-if="coupon.min_order_amount" class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="material-symbols-outlined text-sm">payments</span>
+                Đơn tối thiểu {{ formatMoney(coupon.min_order_amount) }}
+              </div>
+              <div v-if="coupon.max_discount && coupon.type === 'percentage'" class="flex items-center gap-2 text-xs text-slate-500">
+                <span class="material-symbols-outlined text-sm">trending_down</span>
+                Giảm tối đa {{ formatMoney(coupon.max_discount) }}
+              </div>
+              <div class="flex items-center gap-2 text-xs" :class="isExpired(coupon) ? 'text-red-500' : 'text-emerald-600'">
+                <span class="material-symbols-outlined text-sm">schedule</span>
+                {{ getExpiryText(coupon) }}
+              </div>
             </div>
           </div>
 
           <!-- Action -->
-          <button
-            v-if="!coupon.is_claimed"
-            type="button"
-            class="w-full py-2.5 rounded-lg font-semibold text-sm transition-colors"
-            :class="isExpired(coupon)
-              ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
-              : 'bg-primary text-white hover:bg-primary/90'"
-            :disabled="claimingId === coupon.id || isExpired(coupon)"
-            @click="claimCoupon(coupon)"
-          >
-            <span v-if="claimingId === coupon.id">Đang xử lý...</span>
-            <span v-else-if="isExpired(coupon)">Đã hết hạn</span>
-            <span v-else>Nhận mã giảm giá</span>
-          </button>
+          <div class="mt-auto pt-4">
+            <button
+              v-if="!coupon.is_claimed"
+              type="button"
+              class="w-full rounded-lg py-2.5 text-sm font-semibold transition-colors"
+              :class="isExpired(coupon)
+                ? 'bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed'
+                : 'bg-primary text-white hover:bg-primary/90'"
+              :disabled="claimingId === coupon.id || isExpired(coupon)"
+              @click="claimCoupon(coupon)"
+            >
+              <span v-if="claimingId === coupon.id">Đang xử lý...</span>
+              <span v-else-if="isExpired(coupon)">Đã hết hạn</span>
+              <span v-else>Nhận mã giảm giá</span>
+            </button>
 
-          <div v-else class="py-2.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-400 text-sm font-semibold text-center">
-            Đã nhận thành công
+            <div v-else class="rounded-lg bg-emerald-50 py-2.5 text-center text-sm font-semibold text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400">
+              Đã nhận thành công
+            </div>
           </div>
         </div>
       </div>
